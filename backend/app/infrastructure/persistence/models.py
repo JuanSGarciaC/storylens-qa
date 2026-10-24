@@ -199,3 +199,33 @@ class DefectRow(SQLModel, table=True):
     build_version: str = ""
     ai_assisted: bool = False
     created_at: datetime
+
+
+class ImportJobRow(SQLModel, table=True):
+    __tablename__ = "import_job"
+
+    id: str = Field(primary_key=True)
+    project_id: str = Field(foreign_key="project.id", index=True)
+    filename: str
+    status: str = Field(index=True)
+    use_ai: bool = False
+    actor: str
+    note: str = ""
+    created_at: datetime
+    updated_at: datetime
+
+
+class ImportItemRow(SQLModel, table=True):
+    __tablename__ = "import_item"
+
+    id: int | None = Field(default=None, primary_key=True)
+    job_id: str = Field(foreign_key="import_job.id", index=True)
+    row_index: int
+    key: str = ""
+    title: str
+    description: str
+    criteria: list[str] = Field(default_factory=list, sa_column=Column(JSON, nullable=False))
+    status: str = Field(index=True)
+    story_id: str | None = None
+    error: str = ""
+    ai_status: str | None = None

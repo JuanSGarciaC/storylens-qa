@@ -151,9 +151,9 @@ def test_invalid_files_raise_a_clear_error(name, data):
 
 
 def test_rows_are_capped_and_truncation_is_reported():
-    lines = "\n".join(f"T{i},D{i}" for i in range(300))
+    lines = "\n".join(f"T{i},D{i}" for i in range(600))
     table = parse_csv("Summary,Description\n" + lines)
-    assert len(table.rows) == 200 and table.truncated
+    assert len(table.rows) == 500 and table.truncated
 
 
 def test_mapping_must_point_to_existing_columns():

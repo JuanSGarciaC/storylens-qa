@@ -16,6 +16,7 @@ from app.api.routers import (
     audit,
     auth,
     findings,
+    import_jobs,
     projects,
     qa_sessions,
     stories,
@@ -37,6 +38,7 @@ from app.config import get_settings
 from app.domain.story_import import ImportFormatError
 from app.infrastructure.persistence.database import get_engine, get_session, init_db
 from app.infrastructure.persistence.migrations import upgrade_to_head
+from app.infrastructure.persistence.sql_import_job_repository import SqlImportJobRepository
 from app.infrastructure.persistence.sql_project_repository import SqlProjectRepository
 from app.infrastructure.persistence.sql_quota import SqlQuota
 from app.infrastructure.persistence.sql_repository import SqlStoryRepository
@@ -51,6 +53,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     else:
         init_db()
     with Session(get_engine()) as session:
+        SqlImportJobRepository(session).mark_interrupted()
         ensure_owner(SqlUserRepository(session), settings.owner_email, settings.owner_password)
         if settings.seed_demo:
             seed_demo(SqlProjectRepository(session), SqlStoryRepository(session))
@@ -155,6 +158,7 @@ def create_app() -> FastAPI:
     app.include_router(audit.router, prefix="/api/v1")
     app.include_router(analysis.router, prefix="/api/v1")
     app.include_router(story_import.router, prefix="/api/v1")
+    app.include_router(import_jobs.router, prefix="/api/v1")
     app.include_router(stories.router, prefix="/api/v1")
     app.include_router(findings.router, prefix="/api/v1")
     app.include_router(test_design.router, prefix="/api/v1")

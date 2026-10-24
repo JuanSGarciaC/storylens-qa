@@ -4,7 +4,13 @@ from datetime import UTC, datetime
 from sqlmodel import Session, col, delete, or_, select
 
 from app.domain.entities.project import Epic, ProjectSettings, StoredProject, Version
-from app.infrastructure.persistence.models import EpicRow, ProjectRow, VersionRow
+from app.infrastructure.persistence.models import (
+    EpicRow,
+    ImportItemRow,
+    ImportJobRow,
+    ProjectRow,
+    VersionRow,
+)
 from app.infrastructure.persistence.settings_codec import settings_from_json, settings_to_json
 
 
@@ -92,6 +98,9 @@ class SqlProjectRepository:
         row = self._session.get(ProjectRow, project_id)
         if row is None:
             return False
+        job_ids = select(ImportJobRow.id).where(ImportJobRow.project_id == project_id)
+        self._session.exec(delete(ImportItemRow).where(col(ImportItemRow.job_id).in_(job_ids)))
+        self._session.exec(delete(ImportJobRow).where(ImportJobRow.project_id == project_id))
         self._session.exec(delete(EpicRow).where(EpicRow.project_id == project_id))
         self._session.exec(delete(VersionRow).where(VersionRow.project_id == project_id))
         self._session.delete(row)

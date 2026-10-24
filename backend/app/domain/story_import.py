@@ -12,7 +12,7 @@ import unicodedata
 from dataclasses import dataclass, field
 from typing import Any
 
-MAX_ROWS = 200
+MAX_ROWS = 500
 MAX_TITLE_CHARS = 300
 MAX_CRITERIA = 50
 MAX_KEY_CHARS = 50
