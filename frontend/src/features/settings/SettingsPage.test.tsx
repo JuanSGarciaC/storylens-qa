@@ -1,8 +1,10 @@
-import { screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { RouterProvider, createMemoryRouter } from "react-router-dom";
 import { axe } from "vitest-axe";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { makeNamed, makeProject } from "../../test/fakeApi";
+import { RootLayout, routes } from "../../app/routes";
 import { json, renderPage, stubFetch } from "../../test/renderPage";
 import type { Handler } from "../../test/renderPage";
 import { SettingsPage } from "./SettingsPage";
@@ -173,5 +175,54 @@ describe("SettingsPage", () => {
         )?.body,
       ).toEqual({ name: "Nueva" }),
     );
+  });
+
+  it("rechaza umbrales vacíos sin llamar al servidor", async () => {
+    const { calls } = setup();
+    const user = userEvent.setup();
+    await screen.findByRole("checkbox", { name: /Términos vagos/ });
+    await user.clear(screen.getByLabelText("No lista por debajo de"));
+    await user.click(screen.getByRole("button", { name: "Guardar reglas" }));
+    expect(await screen.findByText(/menor que/)).toBeInTheDocument();
+    expect(calls.some((c) => c.method === "PATCH")).toBe(false);
+  });
+
+  it("dentro del Shell real, la confirmación sobrevive al guardado sin remontar", async () => {
+    const saved = makeProject({
+      settings: {
+        disabled_rules: [],
+        penalties: null,
+        not_ready_below: 50,
+        ready_from: 85,
+      },
+    });
+    stubFetch({
+      handler: (call) => {
+        if (call.method === "PATCH") return json(saved);
+        if (call.path === "/projects/p1") return json(makeProject());
+        if (call.path === "/projects") return json([makeProject()]);
+        if (call.path === "/rules") return json(RULES);
+        if (call.path.endsWith("/epics") || call.path.endsWith("/versions")) {
+          return json([]);
+        }
+        return undefined;
+      },
+    });
+    const router = createMemoryRouter(
+      [{ element: <RootLayout />, children: routes[0].children }],
+      { initialEntries: ["/p/p1/settings"] },
+    );
+    render(<RouterProvider router={router} />);
+    const user = userEvent.setup();
+    const low = await screen.findByLabelText("No lista por debajo de");
+    await screen.findByRole("checkbox", { name: /Términos vagos/ });
+    await user.clear(low);
+    await user.type(low, "50");
+    await user.click(screen.getByRole("button", { name: "Guardar reglas" }));
+    expect(
+      await screen.findByText("Reglas y umbrales guardados."),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("No lista por debajo de")).toBe(low);
+    expect(screen.queryByText("Cargando proyecto…")).not.toBeInTheDocument();
   });
 });

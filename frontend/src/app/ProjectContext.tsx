@@ -18,6 +18,8 @@ export type ProjectValue = {
   status: ProjectStatus;
   error: string;
   reload(): void;
+  /** Sustituye el proyecto actual sin pasar por «cargando» (p. ej. con la respuesta de un PATCH). */
+  setProject(project: Project): void;
   /** Proyectos visibles para el selector y la paleta. */
   projects: Project[];
   /** Vuelve a pedir la lista (p. ej. tras crear o borrar un proyecto). */
@@ -97,6 +99,12 @@ export function ProjectProvider({
     setAttempt((n) => n + 1);
   }, []);
 
+  const setProject = useCallback(
+    (project: Project) =>
+      setLoaded({ id: project.id, project, status: "ready", error: "" }),
+    [],
+  );
+
   const fresh = loaded && loaded.id === projectId ? loaded : null;
   const value: ProjectValue = {
     projectId,
@@ -104,6 +112,7 @@ export function ProjectProvider({
     status: !projectId ? "none" : (fresh?.status ?? "loading"),
     error: fresh?.error ?? "",
     reload,
+    setProject,
     projects,
     refreshProjects,
   };

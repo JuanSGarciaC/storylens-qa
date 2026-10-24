@@ -151,3 +151,9 @@
   margin: 0;
   padding-left: var(--space-6);
 }
+
+.form-grid--bare {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}

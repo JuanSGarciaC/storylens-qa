@@ -52,7 +52,7 @@ describe("ProjectOverviewPage", () => {
     expect(within(figures).getByText("33 %")).toBeInTheDocument();
     const ring = screen.getByRole("img", { name: /Distribución/ });
     expect(ring.getAttribute("aria-label")).toBe(
-      "Distribución: Sin analizar 0, Con bloqueantes 1, Aprobadas con observaciones 1, Listas 1",
+      "Distribución: Sin analizar 0, No listas 1, Aprobadas con observaciones 1, Listas 1",
     );
     expect(document.body.textContent).not.toMatch(/NaN/);
     expect(await axe(view.container)).toHaveNoViolations();

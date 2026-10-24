@@ -33,7 +33,7 @@ describe("classifyStory", () => {
   it("respeta el veredicto del servidor", () => {
     expect(
       classifyStory(story({ score: 95, verdict: "not_ready" }), settings),
-    ).toBe("blocking");
+    ).toBe("notReady");
     expect(
       classifyStory(
         story({ score: 70, verdict: "ready_with_notes" }),
@@ -48,7 +48,7 @@ describe("classifyStory", () => {
   it("con un veredicto desconocido usa los umbrales del proyecto", () => {
     const custom = { ...settings, not_ready_below: 40, ready_from: 70 };
     expect(classifyStory(story({ score: 39, verdict: "?" }), custom)).toBe(
-      "blocking",
+      "notReady",
     );
     expect(classifyStory(story({ score: 40, verdict: "?" }), custom)).toBe(
       "notes",
@@ -73,7 +73,7 @@ describe("summarizeStories", () => {
     expect(summary.total).toBe(4);
     expect(summary.analyzed).toBe(3);
     expect(summary.meanScore).toBe(70);
-    expect(summary.blockingPercent).toBe(33);
+    expect(summary.notReadyPercent).toBe(33);
     const counts = Object.values(summary.counts);
     expect(counts.reduce((a, b) => a + b, 0)).toBe(4);
   });
@@ -81,6 +81,6 @@ describe("summarizeStories", () => {
   it("sin historias analizadas no inventa cifras", () => {
     const summary = summarizeStories([story(null)], settings);
     expect(summary.meanScore).toBeNull();
-    expect(summary.blockingPercent).toBeNull();
+    expect(summary.notReadyPercent).toBeNull();
   });
 });

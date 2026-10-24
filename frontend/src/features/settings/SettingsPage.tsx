@@ -40,7 +40,7 @@ function ProjectData({
   project: Project;
   access: Access;
 }) {
-  const { reload, refreshProjects } = useProject();
+  const { setProject, refreshProjects } = useProject();
   const [name, setName] = useState(project.name);
   const [description, setDescription] = useState(project.description);
   const [objective, setObjective] = useState(project.objective);
@@ -58,14 +58,14 @@ function ProjectData({
     setError("");
     setSaved("");
     try {
-      await api.updateProject(project.id, {
+      const updated = await api.updateProject(project.id, {
         name: name.trim(),
         description,
         objective,
       });
       setSaved("Datos guardados.");
       refreshProjects();
-      reload();
+      setProject(updated);
     } catch (e) {
       setError(message(e, "No se pudieron guardar los datos."));
     } finally {
@@ -112,7 +112,7 @@ function ProjectData({
 }
 
 function RulesForm({ project, access }: { project: Project; access: Access }) {
-  const { reload } = useProject();
+  const { setProject } = useProject();
   const rules = useLoad(() => api.listRules(), "rules");
   const settings = project.settings;
   const [disabled, setDisabled] = useState<string[]>(
@@ -135,6 +135,8 @@ function RulesForm({ project, access }: { project: Project; access: Access }) {
     const notReady = Number(low);
     const ready = Number(high);
     const valid =
+      low.trim() !== "" &&
+      high.trim() !== "" &&
       Number.isInteger(notReady) &&
       Number.isInteger(ready) &&
       notReady >= 0 &&
@@ -149,7 +151,7 @@ function RulesForm({ project, access }: { project: Project; access: Access }) {
     setError("");
     setBusy(true);
     try {
-      await api.updateProject(project.id, {
+      const updated = await api.updateProject(project.id, {
         settings: {
           disabled_rules: disabled,
           penalties: settings.penalties ?? null,
@@ -158,7 +160,7 @@ function RulesForm({ project, access }: { project: Project; access: Access }) {
         },
       });
       setSaved("Reglas y umbrales guardados.");
-      reload();
+      setProject(updated);
     } catch (e) {
       setError(message(e, "No se pudo guardar la configuración."));
     } finally {
@@ -201,9 +203,8 @@ function RulesForm({ project, access }: { project: Project; access: Access }) {
         Una regla desmarcada deja de evaluarse en los próximos análisis.
       </p>
       <fieldset
-        className="form-grid"
+        className="form-grid form-grid--bare"
         disabled={!access.canWrite}
-        style={{ border: 0, padding: 0, margin: 0 }}
       >
         <legend className="visually-hidden">Reglas activas</legend>
         {list}

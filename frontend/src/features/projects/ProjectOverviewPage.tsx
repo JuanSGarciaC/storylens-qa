@@ -53,10 +53,11 @@ export function ProjectOverviewPage() {
             <dd className="gradient-text">{s.total}</dd>
           </dl>
           <dl className="stat">
-            <dt>Con bloqueantes</dt>
+            <dt>No listas</dt>
             <dd className="gradient-text">
-              {s.blockingPercent === null ? NONE : `${s.blockingPercent} %`}
+              {s.notReadyPercent === null ? NONE : `${s.notReadyPercent} %`}
             </dd>
+            <dd className="hint">con bloqueantes o puntaje bajo</dd>
           </dl>
           <dl className="stat">
             <dt>Puntaje medio</dt>
@@ -84,8 +85,8 @@ export function ProjectOverviewPage() {
                 tone: "neutral",
               },
               {
-                label: "Con bloqueantes",
-                value: s.counts.blocking,
+                label: "No listas",
+                value: s.counts.notReady,
                 tone: "danger",
               },
               {
