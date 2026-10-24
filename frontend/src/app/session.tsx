@@ -24,6 +24,8 @@ export type SessionValue = {
   aiConfigured: boolean;
   /** Cuota de IA restante hoy según /health; null si no se informa. */
   aiQuotaRemaining: number | null;
+  /** Vuelve a pedir /health (p. ej. tras gastar una consulta de IA); true si respondió. */
+  refreshHealth(): Promise<boolean>;
   login(email: string, password: string): Promise<void>;
   logout(): Promise<void>;
   retry(): void;
@@ -156,6 +158,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => api.setUnauthorizedHandler(null);
   }, [navigate]);
 
+  const refreshHealth = useCallback(async () => {
+    try {
+      const health = await api.getHealth();
+      setAiConfigured(health.ai_configured);
+      setAiQuotaRemaining(health.ai_quota_remaining_today ?? null);
+      return true;
+    } catch {
+      return false; // no es fatal: se conserva el último valor conocido
+    }
+  }, []);
+
   const login = useCallback(async (email: string, password: string) => {
     setMe(await api.login(email, password));
   }, []);
@@ -176,11 +189,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       status,
       aiConfigured,
       aiQuotaRemaining,
+      refreshHealth,
       login,
       logout,
       retry,
     }),
-    [me, status, aiConfigured, aiQuotaRemaining, login, logout, retry],
+    [
+      me,
+      status,
+      aiConfigured,
+      aiQuotaRemaining,
+      refreshHealth,
+      login,
+      logout,
+      retry,
+    ],
   );
 
   let content: ReactNode = children;

@@ -35,6 +35,12 @@ const SEVERITIES: { key: Finding["severity"]; label: string }[] = [
   { key: "info", label: "Info" },
 ];
 
+const ErrorText = ({ message }: { message: string }) => (
+  <p role="alert" className="field__error wrap">
+    {message}
+  </p>
+);
+
 type OnDecide = (
   finding: Finding,
   decision: Decision,
@@ -45,11 +51,13 @@ function FindingItem({
   finding,
   canDecide,
   busy,
+  error,
   onDecide,
 }: {
   finding: Finding;
   canDecide: boolean;
   busy: boolean;
+  error: string;
   onDecide: OnDecide;
 }) {
   const [dismissing, setDismissing] = useState(false);
@@ -109,6 +117,7 @@ function FindingItem({
         </p>
       ) : null}
 
+      {error ? <ErrorText message={error} /> : null}
       {!canDecide ? null : dismissing ? (
         <div className="finding__actions">
           <Field label="Motivo del descarte" error={reasonError}>
@@ -211,11 +220,13 @@ function Findings({
   analysis,
   canDecide,
   busy,
+  decideError,
   onDecide,
 }: {
   analysis: Analysis;
   canDecide: boolean;
   busy: boolean;
+  decideError: { id: string; message: string } | null;
   onDecide: OnDecide;
 }) {
   const base = useId();
@@ -240,6 +251,11 @@ function Findings({
                   finding={finding}
                   canDecide={canDecide}
                   busy={busy}
+                  error={
+                    decideError && decideError.id === finding.id
+                      ? decideError.message
+                      : ""
+                  }
                   onDecide={onDecide}
                 />
               ))}
@@ -289,7 +305,7 @@ function AnalysisView({
 }) {
   const navigate = useNavigate();
   const { refreshProjects } = useProject();
-  const { aiQuotaRemaining } = useSession();
+  const { aiQuotaRemaining, refreshHealth } = useSession();
   const access = useAccess(project);
   const analysisId = story.latest_analysis?.id;
   const data = useLoad<Analysis | null>(
@@ -298,7 +314,14 @@ function AnalysisView({
   );
   const [busy, setBusy] = useState(false);
   const [running, setRunning] = useState<"rules" | "ai" | null>(null);
-  const [error, setError] = useState("");
+  const [analyzeError, setAnalyzeError] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [decideError, setDecideError] = useState<{
+    id: string;
+    message: string;
+  } | null>(null);
+  // La IA respondió «no disponible» y /health no pudo confirmarlo: se bloquea hasta el próximo refresco.
+  const [aiDown, setAiDown] = useState(false);
   const [notice, setNotice] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const deleteButton = useRef<HTMLButtonElement>(null);
@@ -314,23 +337,32 @@ function AnalysisView({
   const analysis = data.data ?? null;
 
   const outOfQuota = aiQuotaRemaining === 0;
-  const aiEnabled = access.canUseAi && !outOfQuota;
+  const aiEnabled = access.canUseAi && !outOfQuota && !aiDown;
   const quotaText =
     access.canUseAi && aiQuotaRemaining !== null
       ? aiQuotaRemaining === 0
         ? "Sin consultas de IA hoy."
         : `${aiQuotaRemaining === 1 ? "Queda 1 consulta" : `Quedan ${aiQuotaRemaining} consultas`} de IA hoy.`
       : null;
-  const reason = access.reason ?? quotaText;
+  const reason =
+    access.reason ??
+    (aiDown && !outOfQuota
+      ? "La IA no está disponible ahora (límite alcanzado o servicio caído)."
+      : quotaText);
 
-  async function guard(action: () => Promise<void>): Promise<boolean> {
+  async function guard(
+    action: () => Promise<void>,
+    onError: (message: string) => void,
+  ): Promise<boolean> {
     setBusy(true);
-    setError("");
+    setAnalyzeError("");
+    setDeleteError("");
+    setDecideError(null);
     try {
       await action();
       return true;
     } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo completar.");
+      onError(e instanceof Error ? e.message : "No se pudo completar.");
       return false;
     } finally {
       setBusy(false);
@@ -340,26 +372,44 @@ function AnalysisView({
   async function analyze(useAi: boolean) {
     setRunning(useAi ? "ai" : "rules");
     setNotice("");
+    let unavailable = false;
     await guard(async () => {
-      data.set(await api.createAnalysis(story.id, useAi));
-      setNotice("Análisis completado.");
-    });
+      try {
+        const result = await api.createAnalysis(story.id, useAi);
+        unavailable = result.ai_status === "unavailable";
+        data.set(result);
+        setNotice("Análisis completado.");
+      } finally {
+        if (useAi) {
+          // Se refresca siempre: la consulta pudo gastarse aunque la petición fallara.
+          const refreshed = await refreshHealth();
+          setAiDown(unavailable && !refreshed);
+        }
+      }
+    }, setAnalyzeError);
     setRunning(null);
   }
 
   const decide: OnDecide = (finding, decision, why) =>
-    guard(async () => {
-      if (!finding.id) throw new Error("El hallazgo aún no se ha guardado.");
-      data.set(await api.decideFinding(finding.id, decision, why));
-    });
+    guard(
+      async () => {
+        if (!finding.id) throw new Error("El hallazgo aún no se ha guardado.");
+        data.set(await api.decideFinding(finding.id, decision, why));
+      },
+      (message) => setDecideError({ id: finding.id ?? "", message }),
+    );
 
   async function remove() {
     const ok = await guard(async () => {
       await api.deleteStory(story.id);
       refreshProjects();
       navigate(`/p/${project.id}/stories`);
-    });
-    if (!ok) setConfirmDelete(false);
+    }, setDeleteError);
+    if (!ok) {
+      setConfirmDelete(false);
+      // El botón sigue deshabilitado hasta el próximo render.
+      requestAnimationFrame(() => deleteButton.current?.focus());
+    }
   }
 
   const toolbar = (
@@ -382,6 +432,7 @@ function AnalysisView({
         </Button>
       </div>
       {reason ? <p className="hint">{reason}</p> : null}
+      {analyzeError ? <ErrorText message={analyzeError} /> : null}
     </>
   );
 
@@ -411,8 +462,6 @@ function AnalysisView({
           </p>
         ) : null}
       </div>
-      {error ? <ErrorNotice message={error} /> : null}
-
       {!analysis || !verdict ? (
         <section aria-labelledby="result-title">
           <h2 id="result-title" className="visually-hidden">
@@ -467,6 +516,7 @@ function AnalysisView({
               analysis={analysis}
               canDecide={access.canWrite}
               busy={busy}
+              decideError={decideError}
               onDecide={decide}
             />
             <p className="hint">
@@ -491,6 +541,7 @@ function AnalysisView({
           >
             Eliminar historia
           </Button>
+          {deleteError ? <ErrorText message={deleteError} /> : null}
           {confirmDelete ? (
             <div role="group" aria-labelledby="delete-question">
               <p id="delete-question">

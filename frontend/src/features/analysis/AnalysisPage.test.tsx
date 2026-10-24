@@ -94,6 +94,9 @@ type Options = {
   aiConfigured?: boolean;
   quota?: number;
   deleteStatus?: number;
+  createStatus?: number;
+  /** Cuota que informa /health tras la primera consulta de IA; "down" = /health no responde. */
+  quotaAfter?: number | "down";
 };
 
 function setup(options: Options = {}) {
@@ -105,10 +108,21 @@ function setup(options: Options = {}) {
   const project = makeProject({ is_demo: options.demo ?? false });
   const calls = stubFetch({
     me: options.anonymous ? { authenticated: false } : makeMe(),
-    health: {
-      status: "ok",
-      ai_configured: options.aiConfigured ?? true,
-      ai_quota_remaining_today: options.quota,
+    health: () => {
+      const spent = calls.some(
+        (c) => c.method === "POST" && c.path.endsWith("/analyses"),
+      );
+      if (spent && options.quotaAfter === "down") {
+        return new Response(null, { status: 503 });
+      }
+      return {
+        status: "ok",
+        ai_configured: options.aiConfigured ?? true,
+        ai_quota_remaining_today:
+          spent && options.quotaAfter !== undefined
+            ? options.quotaAfter
+            : options.quota,
+      };
     },
     handler: (call: Call) => {
       const { path, method } = call;
@@ -124,6 +138,12 @@ function setup(options: Options = {}) {
       }
       if (path === "/analyses/a1") return json(analysis);
       if (path === `/stories/${story.id}/analyses` && method === "POST") {
+        if (options.createStatus) {
+          return json(
+            { detail: "Límite de análisis alcanzado" },
+            options.createStatus,
+          );
+        }
         return json(options.created ?? makeAnalysis(), 201);
       }
       const finding = path.match(/^\/findings\/(.+)$/);
@@ -392,6 +412,104 @@ describe("AnalysisPage - IA", () => {
   });
 });
 
+describe("AnalysisPage - cuota y fallos de IA", () => {
+  const aiAnalysis = makeAnalysis({
+    used_ai: true,
+    ai_status: "ok",
+    model_name: "gemini-test",
+  });
+
+  it("tras un análisis con IA actualiza las consultas restantes", async () => {
+    setup({ quota: 5, quotaAfter: 4, created: aiAnalysis });
+    expect(await screen.findByText(/quedan 5 consultas/i)).toBeVisible();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Analizar con IA" }),
+    );
+    expect(await screen.findByText(/quedan 4 consultas/i)).toBeVisible();
+  });
+
+  it("si la cuota se agota a mitad, deshabilita la IA y las reglas siguen", async () => {
+    const { calls } = setup({
+      quota: 1,
+      quotaAfter: 0,
+      created: makeAnalysis({ ai_status: "unavailable" }),
+    });
+    await screen.findByText(/queda 1 consulta/i);
+    await userEvent.click(
+      screen.getByRole("button", { name: "Analizar con IA" }),
+    );
+    expect(await screen.findByText(/sin consultas de ia/i)).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Analizar con IA" }),
+    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Analizar" })).toBeEnabled();
+    await userEvent.click(screen.getByRole("button", { name: "Analizar" }));
+    await waitFor(() =>
+      expect(
+        calls.filter(
+          (c) => c.method === "POST" && c.path.endsWith("/analyses"),
+        ),
+      ).toHaveLength(2),
+    );
+  });
+
+  it("con /health caído y la IA no disponible, la deshabilita con motivo visible", async () => {
+    setup({
+      quota: 3,
+      quotaAfter: "down",
+      created: makeAnalysis({ ai_status: "unavailable" }),
+    });
+    await screen.findByText(/quedan 3 consultas/i);
+    await userEvent.click(
+      screen.getByRole("button", { name: "Analizar con IA" }),
+    );
+    expect(
+      await screen.findByText(/la ia no está disponible ahora/i),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Analizar con IA" }),
+    ).toBeDisabled();
+  });
+
+  it.each([429, 403])(
+    "si crear el análisis falla con %s muestra el mensaje y conserva el análisis",
+    async (status) => {
+      setup({ createStatus: status });
+      await screen.findByLabelText("Puntaje 60 de 100");
+      await userEvent.click(screen.getByRole("button", { name: "Analizar" }));
+      const alert = await screen.findByText("Límite de análisis alcanzado");
+      expect(alert).toHaveAttribute("role", "alert");
+      expect(alert).not.toHaveClass("notice");
+      expect(screen.getByLabelText("Puntaje 60 de 100")).toBeVisible();
+      expect(screen.getByRole("button", { name: "Analizar" })).toBeEnabled();
+    },
+  );
+
+  it("un ai_status desconocido avisa con motivo desconocido", async () => {
+    setup({ analysis: makeAnalysis({ ai_status: "otro" as never }) });
+    expect(
+      await screen.findByText(
+        /La IA no pudo participar \(motivo desconocido\)/,
+      ),
+    ).toBeVisible();
+  });
+
+  it("un fallo al descartar se muestra junto al hallazgo sin caja", async () => {
+    setup();
+    await screen.findByLabelText("Puntaje 60 de 100");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => json({ detail: "Sin permiso para decidir" }, 403)),
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: "Aceptar US-AMB-001" }),
+    );
+    const alert = await screen.findByText("Sin permiso para decidir");
+    expect(alert.closest("li")).not.toBeNull();
+    expect(document.querySelectorAll(".notice")).toHaveLength(1); // solo la crítica
+  });
+});
+
 describe("AnalysisPage - eliminar historia", () => {
   it("pide confirmación, elimina y vuelve al listado", async () => {
     const { calls } = setup();
@@ -436,6 +554,12 @@ describe("AnalysisPage - eliminar historia", () => {
       await screen.findByText("No tienes permiso para eliminar"),
     ).toBeVisible();
     expect(screen.getByTestId("where")).toHaveTextContent("/analysis");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Eliminar historia" }),
+      ).toHaveFocus(),
+    );
+    expect(document.querySelectorAll(".notice")).toHaveLength(1);
   });
 
   it.each([
