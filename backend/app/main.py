@@ -21,6 +21,7 @@ from app.api.routers import (
     test_design,
 )
 from app.application.auth import LoginThrottle, ensure_owner
+from app.application.demo import seed_demo
 from app.application.errors import ForbiddenError, NotAuthenticatedError
 from app.application.projects import InvalidProjectError
 from app.application.qa_sessions import ConflictError, InvalidSessionDataError
@@ -33,6 +34,8 @@ from app.application.test_design import (
 from app.config import get_settings
 from app.domain.story_import import ImportFormatError
 from app.infrastructure.persistence.database import get_engine, init_db
+from app.infrastructure.persistence.sql_project_repository import SqlProjectRepository
+from app.infrastructure.persistence.sql_repository import SqlStoryRepository
 from app.infrastructure.persistence.sql_users import SqlUserRepository
 
 
@@ -42,6 +45,8 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     with Session(get_engine()) as session:
         ensure_owner(SqlUserRepository(session), settings.owner_email, settings.owner_password)
+        if settings.seed_demo:
+            seed_demo(SqlProjectRepository(session), SqlStoryRepository(session))
     yield
 
 
