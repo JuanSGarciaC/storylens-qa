@@ -4,6 +4,36 @@
 > If that file exists, its rules **override** this Master file.
 > If not, strictly follow the rules below.
 
+## Overrides de la spec (prevalecen sobre todo lo demás)
+
+> La paleta slate/verde y las fuentes de abajo están **obsoletas**. Manda la spec v3 §4.
+
+- **Paleta negra:** `--bg #000`, `--fg #ededed`, `--muted #a1a1a1`, `--line rgb(255 255 255 / 12%)`, `--accent #6ea8ff` (azul), `--accent-2 #b79cff` (violeta), `--ok #4ade80`, `--warn #fbbf24`, `--danger #ff7b7b`. Fondo con dos luces radiales azul/violeta tenues y rejilla de 1px de baja opacidad.
+- **Tipografía:** Geist (texto) y Geist Mono (IDs, puntajes, versiones, rutas). Cuerpo largo con `.prose` (70ch, interlineado 1.7).
+- **Texto sin cajas:** métricas y listas sobre el fondo, separadas por líneas finas. La única caja permitida es `ErrorNotice` (alertas críticas).
+- **Gradientes** solo en cifras grandes, gráficos y luces de fondo (`.gradient-text`).
+- **Anti-patrones:** emojis como iconos, color como única señal (siempre texto), tarjetas anidadas, animaciones sin `prefers-reduced-motion`, texto bajo 4.5:1.
+- **Accesibilidad:** foco `:focus-visible` de 2px, transiciones 150–200 ms, `cursor:pointer` en clicables.
+
+### Pares texto/fondo verificados (WCAG AA, mínimo 4.5:1)
+
+| Par | Ratio |
+|---|---|
+| fg `#ededed` / `#000` | 17.94 |
+| muted `#a1a1a1` / `#000` | 8.13 |
+| muted / superficie `#0a0a0a` | 7.66 |
+| muted / luz de fondo `#0b1a3a` | 6.65 |
+| accent `#6ea8ff` / `#000` | 8.71 |
+| accent-2 `#b79cff` / `#000` | 9.21 |
+| ok / warn / danger sobre `#000` | 12.05 / 12.58 / 8.37 |
+| botón primario `#000` / `#ededed` | 17.94 |
+| botón peligro `#000` / `#ff7b7b` | 8.37 |
+| fg / alerta `#1a0a0a` | 16.43 |
+| danger / alerta `#1a0a0a` | 7.67 |
+| insignias ok, warn, danger, info, neutral | 10.46, 10.93, 7.57, 7.64, 7.13 |
+
+---
+
 ---
 
 **Project:** StoryLens QA

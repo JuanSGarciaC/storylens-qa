@@ -1,0 +1,23 @@
+:root {
+  color-scheme: dark;
+  --bg: #000000;
+  --fg: #ededed;
+  --muted: #a1a1a1;
+  --line: rgb(255 255 255 / 12%);
+  --accent: #6ea8ff;
+  --accent-2: #b79cff;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+  --danger: #ff7b7b;
+  --surface-alert: #1a0a0a;
+  --font-sans: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --radius: 8px;
+  --ease: 180ms ease;
+}
