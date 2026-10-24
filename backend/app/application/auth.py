@@ -1,3 +1,4 @@
+import secrets
 import time
 from collections import defaultdict, deque
 from collections.abc import Callable
@@ -5,6 +6,9 @@ from collections.abc import Callable
 from app.domain.auth import hash_password, verify_password
 from app.domain.entities import StoredUser
 from app.domain.ports.users import UserRepository
+
+# Hash falso calculado una vez: verificar contra él cuesta lo mismo que contra un usuario real.
+_DUMMY_HASH = hash_password(secrets.token_hex(16))
 
 MAX_FAILURES = 5
 LOCK_WINDOW_SECONDS = 15 * 60
@@ -49,15 +53,24 @@ def ensure_owner(
     if not email or not password:
         return None
     existing = users.get_by_email(email)
-    if existing is not None and verify_password(password, existing.password_hash):
+    if (
+        existing is not None
+        and users.count() == 1
+        and verify_password(password, existing.password_hash)
+    ):
         return existing
-    return users.upsert(email, hash_password(password))
+    return users.set_owner(email, hash_password(password))
+
+
+def is_configured_owner(email: str, owner_email: str | None) -> bool:
+    """Solo vale la cuenta que coincide con OWNER_EMAIL; si se quita la variable, nadie entra."""
+    return bool(owner_email) and email.strip().lower() == (owner_email or "").strip().lower()
 
 
 def authenticate(users: UserRepository, email: str, password: str) -> StoredUser | None:
     user = users.get_by_email(email)
     if user is None:
         # Gasta el mismo tiempo que una clave errónea para no revelar si el email existe.
-        verify_password(password, hash_password("relleno"))
+        verify_password(password, _DUMMY_HASH)
         return None
     return user if verify_password(password, user.password_hash) else None

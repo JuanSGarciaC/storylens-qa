@@ -5,7 +5,7 @@ from fastapi import APIRouter, Request, Response, status
 from app.api.principal import SESSION_COOKIE, CurrentPrincipal, Users
 from app.api.problems import problem
 from app.api.schemas.auth import LoginIn, MeOut
-from app.application.auth import LoginThrottle, authenticate
+from app.application.auth import LoginThrottle, authenticate, is_configured_owner
 from app.config import get_settings
 from app.domain.auth import sign_session
 
@@ -19,7 +19,11 @@ def login(payload: LoginIn, request: Request, response: Response, users: Users) 
     if throttle.is_locked(payload.email):
         return problem(429, "Demasiados intentos", "Espera unos minutos antes de volver a intentar")
     user = authenticate(users, payload.email, payload.password)
-    if user is None or not settings.session_secret:
+    if (
+        user is None
+        or not settings.session_secret
+        or not is_configured_owner(user.email, settings.owner_email)
+    ):
         throttle.record_failure(payload.email)
         return problem(401, "Credenciales no válidas", "Correo o contraseña incorrectos")
     throttle.reset(payload.email)

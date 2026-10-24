@@ -59,3 +59,12 @@ def test_session_requires_a_secret() -> None:
     token = sign_session("user-1", SECRET, now=1000.0, ttl_seconds=60)
 
     assert read_session(token, "", now=1001.0) is None
+
+
+def test_session_with_non_ascii_signature_returns_none() -> None:
+    """Una cookie con bytes no ASCII no puede provocar un error (era un 500 en todas las rutas)."""
+    token = sign_session("user-1", SECRET, now=1000.0, ttl_seconds=60)
+    payload = token.split(".")[0]
+
+    assert read_session(payload + ".éé", SECRET, now=1001.0) is None
+    assert read_session("é." + token.split(".")[1], SECRET, now=1001.0) is None

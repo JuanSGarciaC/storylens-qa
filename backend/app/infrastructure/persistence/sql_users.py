@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlmodel import Session, select
+from sqlmodel import Session, col, select
 
 from app.domain.entities import StoredUser
 from app.infrastructure.persistence.models import UserRow
@@ -25,18 +25,25 @@ class SqlUserRepository:
         row = self._session.get(UserRow, user_id)
         return _user(row) if row else None
 
-    def upsert(self, email: str, password_hash: str) -> StoredUser:
+    def count(self) -> int:
+        return len(self._session.exec(select(UserRow.id)).all())
+
+    def set_owner(self, email: str, password_hash: str) -> StoredUser:
         key = email.strip().lower()
-        row = self._session.exec(select(UserRow).where(UserRow.email == key)).first()
-        if row is None:
+        rows = list(self._session.exec(select(UserRow).order_by(col(UserRow.created_at))))
+        if rows:
+            row, extras = rows[0], rows[1:]
+            row.email, row.password_hash = key, password_hash
+        else:
             row = UserRow(
                 id=str(uuid.uuid4()),
                 email=key,
                 password_hash=password_hash,
                 created_at=datetime.now(UTC),
             )
-        else:
-            row.password_hash = password_hash
+            extras = []
+        for extra in extras:
+            self._session.delete(extra)
         self._session.add(row)
         self._session.commit()
         return _user(row)

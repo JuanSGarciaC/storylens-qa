@@ -58,7 +58,9 @@ def read_session(token: str, secret: str, now: float) -> str | None:
     if not secret or not token or len(token) > 1024:
         return None
     payload, _, signature = token.partition(".")
-    if not payload or not hmac.compare_digest(_mac(payload, secret), signature):
+    if not payload or not signature.isascii() or not payload.isascii():
+        return None  # compare_digest falla con texto no ASCII: una cookie así es basura
+    if not hmac.compare_digest(_mac(payload, secret), signature):
         return None
     try:
         user_id, _, expires = _unb64(payload).decode().rpartition("|")

@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlmodel import Session
 
+from app.application.auth import is_configured_owner
 from app.config import get_settings
 from app.domain.auth import read_session
 from app.domain.ports.users import UserRepository
@@ -39,7 +40,9 @@ def get_principal(request: Request, users: Users) -> Principal:
         return Principal()
     user_id = read_session(token, secret, time.time())
     user = users.get_by_id(user_id) if user_id else None
-    return Principal(user.id, user.email) if user else Principal()
+    if user is None or not is_configured_owner(user.email, get_settings().owner_email):
+        return Principal()
+    return Principal(user.id, user.email)
 
 
 CurrentPrincipal = Annotated[Principal, Depends(get_principal)]

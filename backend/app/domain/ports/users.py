@@ -8,6 +8,9 @@ class UserRepository(Protocol):
 
     def get_by_id(self, user_id: str) -> StoredUser | None: ...
 
-    def upsert(self, email: str, password_hash: str) -> StoredUser:
-        """Crea el usuario o cambia su hash si el email ya existe."""
+    def count(self) -> int: ...
+
+    def set_owner(self, email: str, password_hash: str) -> StoredUser:
+        """Deja una única cuenta: reutiliza la existente (mismo id, así conserva sus proyectos)
+        cambiando su correo y clave, y borra las demás."""
         ...

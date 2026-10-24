@@ -92,3 +92,56 @@ def test_ensure_owner_updates_password_when_it_changes(engine) -> None:
         assert stored is not None
         assert verify_password("dos", stored.password_hash)
         assert not verify_password("uno", stored.password_hash)
+
+
+def test_cookie_with_non_ascii_bytes_is_anonymous_not_a_500(anon_client: TestClient) -> None:
+    response = anon_client.get(
+        "/api/v1/auth/me", headers=[(b"cookie", b"storylens_session=abc.\xe9\xe9")]
+    )
+
+    assert response.status_code == 200
+    assert response.json()["authenticated"] is False
+
+
+def test_unknown_email_does_not_pay_an_extra_password_hash(engine, monkeypatch) -> None:
+    """El tiempo de respuesta no debe delatar si el correo existe: solo se verifica."""
+    import app.application.auth as auth_module
+
+    def forbidden(_password: str) -> str:
+        raise AssertionError("authenticate no debe hashear contraseñas")
+
+    monkeypatch.setattr(auth_module, "hash_password", forbidden)
+    with Session(engine) as db:
+        users = SqlUserRepository(db)
+
+        assert auth_module.authenticate(users, "nadie@test.local", "x") is None
+        assert auth_module.authenticate(users, EMAIL, "mala") is None
+
+
+def test_changing_owner_email_replaces_the_owner_and_keeps_projects(engine) -> None:
+    from app.domain.auth import verify_password
+
+    with Session(engine) as db:
+        users = SqlUserRepository(db)
+        old = ensure_owner(users, "viejo@test.local", "clave-vieja")
+        assert old is not None
+
+        new = ensure_owner(users, "nuevo@test.local", "clave-nueva")
+
+        assert new is not None and new.id == old.id  # mismo id: sus proyectos le siguen
+        assert users.get_by_email("viejo@test.local") is None
+        stored = users.get_by_email("nuevo@test.local")
+        assert stored is not None and verify_password("clave-nueva", stored.password_hash)
+        assert not verify_password("clave-vieja", stored.password_hash)
+
+
+def test_owner_removed_from_environment_cannot_log_in_or_keep_a_session(
+    client: TestClient, anon_client: TestClient, monkeypatch
+) -> None:
+    assert login(anon_client).status_code == 200
+    assert anon_client.get("/api/v1/auth/me").json()["authenticated"] is True
+
+    monkeypatch.setattr(get_settings(), "owner_email", None)
+
+    assert anon_client.get("/api/v1/auth/me").json()["authenticated"] is False
+    assert login(TestClient(anon_client.app)).status_code == 401
