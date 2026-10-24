@@ -327,6 +327,17 @@ function AnalysisView({
   const deleteButton = useRef<HTMLButtonElement>(null);
   const cancelDelete = useRef<HTMLButtonElement>(null);
 
+  // Si la IA quedó marcada como caída, se vuelve a comprobar al volver a la pestaña.
+  useEffect(() => {
+    if (!aiDown) return;
+    const recheck = () => {
+      if (document.visibilityState !== "visible") return;
+      void refreshHealth().then((ok) => ok && setAiDown(false));
+    };
+    document.addEventListener("visibilitychange", recheck);
+    return () => document.removeEventListener("visibilitychange", recheck);
+  }, [aiDown, refreshHealth]);
+
   useEffect(() => {
     if (confirmDelete) cancelDelete.current?.focus();
   }, [confirmDelete]);
@@ -432,6 +443,18 @@ function AnalysisView({
         </Button>
       </div>
       {reason ? <p className="hint">{reason}</p> : null}
+      {aiDown ? (
+        <div>
+          <Button
+            variant="ghost"
+            onClick={() =>
+              void refreshHealth().then((ok) => ok && setAiDown(false))
+            }
+          >
+            Comprobar de nuevo
+          </Button>
+        </div>
+      ) : null}
       {analyzeError ? <ErrorText message={analyzeError} /> : null}
     </>
   );

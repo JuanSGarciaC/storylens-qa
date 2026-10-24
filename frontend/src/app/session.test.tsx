@@ -238,3 +238,54 @@ describe("useAccess", () => {
     ]);
   });
 });
+
+describe("refreshHealth", () => {
+  function Quota() {
+    const { aiQuotaRemaining, refreshHealth } = useSession();
+    return (
+      <div>
+        <span data-testid="quota">{String(aiQuotaRemaining)}</span>
+        <button
+          onClick={() => {
+            void refreshHealth();
+          }}
+        >
+          refrescar
+        </button>
+      </div>
+    );
+  }
+
+  it("una respuesta antigua que llega tarde no pisa a la más reciente", async () => {
+    const pending: ((r: Response) => void)[] = [];
+    let health = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        if (url.endsWith("/health")) {
+          if (health++ === 0) {
+            return json({ status: "ok", ai_configured: true });
+          }
+          return new Promise<Response>((resolve) => pending.push(resolve));
+        }
+        return json(makeMe());
+      }),
+    );
+    render(
+      <MemoryRouter>
+        <SessionProvider>
+          <Quota />
+        </SessionProvider>
+      </MemoryRouter>,
+    );
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    const refresh = screen.getByRole("button", { name: "refrescar" });
+    await act(async () => refresh.click());
+    await act(async () => refresh.click());
+    const body = (n: number) =>
+      json({ status: "ok", ai_configured: true, ai_quota_remaining_today: n });
+    await act(async () => pending[1](body(1))); // la más nueva responde primero
+    await act(async () => pending[0](body(9))); // la antigua llega tarde
+    expect(screen.getByTestId("quota")).toHaveTextContent("1");
+  });
+});

@@ -158,9 +158,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => api.setUnauthorizedHandler(null);
   }, [navigate]);
 
+  // Contador monotónico: una respuesta antigua no pisa a una más reciente.
+  const healthRequests = useRef(0);
+  const healthApplied = useRef(0);
   const refreshHealth = useCallback(async () => {
+    const id = ++healthRequests.current;
     try {
       const health = await api.getHealth();
+      if (id < healthApplied.current) return true;
+      healthApplied.current = id;
       setAiConfigured(health.ai_configured);
       setAiQuotaRemaining(health.ai_quota_remaining_today ?? null);
       return true;

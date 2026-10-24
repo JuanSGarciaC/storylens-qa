@@ -97,6 +97,8 @@ type Options = {
   createStatus?: number;
   /** Cuota que informa /health tras la primera consulta de IA; "down" = /health no responde. */
   quotaAfter?: number | "down";
+  /** Mientras `value` sea true, /health no responde tras la primera consulta. */
+  down?: { value: boolean };
 };
 
 function setup(options: Options = {}) {
@@ -112,7 +114,7 @@ function setup(options: Options = {}) {
       const spent = calls.some(
         (c) => c.method === "POST" && c.path.endsWith("/analyses"),
       );
-      if (spent && options.quotaAfter === "down") {
+      if (spent && (options.quotaAfter === "down" || options.down?.value)) {
         return new Response(null, { status: 503 });
       }
       return {
@@ -469,6 +471,39 @@ describe("AnalysisPage - cuota y fallos de IA", () => {
     expect(
       screen.getByRole("button", { name: "Analizar con IA" }),
     ).toBeDisabled();
+  });
+
+  it("«Comprobar de nuevo» rehabilita la IA cuando /health vuelve", async () => {
+    const down = { value: true };
+    setup({
+      quota: 3,
+      down,
+      created: makeAnalysis({ ai_status: "unavailable" }),
+    });
+    await screen.findByText(/quedan 3 consultas/i);
+    await userEvent.click(
+      screen.getByRole("button", { name: "Analizar con IA" }),
+    );
+    const retry = await screen.findByRole("button", {
+      name: "Comprobar de nuevo",
+    });
+    await userEvent.click(retry); // /health sigue caído: no se rehabilita
+    expect(
+      screen.getByRole("button", { name: "Analizar con IA" }),
+    ).toBeDisabled();
+
+    down.value = false;
+    await userEvent.click(
+      screen.getByRole("button", { name: "Comprobar de nuevo" }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Analizar con IA" }),
+      ).toBeEnabled(),
+    );
+    expect(
+      screen.queryByRole("button", { name: "Comprobar de nuevo" }),
+    ).toBeNull();
   });
 
   it.each([429, 403])(
