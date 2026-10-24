@@ -1,0 +1,3 @@
+# Usa las reglas por defecto de gitleaks (incluye claves de Google/Gemini).
+[extend]
+useDefault = true

@@ -1,0 +1,209 @@
+# Catálogo de reglas de StoryLens QA. Ver docs/02-marco-normativo-qa.md
+# type: deterministic (código) | ai (Gemini)
+# Las reglas deterministic traen `examples` (ok/fail) que se prueban automáticamente:
+# son cambios parciales sobre una historia base correcta (ver tests/unit/test_rules_catalog.py).
+version: "1.0.0"
+rules:
+  # --- Formato y estructura ---
+  - id: US-FMT-001
+    name: Estructura rol-acción-beneficio
+    reference: "Formato Connextra / 3C (Tarjeta)"
+    type: deterministic
+    severity: major
+    description: La historia tiene rol, acción y beneficio ("Como… quiero… para…").
+    message: "A la historia le falta: {missing}."
+    suggestion: 'Use el formato "Como <rol> quiero <acción> para <beneficio>".'
+    examples:
+      ok: {}
+      fail:
+        description: "Quiero restablecer mi contraseña"
+
+  - id: US-FMT-002
+    name: El beneficio expresa valor de negocio
+    reference: "INVEST — Valiosa"
+    type: ai
+    severity: minor
+    description: El "para…" aporta valor y no repite la acción.
+    message: El beneficio no expresa valor de negocio.
+    suggestion: Reformule el beneficio indicando qué gana el rol o el negocio.
+
+  - id: US-FMT-003
+    name: Título presente y breve
+    reference: "Buena práctica"
+    type: deterministic
+    severity: info
+    description: El título existe y tiene menos de 100 caracteres.
+    message: "{problem}"
+    suggestion: Use un título corto que identifique la funcionalidad.
+    examples:
+      ok: {}
+      fail:
+        title: ""
+
+  # --- Criterios de aceptación ---
+  - id: US-AC-001
+    name: Existen criterios de aceptación
+    reference: "3C (Confirmación); Definition of Ready"
+    type: deterministic
+    severity: blocking
+    description: La historia tiene al menos un criterio de aceptación.
+    message: La historia no tiene criterios de aceptación.
+    suggestion: Agregue criterios verificables que definan cuándo la historia está terminada.
+    examples:
+      ok: {}
+      fail:
+        criteria: []
+
+  - id: US-AC-002
+    name: Criterios verificables
+    reference: "IEEE 29148 (Verificable); INVEST (Testeable)"
+    type: ai
+    severity: major
+    description: Cada criterio describe un resultado observable.
+    message: El criterio no describe un resultado observable.
+    suggestion: Exprese el criterio como una condición que se pueda comprobar con una prueba.
+
+  - id: US-AC-003
+    name: Criterios en formato Gherkin
+    reference: "ISTQB CTFL v4.0 (ATDD/BDD)"
+    type: deterministic
+    severity: minor
+    description: Al menos un criterio usa Dado/Cuando/Entonces.
+    message: Ningún criterio usa el formato Dado/Cuando/Entonces.
+    suggestion: Reescriba los criterios como escenarios Gherkin para facilitar su automatización.
+    examples:
+      ok: {}
+      fail:
+        criteria: ["El usuario recibe un correo con el enlace"]
+
+  - id: US-AC-004
+    name: Cubre caminos alternos y de error
+    reference: "ISTQB CTFL v4.0 (caja negra)"
+    type: ai
+    severity: major
+    description: Hay criterios para el camino alterno y de error, no solo el feliz.
+    message: Solo se describe el camino feliz.
+    suggestion: Agregue criterios para entradas inválidas, fallos y casos límite.
+
+  - id: US-AC-005
+    name: Un criterio, una verificación
+    reference: "IEEE 29148 (Singular)"
+    type: ai
+    severity: minor
+    description: Cada criterio verifica una sola cosa.
+    message: El criterio verifica varias cosas a la vez.
+    suggestion: Divida el criterio en varios.
+
+  - id: US-AC-006
+    name: Límites y valores explícitos
+    reference: "ISTQB CTFL v4.0 (valores límite)"
+    type: deterministic
+    severity: major
+    description: Los criterios que hablan de límites, longitudes o plazos incluyen el valor.
+    message: "El criterio habla de «{term}» pero no indica un valor concreto."
+    suggestion: Indique el valor numérico y su unidad (p. ej. «mínimo 8 caracteres»).
+    examples:
+      ok: {}
+      fail:
+        criteria: ["La contraseña debe cumplir la longitud mínima"]
+
+  # --- Ambigüedad y lenguaje ---
+  - id: US-AMB-001
+    name: Sin términos vagos
+    reference: "ISO/IEC/IEEE 29148:2018 (No ambiguo)"
+    type: deterministic
+    severity: major
+    description: No usa términos vagos como «rápido», «fácil» o «etc.».
+    message: "Se usa el término vago «{term}»."
+    suggestion: Reemplácelo por un valor o comportamiento medible.
+    examples:
+      ok: {}
+      fail:
+        description: "Como usuario quiero un proceso rápido para recuperar el acceso"
+
+  - id: US-AMB-002
+    name: Sin referencias sin antecedente
+    reference: "ISO/IEC/IEEE 29148:2018 (No ambiguo)"
+    type: ai
+    severity: minor
+    description: No hay pronombres ni referencias como «eso» o «lo anterior» sin antecedente.
+    message: Hay una referencia sin antecedente claro.
+    suggestion: Nombre explícitamente a qué se refiere.
+
+  - id: US-AMB-003
+    name: Términos de dominio consistentes
+    reference: "ISO/IEC/IEEE 29148:2018 (Conforme)"
+    type: ai
+    severity: info
+    description: Los términos del dominio se usan de forma consistente.
+    message: Un mismo concepto se nombra de formas distintas.
+    suggestion: Unifique el vocabulario.
+
+  # --- Tamaño y dependencias ---
+  - id: US-SIZE-001
+    name: Historia de tamaño manejable
+    reference: "INVEST — Pequeña"
+    type: deterministic
+    severity: minor
+    description: La historia no tiene más de 8 criterios de aceptación.
+    message: "La historia tiene {count} criterios; puede ser demasiado grande."
+    suggestion: Considere dividirla en historias más pequeñas.
+    examples:
+      ok: {}
+      fail:
+        criteria: ["c1", "c2", "c3", "c4", "c5", "c6", "c7", "c8", "c9"]
+
+  - id: US-DEP-001
+    name: Dependencias identificadas
+    reference: "INVEST — Independiente"
+    type: ai
+    severity: minor
+    description: Las dependencias de otras historias o sistemas están identificadas.
+    message: Se mencionan dependencias sin identificarlas.
+    suggestion: Indique la historia o el sistema del que depende.
+
+  - id: US-EST-001
+    name: Información suficiente para estimar
+    reference: "INVEST — Estimable"
+    type: ai
+    severity: info
+    description: Hay información suficiente para estimar el esfuerzo.
+    message: Falta información para estimar.
+    suggestion: Aclare el alcance con el equipo.
+
+  # --- Requisitos no funcionales (ISO/IEC 25010:2023) ---
+  - id: US-NFR-001
+    name: Accesibilidad considerada
+    reference: "ISO/IEC 25010:2023 (Capacidad de interacción); WCAG 2.2 AA"
+    type: ai
+    severity: minor
+    description: Si hay interfaz de usuario, se consideró la accesibilidad.
+    message: No se menciona la accesibilidad.
+    suggestion: Agregue un criterio de accesibilidad (teclado, contraste, lector de pantalla).
+
+  - id: US-NFR-002
+    name: Seguridad considerada
+    reference: "ISO/IEC 25010:2023 (Seguridad); OWASP ASVS 5.0"
+    type: ai
+    severity: major
+    description: Si hay datos personales, autenticación o entradas libres, hay criterios de seguridad.
+    message: No hay criterios de seguridad para una funcionalidad sensible.
+    suggestion: Defina validación de entradas, control de acceso y manejo de datos sensibles.
+
+  - id: US-NFR-003
+    name: Desempeño medible
+    reference: "ISO/IEC 25010:2023 (Eficiencia de desempeño)"
+    type: ai
+    severity: minor
+    description: Si hay tiempos o volúmenes críticos, hay un criterio de desempeño medible.
+    message: No hay criterio de desempeño medible.
+    suggestion: Defina un umbral (p. ej. «en menos de 2 s en el p95»).
+
+  - id: US-NFR-004
+    name: Comportamiento ante fallos de terceros
+    reference: "ISO/IEC 25010:2023 (Fiabilidad)"
+    type: ai
+    severity: minor
+    description: Si integra con terceros, define qué ocurre cuando fallan.
+    message: No se define el comportamiento ante fallos de una integración.
+    suggestion: Describa el mensaje o la alternativa cuando el servicio externo no responde.

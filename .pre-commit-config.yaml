@@ -1,0 +1,40 @@
+# Instalación (una vez por clon):  backend\.venv\Scripts\pre-commit install
+# Ejecución manual sobre todo:      backend\.venv\Scripts\pre-commit run --all-files
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks # escanea los cambios en stage en busca de claves y tokens
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: detect-private-key
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: check-merge-conflict
+      - id: check-yaml
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.2
+    hooks:
+      - id: ruff-check
+        files: ^backend/
+      - id: ruff-format
+        files: ^backend/
+
+  - repo: local
+    hooks:
+      - id: forbid-env-files
+        name: Prohibir archivos .env (solo se permite .env.example)
+        entry: "Los archivos .env contienen secretos y no se versionan"
+        language: fail
+        files: (^|/)\.env(\..+)?$
+        exclude: \.env\.example$
+
+      - id: prettier
+        name: prettier (frontend)
+        entry: npm --prefix frontend run format:check
+        language: system
+        files: ^frontend/
+        pass_filenames: false
