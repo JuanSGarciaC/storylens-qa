@@ -48,3 +48,43 @@ PostgreSQL gratuito (Neon, Supabase): `pip install -e ".[postgres]"` y `DATABASE
 
 ## Cuándo escribir un ADR
 Cuando una decisión sea difícil de revertir o haya alternativas razonables descartadas (cambiar de base de datos, de modelo de IA, pasar a procesamiento asíncrono). Plantilla en `docs/adr/000-plantilla.md`.
+
+## Frontend (Fase B)
+
+React 19 + Vite + TypeScript + React Router. Sin librerías de UI ni de estado: componentes propios en `frontend/src/shared/ui` y estilos por capas en `frontend/src/styles` (`tokens`, `base`, `components`, `shell`, `pages`). El sistema de diseño está en `design-system/storylens-qa/MASTER.md` (las páginas con reglas propias, en `design-system/storylens-qa/pages/`).
+
+### Cómo verlo (demo)
+```bash
+# Terminal 1: backend (SQLite local, con el proyecto de demostración)
+cd backend && uvicorn app.main:app --reload     # http://localhost:8000
+# Terminal 2: frontend
+cd frontend && npm install && npm run dev       # http://localhost:5173
+```
+Sin sesión se ve el proyecto de demostración en solo lectura. Para el flujo completo del dueño define `OWNER_EMAIL`, `OWNER_PASSWORD` y `SESSION_SECRET` en `backend/.env` y entra por `/login`. Vite reenvía `/api` a `http://localhost:8000`.
+
+### Rutas
+| Ruta | Pantalla |
+|------|----------|
+| `/login` | Acceso del dueño |
+| `/` | Lista de proyectos |
+| `/p/:projectId` | Resumen del proyecto |
+| `/p/:projectId/stories` | Historias: alta, importación CSV/JSON, filtros |
+| `/p/:projectId/stories/:storyId/analysis` | Análisis (reglas o IA) y revisión de hallazgos |
+| `/p/:projectId/stories/:storyId/tests` | Diseño de pruebas y trazabilidad |
+| `/p/:projectId/stories/:storyId/sessions[/:sessionId]` | Sesiones QA, ejecuciones, evidencias, defectos |
+| `/p/:projectId/reports` | Informes (Markdown/PDF) y auditoría |
+| `/p/:projectId/settings` | Configuración del proyecto |
+
+`Ctrl+K` abre la paleta de comandos.
+
+### Scripts (`frontend/`)
+| Script | Qué hace |
+|--------|----------|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Comprobación de tipos y build de producción |
+| `npm run lint` / `npm run format:check` | ESLint / Prettier |
+| `npm test` | Vitest (jsdom, con pruebas de accesibilidad axe) |
+| `npm run gen:api` | Regenera `src/api/schema.d.ts` desde el backend en marcha |
+
+### Variable de entorno del frontend
+`VITE_API_BASE_URL` (ver `frontend/.env.example`): base de la API, por defecto `/api/v1`. Solo se cambia para un hosting estático separado del backend (URL absoluta, p. ej. `https://mi-api.example.com/api/v1`; el backend debe permitir ese origen en `CORS_ORIGINS`). Es pública en el bundle: nunca pongas secretos aquí. Todo enlace o `fetch` pasa por `apiUrl()` en `src/api/client.ts`.
