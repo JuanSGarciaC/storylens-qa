@@ -21,6 +21,147 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login */
+        post: operations["login_api_v1_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout */
+        post: operations["logout_api_v1_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Me */
+        get: operations["me_api_v1_auth_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Projects */
+        get: operations["list_projects_api_v1_projects_get"];
+        put?: never;
+        /** Create Project */
+        post: operations["create_project_api_v1_projects_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Project */
+        get: operations["get_project_api_v1_projects__project_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Project */
+        delete: operations["delete_project_api_v1_projects__project_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Project */
+        patch: operations["update_project_api_v1_projects__project_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/epics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Epics */
+        get: operations["list_epics_api_v1_projects__project_id__epics_get"];
+        put?: never;
+        /** Create Epic */
+        post: operations["create_epic_api_v1_projects__project_id__epics_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Versions */
+        get: operations["list_versions_api_v1_projects__project_id__versions_get"];
+        put?: never;
+        /** Create Version */
+        post: operations["create_version_api_v1_projects__project_id__versions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Audit */
+        get: operations["list_audit_api_v1_projects__project_id__audit_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/analyze": {
         parameters: {
             query?: never;
@@ -55,7 +196,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/stories/import": {
+    "/api/v1/projects/{project_id}/stories/import": {
         parameters: {
             query?: never;
             header?: never;
@@ -68,14 +209,14 @@ export interface paths {
          * Preview Import
          * @description Vista previa del archivo de Jira (CSV/JSON) con el mapeo de columnas. No guarda nada.
          */
-        post: operations["preview_import_api_v1_stories_import_post"];
+        post: operations["preview_import_api_v1_projects__project_id__stories_import_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/stories/import:confirm": {
+    "/api/v1/projects/{project_id}/stories/import:confirm": {
         parameters: {
             query?: never;
             header?: never;
@@ -88,14 +229,14 @@ export interface paths {
          * Confirm Import
          * @description Crea las historias elegidas (por número de fila) a partir del mismo archivo.
          */
-        post: operations["confirm_import_api_v1_stories_import_confirm_post"];
+        post: operations["confirm_import_api_v1_projects__project_id__stories_import_confirm_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/stories": {
+    "/api/v1/projects/{project_id}/stories": {
         parameters: {
             query?: never;
             header?: never;
@@ -103,10 +244,10 @@ export interface paths {
             cookie?: never;
         };
         /** List Stories */
-        get: operations["list_stories_api_v1_stories_get"];
+        get: operations["list_stories_api_v1_projects__project_id__stories_get"];
         put?: never;
         /** Create Story */
-        post: operations["create_story_api_v1_stories_post"];
+        post: operations["create_story_api_v1_projects__project_id__stories_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -534,6 +675,28 @@ export interface components {
              */
             created_at: string;
         };
+        /** AuditEventOut */
+        AuditEventOut: {
+            /** Id */
+            id: number;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Actor */
+            actor: string;
+            /** Action */
+            action: string;
+            /** Entity */
+            entity: string;
+            /** Entity Id */
+            entity_id: string;
+            /** Project Id */
+            project_id: string | null;
+            /** Detail */
+            detail: string;
+        };
         /** Body_add_image_evidence_api_v1_executions__execution_id__evidences_image_post */
         Body_add_image_evidence_api_v1_executions__execution_id__evidences_image_post: {
             /** File */
@@ -544,8 +707,8 @@ export interface components {
              */
             description?: string;
         };
-        /** Body_confirm_import_api_v1_stories_import_confirm_post */
-        Body_confirm_import_api_v1_stories_import_confirm_post: {
+        /** Body_confirm_import_api_v1_projects__project_id__stories_import_confirm_post */
+        Body_confirm_import_api_v1_projects__project_id__stories_import_confirm_post: {
             /** File */
             file: string;
             /** Mapping */
@@ -553,8 +716,8 @@ export interface components {
             /** Selected */
             selected?: string | null;
         };
-        /** Body_preview_import_api_v1_stories_import_post */
-        Body_preview_import_api_v1_stories_import_post: {
+        /** Body_preview_import_api_v1_projects__project_id__stories_import_post */
+        Body_preview_import_api_v1_projects__project_id__stories_import_post: {
             /** File */
             file: string;
             /** Mapping */
@@ -935,11 +1098,102 @@ export interface components {
             /** Importable */
             importable: boolean;
         };
+        /** LoginIn */
+        LoginIn: {
+            /** Email */
+            email: string;
+            /** Password */
+            password: string;
+        };
+        /** MeOut */
+        MeOut: {
+            /** Authenticated */
+            authenticated: boolean;
+            /** Email */
+            email?: string | null;
+        };
+        /** NamedIn */
+        NamedIn: {
+            /** Name */
+            name: string;
+        };
+        /** NamedOut */
+        NamedOut: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Name */
+            name: string;
+        };
         /**
          * Priority
          * @enum {string}
          */
         Priority: "high" | "medium" | "low";
+        /** ProjectIn */
+        ProjectIn: {
+            /** Name */
+            name: string;
+            /**
+             * Description
+             * @default
+             */
+            description?: string;
+            /**
+             * Objective
+             * @default
+             */
+            objective?: string;
+        };
+        /** ProjectOut */
+        ProjectOut: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /** Objective */
+            objective: string;
+            settings: components["schemas"]["ProjectSettingsIO"];
+            /** Is Demo */
+            is_demo: boolean;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** ProjectPatch */
+        ProjectPatch: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Objective */
+            objective?: string | null;
+            settings?: components["schemas"]["ProjectSettingsIO"] | null;
+        };
+        /** ProjectSettingsIO */
+        ProjectSettingsIO: {
+            /** Disabled Rules */
+            disabled_rules?: string[];
+            /** Penalties */
+            penalties?: {
+                [key: string]: number;
+            } | null;
+            /**
+             * Not Ready Below
+             * @default 60
+             */
+            not_ready_below?: number;
+            /**
+             * Ready From
+             * @default 85
+             */
+            ready_from?: number;
+        };
         /**
          * Recommendation
          * @enum {string}
@@ -1081,11 +1335,21 @@ export interface components {
              * @default
              */
             notes?: string;
+            /** Epic Id */
+            epic_id?: string | null;
+            /** Version Id */
+            version_id?: string | null;
         };
         /** StoryOut */
         StoryOut: {
             /** Id */
             id: string;
+            /** Project Id */
+            project_id: string;
+            /** Epic Id */
+            epic_id?: string | null;
+            /** Version Id */
+            version_id?: string | null;
             /** Title */
             title: string;
             /** Description */
@@ -1173,6 +1437,391 @@ export interface operations {
             };
         };
     };
+    login_api_v1_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_api_v1_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    me_api_v1_auth_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeOut"];
+                };
+            };
+        };
+    };
+    list_projects_api_v1_projects_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectOut"][];
+                };
+            };
+        };
+    };
+    create_project_api_v1_projects_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_project_api_v1_projects__project_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_project_api_v1_projects__project_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_project_api_v1_projects__project_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProjectPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_epics_api_v1_projects__project_id__epics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NamedOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_epic_api_v1_projects__project_id__epics_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NamedIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NamedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_versions_api_v1_projects__project_id__versions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NamedOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_version_api_v1_projects__project_id__versions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NamedIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NamedOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_audit_api_v1_projects__project_id__audit_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEventOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     analyze_api_v1_analyze_post: {
         parameters: {
             query?: never;
@@ -1226,16 +1875,18 @@ export interface operations {
             };
         };
     };
-    preview_import_api_v1_stories_import_post: {
+    preview_import_api_v1_projects__project_id__stories_import_post: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                project_id: string;
+            };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_preview_import_api_v1_stories_import_post"];
+                "multipart/form-data": components["schemas"]["Body_preview_import_api_v1_projects__project_id__stories_import_post"];
             };
         };
         responses: {
@@ -1259,16 +1910,18 @@ export interface operations {
             };
         };
     };
-    confirm_import_api_v1_stories_import_confirm_post: {
+    confirm_import_api_v1_projects__project_id__stories_import_confirm_post: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                project_id: string;
+            };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_confirm_import_api_v1_stories_import_confirm_post"];
+                "multipart/form-data": components["schemas"]["Body_confirm_import_api_v1_projects__project_id__stories_import_confirm_post"];
             };
         };
         responses: {
@@ -1292,11 +1945,16 @@ export interface operations {
             };
         };
     };
-    list_stories_api_v1_stories_get: {
+    list_stories_api_v1_projects__project_id__stories_get: {
         parameters: {
-            query?: never;
+            query?: {
+                epic_id?: string | null;
+                version_id?: string | null;
+            };
             header?: never;
-            path?: never;
+            path: {
+                project_id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -1310,13 +1968,24 @@ export interface operations {
                     "application/json": components["schemas"]["StoryOut"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
-    create_story_api_v1_stories_post: {
+    create_story_api_v1_projects__project_id__stories_post: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                project_id: string;
+            };
             cookie?: never;
         };
         requestBody: {

@@ -7,6 +7,7 @@ import {
 } from "../../api/client";
 
 interface Props {
+  projectId: string;
   busy: boolean;
   onImported: (count: number) => void | Promise<void>;
   /** Ejecuta la acción mostrando carga y errores de la app. */
@@ -20,7 +21,7 @@ const FIELD_LABEL: Record<string, string> = {
   key: "Clave (Jira)",
 };
 
-export function ImportPanel({ busy, onImported, run }: Props) {
+export function ImportPanel({ projectId, busy, onImported, run }: Props) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [mapping, setMapping] = useState<ImportMapping | null>(null);
@@ -28,7 +29,7 @@ export function ImportPanel({ busy, onImported, run }: Props) {
 
   const load = (chosen: File, chosenMapping: ImportMapping | null) =>
     run(async () => {
-      const result = await previewImport(chosen, chosenMapping);
+      const result = await previewImport(projectId, chosen, chosenMapping);
       setPreview(result);
       setMapping(result.mapping);
       setSkipped(new Set());
@@ -64,6 +65,7 @@ export function ImportPanel({ busy, onImported, run }: Props) {
     if (!file || !mapping) return;
     void run(async () => {
       const result = await confirmImport(
+        projectId,
         file,
         mapping,
         chosenRows.map((r) => r.index),

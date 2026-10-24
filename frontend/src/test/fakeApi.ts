@@ -1,13 +1,61 @@
 import { vi } from "vitest";
 import type {
   Analysis,
+  AuditEvent,
   Defect,
   Evidence,
   Execution,
+  Me,
+  Named,
+  Project,
   SessionDetail,
   StoryItem,
   TestCase,
 } from "../api/client";
+
+export const PROJECT_ID = "p1";
+
+export function makeProject(overrides: Partial<Project> = {}): Project {
+  return {
+    id: PROJECT_ID,
+    name: "Banca móvil",
+    description: "App de banca para clientes",
+    objective: "Reducir defectos en producción",
+    settings: {
+      disabled_rules: [],
+      penalties: null,
+      not_ready_below: 60,
+      ready_from: 85,
+    },
+    is_demo: false,
+    created_at: "2026-10-23T12:00:00Z",
+    ...overrides,
+  };
+}
+
+export function makeMe(overrides: Partial<Me> = {}): Me {
+  return { authenticated: true, email: "dueno@example.com", ...overrides };
+}
+
+export function makeNamed(name: string, overrides: Partial<Named> = {}): Named {
+  return { id: `n-${name}`, project_id: PROJECT_ID, name, ...overrides };
+}
+
+export function makeAuditEvent(
+  overrides: Partial<AuditEvent> = {},
+): AuditEvent {
+  return {
+    id: 1,
+    at: "2026-10-23T12:00:00Z",
+    actor: "dueno@example.com",
+    action: "story.created",
+    entity: "story",
+    entity_id: "s-1",
+    project_id: PROJECT_ID,
+    detail: "",
+    ...overrides,
+  };
+}
 
 const PENALTY = { blocking: 30, major: 10, minor: 4, info: 0 } as const;
 
@@ -136,6 +184,7 @@ export function installFakeApi(
   function addStory(id: string, title: string) {
     stories.unshift({
       id,
+      project_id: PROJECT_ID,
       title,
       description: "Como usuario quiero un acceso rápido para entrar",
       notes: "",
@@ -220,9 +269,25 @@ export function installFakeApi(
     if (method === "GET" && path === "/health") {
       return json({ status: "ok", ai_configured: options.ai !== undefined });
     }
-    if (method === "GET" && path === "/stories") return json(stories);
+    if (method === "GET" && path === `/projects/${PROJECT_ID}/stories`) {
+      return json(stories);
+    }
+    if (method === "GET" && path === "/projects") return json([makeProject()]);
+    if (method === "GET" && path === "/auth/me") return json(makeMe());
+    if (method === "GET" && path === `/projects/${PROJECT_ID}`) {
+      return json(makeProject());
+    }
+    if (method === "GET" && path === `/projects/${PROJECT_ID}/epics`) {
+      return json([]);
+    }
+    if (method === "GET" && path === `/projects/${PROJECT_ID}/versions`) {
+      return json([]);
+    }
 
-    if (method === "POST" && path === "/stories/import") {
+    if (
+      method === "POST" &&
+      path === `/projects/${PROJECT_ID}/stories/import`
+    ) {
       const mapping = form?.get("mapping");
       return json({
         format: "csv",
@@ -270,7 +335,10 @@ export function installFakeApi(
         ],
       });
     }
-    if (method === "POST" && path === "/stories/import:confirm") {
+    if (
+      method === "POST" &&
+      path === `/projects/${PROJECT_ID}/stories/import:confirm`
+    ) {
       const selected: number[] = JSON.parse(String(form?.get("selected")));
       const titles: Record<number, string> = {
         1: "Retirar efectivo",
@@ -280,7 +348,7 @@ export function installFakeApi(
       return json({ created: stories.slice(0, selected.length) }, 201);
     }
 
-    if (method === "POST" && path === "/stories") {
+    if (method === "POST" && path === `/projects/${PROJECT_ID}/stories`) {
       addStory("s-new", body.title);
       return json(stories[0], 201);
     }

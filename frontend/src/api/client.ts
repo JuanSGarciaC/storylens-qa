@@ -25,6 +25,12 @@ export type ImportPreview = Schemas["ImportPreviewOut"];
 export type ImportRow = Schemas["ImportRowOut"];
 export type ImportMapping = Record<string, string | null>;
 export type DefectDraftResult = Schemas["DefectDraftOut"];
+export type Project = Schemas["ProjectOut"];
+export type ProjectInput = Schemas["ProjectIn"];
+export type ProjectPatch = Schemas["ProjectPatch"];
+export type Me = Schemas["MeOut"];
+export type Named = Schemas["NamedOut"];
+export type AuditEvent = Schemas["AuditEventOut"];
 export type Recommendation = NonNullable<SessionDetail["recommendation"]>;
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api/v1";
@@ -36,6 +42,17 @@ export class ApiError extends Error {
   ) {
     super(message);
   }
+
+  get isUnauthorized(): boolean {
+    return this.status === 401;
+  }
+}
+
+let unauthorizedHandler: (() => void) | null = null;
+
+/** Registra qué hacer ante un 401 (salvo en /auth/*): normalmente, volver al login. */
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  unauthorizedHandler = handler;
 }
 
 /** Usa el `detail` del Problem Details cuando es texto; si no, un mensaje genérico. */
@@ -60,21 +77,85 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       typeof init.body === "string"
         ? { "Content-Type": "application/json" }
         : {};
-    response = await fetch(`${BASE_URL}${path}`, { ...init, headers });
+    response = await fetch(`${BASE_URL}${path}`, {
+      ...init,
+      headers,
+      credentials: "same-origin",
+    });
   } catch {
     throw new ApiError("No se pudo conectar con el servidor.", 0);
   }
   if (!response.ok) {
+    if (response.status === 401 && !path.startsWith("/auth/")) {
+      unauthorizedHandler?.();
+    }
     throw new ApiError(await errorMessage(response), response.status);
   }
   if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
 }
 
-export const listStories = () => request<StoryItem[]>("/stories");
+// --- sesión ---
+export const login = (email: string, password: string) =>
+  request<Me>("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
 
-export const createStory = (story: StoryInput) =>
-  request<StoryItem>("/stories", {
+export const logout = () => request<void>("/auth/logout", { method: "POST" });
+
+export const getMe = () => request<Me>("/auth/me");
+
+// --- proyectos ---
+export const listProjects = () => request<Project[]>("/projects");
+
+export const createProject = (input: ProjectInput) =>
+  request<Project>("/projects", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+
+export const getProject = (projectId: string) =>
+  request<Project>(`/projects/${projectId}`);
+
+export const updateProject = (projectId: string, patch: ProjectPatch) =>
+  request<Project>(`/projects/${projectId}`, {
+    method: "PATCH",
+    body: JSON.stringify(patch),
+  });
+
+export const deleteProject = (projectId: string) =>
+  request<void>(`/projects/${projectId}`, { method: "DELETE" });
+
+export const listEpics = (projectId: string) =>
+  request<Named[]>(`/projects/${projectId}/epics`);
+
+export const createEpic = (projectId: string, name: string) =>
+  request<Named>(`/projects/${projectId}/epics`, {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  });
+
+export const listVersions = (projectId: string) =>
+  request<Named[]>(`/projects/${projectId}/versions`);
+
+export const createVersion = (projectId: string, name: string) =>
+  request<Named>(`/projects/${projectId}/versions`, {
+    method: "POST",
+    body: JSON.stringify({ name }),
+  });
+
+export const listAudit = (projectId: string, limit = 50, offset = 0) =>
+  request<AuditEvent[]>(
+    `/projects/${projectId}/audit?limit=${limit}&offset=${offset}`,
+  );
+
+// --- historias ---
+export const listStories = (projectId: string) =>
+  request<StoryItem[]>(`/projects/${projectId}/stories`);
+
+export const createStory = (projectId: string, story: StoryInput) =>
+  request<StoryItem>(`/projects/${projectId}/stories`, {
     method: "POST",
     body: JSON.stringify(story),
   });
@@ -229,18 +310,26 @@ function importForm(
   return form;
 }
 
-export const previewImport = (file: File, mapping: ImportMapping | null) =>
-  request<ImportPreview>("/stories/import", {
+export const previewImport = (
+  projectId: string,
+  file: File,
+  mapping: ImportMapping | null,
+) =>
+  request<ImportPreview>(`/projects/${projectId}/stories/import`, {
     method: "POST",
     body: importForm(file, mapping),
   });
 
 export const confirmImport = (
+  projectId: string,
   file: File,
   mapping: ImportMapping | null,
   selected: number[],
 ) =>
-  request<{ created: StoryItem[] }>("/stories/import:confirm", {
-    method: "POST",
-    body: importForm(file, mapping, selected),
-  });
+  request<{ created: StoryItem[] }>(
+    `/projects/${projectId}/stories/import:confirm`,
+    {
+      method: "POST",
+      body: importForm(file, mapping, selected),
+    },
+  );

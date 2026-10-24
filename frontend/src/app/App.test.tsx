@@ -64,7 +64,7 @@ describe("App", () => {
     expect(within(history).getByText(/60\/100/)).toBeInTheDocument();
 
     const created = requests.find(
-      (r) => r.method === "POST" && r.path === "/stories",
+      (r) => r.method === "POST" && r.path === "/projects/p1/stories",
     );
     expect(created?.body).toMatchObject({
       acceptance_criteria: ["Primero", "Segundo"],

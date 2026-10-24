@@ -20,6 +20,8 @@ import { QASessionPanel } from "../features/qa-session/QASessionPanel";
 import { TestDesignPanel } from "../features/test-design/TestDesignPanel";
 import { StoryHistory } from "../features/stories/StoryHistory";
 
+const LEGACY_PROJECT_ID = "p1"; // TODO fase B: se elimina con App.tsx (tarea 12)
+
 export function App() {
   const [stories, setStories] = useState<StoryItem[]>([]);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
@@ -43,13 +45,13 @@ export function App() {
   }, []);
 
   const refreshStories = useCallback(
-    async () => setStories(await listStories()),
+    async () => setStories(await listStories(LEGACY_PROJECT_ID)),
     [],
   );
 
   useEffect(() => {
     let cancelled = false;
-    listStories()
+    listStories(LEGACY_PROJECT_ID)
       .then((items) => {
         if (!cancelled) setStories(items);
       })
@@ -71,7 +73,7 @@ export function App() {
 
   const handleSubmit = (input: StoryInput, useAi: boolean) =>
     run(async () => {
-      const story = await createStory(input);
+      const story = await createStory(LEGACY_PROJECT_ID, input);
       setAnalysis(await createAnalysis(story.id, useAi));
       setSelectedId(story.id);
       await refreshStories();
@@ -154,7 +156,12 @@ export function App() {
           onSubmit={handleSubmit}
         />
 
-        <ImportPanel busy={busy} run={run} onImported={handleImported} />
+        <ImportPanel
+          projectId={LEGACY_PROJECT_ID}
+          busy={busy}
+          run={run}
+          onImported={handleImported}
+        />
 
         <div aria-live="polite">
           {importedCount !== null && (

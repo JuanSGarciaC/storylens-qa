@@ -48,9 +48,9 @@ describe("Importación desde Jira", () => {
   it("no crea nada hasta confirmar y respeta las filas desmarcadas", async () => {
     const { requests } = installFakeApi();
     await chooseFile();
-    expect(requests.some((r) => r.path === "/stories/import:confirm")).toBe(
-      false,
-    );
+    expect(
+      requests.some((r) => r.path === "/projects/p1/stories/import:confirm"),
+    ).toBe(false);
 
     await userEvent.click(
       screen.getByRole("checkbox", { name: "Importar fila 3" }),
@@ -78,9 +78,9 @@ describe("Importación desde Jira", () => {
     );
 
     await waitFor(() =>
-      expect(requests.filter((r) => r.path === "/stories/import").length).toBe(
-        2,
-      ),
+      expect(
+        requests.filter((r) => r.path === "/projects/p1/stories/import").length,
+      ).toBe(2),
     );
     expect(
       (
