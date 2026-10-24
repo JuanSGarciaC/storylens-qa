@@ -7,7 +7,7 @@
 - Git y cuenta de GitHub.
 
 ## Variables de entorno
-Copia `.env.example` a `backend/.env` y completa los valores. El frontend solo necesita la URL del backend (`VITE_API_BASE_URL`), **nunca** la key de Gemini.
+Copia `.env.example` a `backend/.env` y completa los valores. El frontend usa por defecto `/api/v1` (ver [Variable de entorno del frontend](#frontend-fase-b)) y **nunca** debe recibir la key de Gemini.
 
 ### Cuenta del dueño, demo y migraciones (Fase A)
 
@@ -87,4 +87,4 @@ Sin sesión se ve el proyecto de demostración en solo lectura. Para el flujo co
 | `npm run gen:api` | Regenera `src/api/schema.d.ts` desde el backend en marcha |
 
 ### Variable de entorno del frontend
-`VITE_API_BASE_URL` (ver `frontend/.env.example`): base de la API, por defecto `/api/v1`. Solo se cambia para un hosting estático separado del backend (URL absoluta, p. ej. `https://mi-api.example.com/api/v1`; el backend debe permitir ese origen en `CORS_ORIGINS`). Es pública en el bundle: nunca pongas secretos aquí. Todo enlace o `fetch` pasa por `apiUrl()` en `src/api/client.ts`.
+`VITE_API_BASE_URL` (ver `frontend/.env.example`): base de la API, por defecto `/api/v1`. **El login del dueño exige mismo origen**: el cliente envía credenciales `same-origin`, el backend no activa `allow_credentials` y la cookie de sesión es `SameSite=Lax`. Con una URL absoluta de otro dominio (p. ej. `https://mi-api.example.com/api/v1` más `CORS_ORIGINS`) la demo anónima funciona, pero el login no. Para un hosting estático separado, lo recomendado es mantener `/api/v1` y reenviar `/api/v1/*` al backend con un rewrite o proxy del propio host. La alternativa, ligada al despliegue y que requiere un cambio futuro en el backend, es `credentials: "include"` en el cliente, `allow_credentials` en CORS y la cookie con `SameSite=None; Secure`. Es pública en el bundle: nunca pongas secretos aquí. Todo enlace o `fetch` pasa por `apiUrl()` en `src/api/client.ts`.
