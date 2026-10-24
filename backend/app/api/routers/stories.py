@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Response, status
 
-from app.api.deps import LLM, Projects, Repository, Sessions, Storage
+from app.api.deps import LLM, Actor, Audit, Projects, Repository, Sessions, Storage
 from app.api.mappers import analysis_out, story_out
 from app.api.schemas.analysis import AnalysisOut, AnalysisRequest, StoryIn, StoryOut
 from app.application import stories
@@ -14,7 +14,12 @@ router = APIRouter(tags=["stories"])
     "/projects/{project_id}/stories", response_model=StoryOut, status_code=status.HTTP_201_CREATED
 )
 def create_story(
-    project_id: str, payload: StoryIn, repo: Repository, projects: Projects
+    project_id: str,
+    payload: StoryIn,
+    repo: Repository,
+    projects: Projects,
+    audit: Audit,
+    actor: Actor,
 ) -> StoryOut:
     story = Story(
         title=payload.title,
@@ -25,6 +30,7 @@ def create_story(
     stored = stories.create_story(
         repo, projects, project_id, story, epic_id=payload.epic_id, version_id=payload.version_id
     )
+    audit.record(actor, "story.created", "story", stored.id, project_id, stored.story.title)
     return story_out(stored, latest=None)
 
 
@@ -50,8 +56,20 @@ def get_story(story_id: str, repo: Repository) -> StoryOut:
 
 
 @router.delete("/stories/{story_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_story(story_id: str, repo: Repository, sessions: Sessions, storage: Storage) -> Response:
+def delete_story(
+    story_id: str,
+    repo: Repository,
+    sessions: Sessions,
+    storage: Storage,
+    audit: Audit,
+    actor: Actor,
+) -> Response:
+    stored = repo.get_story(story_id)
     stories.delete_story(repo, sessions, storage, story_id)
+    if stored is not None:
+        audit.record(
+            actor, "story.deleted", "story", story_id, stored.project_id, stored.story.title
+        )
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -61,7 +79,16 @@ def delete_story(story_id: str, repo: Repository, sessions: Sessions, storage: S
     status_code=status.HTTP_201_CREATED,
 )
 def create_analysis(
-    story_id: str, repo: Repository, llm: LLM, payload: AnalysisRequest | None = None
+    story_id: str,
+    repo: Repository,
+    llm: LLM,
+    audit: Audit,
+    actor: Actor,
+    payload: AnalysisRequest | None = None,
 ) -> AnalysisOut:
     use_ai = payload.use_ai if payload else True
-    return analysis_out(stories.run_analysis(repo, story_id, llm=llm, use_ai=use_ai))
+    analysis = stories.run_analysis(repo, story_id, llm=llm, use_ai=use_ai)
+    stored = repo.get_story(story_id)
+    if stored is not None:
+        audit.record(actor, "analysis.run", "analysis", analysis.id, stored.project_id)
+    return analysis_out(analysis)

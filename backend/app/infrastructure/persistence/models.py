@@ -34,6 +34,19 @@ class VersionRow(SQLModel, table=True):
     name: str
 
 
+class AuditEventRow(SQLModel, table=True):
+    __tablename__ = "audit_event"
+
+    id: int | None = Field(default=None, primary_key=True)  # autoincremental: da el orden
+    at: datetime
+    actor: str
+    action: str
+    entity: str
+    entity_id: str
+    project_id: str | None = Field(default=None, index=True)
+    detail: str = ""
+
+
 class StoryRow(SQLModel, table=True):
     __tablename__ = "story"
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response, status
 
-from app.api.deps import Projects, Repository, Sessions, Storage
+from app.api.deps import Actor, Audit, Projects, Repository, Sessions, Storage
 from app.api.schemas.project import (
     NamedIn,
     NamedOut,
@@ -41,10 +41,13 @@ def _named_out(item: Epic | Version) -> NamedOut:
 
 
 @router.post("/projects", response_model=ProjectOut, status_code=status.HTTP_201_CREATED)
-def create_project(payload: ProjectIn, projects: Projects) -> ProjectOut:
+def create_project(
+    payload: ProjectIn, projects: Projects, audit: Audit, actor: Actor
+) -> ProjectOut:
     project = uc.create_project(
         projects, OWNER_PLACEHOLDER, payload.name, payload.description, payload.objective
     )
+    audit.record(actor, "project.created", "project", project.id, project.id, project.name)
     return _project_out(project)
 
 
@@ -59,7 +62,9 @@ def get_project(project_id: str, projects: Projects) -> ProjectOut:
 
 
 @router.patch("/projects/{project_id}", response_model=ProjectOut)
-def update_project(project_id: str, payload: ProjectPatch, projects: Projects) -> ProjectOut:
+def update_project(
+    project_id: str, payload: ProjectPatch, projects: Projects, audit: Audit, actor: Actor
+) -> ProjectOut:
     settings = None
     if payload.settings is not None:
         s = payload.settings
@@ -77,6 +82,10 @@ def update_project(project_id: str, payload: ProjectPatch, projects: Projects) -
         objective=payload.objective,
         settings=settings,
     )
+    if any(v is not None for v in (payload.name, payload.description, payload.objective)):
+        audit.record(actor, "project.updated", "project", project_id, project_id, project.name)
+    if settings is not None:
+        audit.record(actor, "settings.changed", "project", project_id, project_id)
     return _project_out(project)
 
 
@@ -87,8 +96,11 @@ def delete_project(
     repo: Repository,
     sessions: Sessions,
     storage: Storage,
+    audit: Audit,
+    actor: Actor,
 ) -> Response:
     uc.delete_project(projects, repo, sessions, storage, project_id)
+    audit.record(actor, "project.deleted", "project", project_id, project_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

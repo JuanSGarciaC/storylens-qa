@@ -4,10 +4,12 @@ from fastapi import Depends
 from sqlmodel import Session
 
 from app.config import get_settings
+from app.domain.audit import SYSTEM_ACTOR, AuditLog
 from app.domain.ports import LLMPort, ProjectRepository, StoryRepository
 from app.domain.ports.sessions import EvidenceStorage, SessionRepository
 from app.infrastructure.llm.factory import build_llm
 from app.infrastructure.persistence.database import get_session
+from app.infrastructure.persistence.sql_audit import SqlAuditLog
 from app.infrastructure.persistence.sql_project_repository import SqlProjectRepository
 from app.infrastructure.persistence.sql_repository import SqlStoryRepository
 from app.infrastructure.persistence.sql_session_repository import SqlSessionRepository
@@ -20,6 +22,14 @@ def get_repository(session: Annotated[Session, Depends(get_session)]) -> StoryRe
 
 def get_project_repository(session: Annotated[Session, Depends(get_session)]) -> ProjectRepository:
     return SqlProjectRepository(session)
+
+
+def get_audit_log(session: Annotated[Session, Depends(get_session)]) -> AuditLog:
+    return SqlAuditLog(session)
+
+
+def get_actor() -> str:
+    return SYSTEM_ACTOR  # Provisional: con la sesión (Tarea 5) será el email del dueño
 
 
 def get_session_repository(session: Annotated[Session, Depends(get_session)]) -> SessionRepository:
@@ -35,6 +45,8 @@ def get_llm() -> LLMPort | None:
 
 
 Repository = Annotated[StoryRepository, Depends(get_repository)]
+Audit = Annotated[AuditLog, Depends(get_audit_log)]
+Actor = Annotated[str, Depends(get_actor)]
 Projects = Annotated[ProjectRepository, Depends(get_project_repository)]
 LLM = Annotated[LLMPort | None, Depends(get_llm)]
 Sessions = Annotated[SessionRepository, Depends(get_session_repository)]

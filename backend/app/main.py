@@ -8,6 +8,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.routers import (
     analysis,
+    audit,
     findings,
     projects,
     qa_sessions,
@@ -109,6 +110,7 @@ def create_app() -> FastAPI:
         return {"status": "ok", "ai_configured": settings.ai_configured}
 
     app.include_router(projects.router, prefix="/api/v1")
+    app.include_router(audit.router, prefix="/api/v1")
     app.include_router(analysis.router, prefix="/api/v1")
     app.include_router(story_import.router, prefix="/api/v1")
     app.include_router(stories.router, prefix="/api/v1")

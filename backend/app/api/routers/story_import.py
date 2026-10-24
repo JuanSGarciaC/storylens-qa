@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
 
-from app.api.deps import Projects, Repository
+from app.api.deps import Actor, Audit, Projects, Repository
 from app.api.mappers import story_out
 from app.api.schemas.story_import import ImportPreviewOut, ImportResultOut, ImportRowOut
 from app.application import story_import
@@ -92,6 +92,8 @@ def confirm_import(
     repo: Repository,
     projects: Projects,
     file: Annotated[UploadFile, File()],
+    audit: Audit,
+    actor: Actor,
     mapping: Annotated[str | None, Form()] = None,
     selected: Annotated[str | None, Form()] = None,
 ) -> ImportResultOut:
@@ -99,5 +101,8 @@ def confirm_import(
     require_project(projects, project_id)
     created = story_import.confirm_import(
         repo, project_id, file.filename or "", _read(file), _mapping(mapping), _selected(selected)
+    )
+    audit.record(
+        actor, "story.imported", "story", created[0].id, project_id, f"{len(created)} historias"
     )
     return ImportResultOut(created=[story_out(s, latest=None) for s in created])
