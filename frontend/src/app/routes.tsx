@@ -37,7 +37,7 @@ export function RootLayout() {
  *   features/stories/StoriesPage          módulo 2                       (Tarea 6)
  *   features/analysis/AnalysisPage        módulos 3 y 4                  (Tarea 7)
  *   features/test-design/TestsPage        módulo 6                       (Tarea 8)
- *   features/qa-session/SessionsPage      módulo 7                       (Tarea 9)
+ *   features/qa-session/SessionsPage      módulo 7, lista (Tarea 9); SessionDetailPage = detalle
  *   features/reports/ReportsPage          módulo 8                       (Tarea 10)
  *   features/settings/SettingsPage        configuración del proyecto
  * Una pantalla puede lanzar un ApiError 404 (p. ej. historia ajena al proyecto):
@@ -94,6 +94,13 @@ export const routes: RouteObject[] = [
                 element: screen(
                   () => import("../features/qa-session/SessionsPage"),
                   "SessionsPage",
+                ),
+              },
+              {
+                path: "p/:projectId/stories/:storyId/sessions/:sessionId",
+                element: screen(
+                  () => import("../features/qa-session/SessionDetailPage"),
+                  "SessionDetailPage",
                 ),
               },
               {

@@ -1,3 +1,4 @@
+import type { Tone } from "../../shared/ui/Badge";
 import type {
   ChecklistItem,
   Defect,
@@ -47,3 +48,10 @@ export const PHASES: ChecklistItem["phase"][] = [
   "execution",
   "closure",
 ];
+
+/** La recomendación siempre se escribe; el tono solo refuerza. */
+export const RECOMMENDATION_TONE: Record<Recommendation, Tone> = {
+  accept: "ok",
+  accept_with_minor_defects: "warn",
+  reject: "danger",
+};

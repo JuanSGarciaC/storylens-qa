@@ -420,3 +420,64 @@
   margin: 0;
   padding-left: var(--space-4);
 }
+
+/* Módulo 7: sesiones de ejecución QA. */
+.sessions,
+.executions,
+.evidences {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sessions {
+  gap: 0;
+}
+.session-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--line);
+}
+.executions {
+  gap: var(--space-5);
+}
+.execution {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
+}
+.execution h3 {
+  margin: 0;
+}
+.evidences {
+  gap: var(--space-2);
+}
+.evidence__img {
+  display: block;
+  max-width: min(100%, 20rem);
+  max-height: 12rem;
+  margin-top: var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.phase {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.phase legend {
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: var(--space-2);
+}
+.check {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}

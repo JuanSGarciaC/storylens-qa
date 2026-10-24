@@ -269,7 +269,7 @@ const TITLES: [RegExp, string][] = [
   [/\/login$/, "Iniciar sesión"],
   [/\/stories\/[^/]+\/analysis$/, "Análisis"],
   [/\/stories\/[^/]+\/tests$/, "Casos de prueba"],
-  [/\/stories\/[^/]+\/sessions$/, "Sesiones QA"],
+  [/\/stories\/[^/]+\/sessions(\/[^/]+)?$/, "Sesiones QA"],
   [/\/stories$/, "Historias"],
   [/\/reports$/, "Informes"],
   [/\/settings$/, "Configuración"],
