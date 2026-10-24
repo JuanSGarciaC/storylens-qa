@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import type { ReactNode } from "react";
@@ -99,11 +100,13 @@ export function ProjectProvider({
     setAttempt((n) => n + 1);
   }, []);
 
-  const setProject = useCallback(
-    (project: Project) =>
-      setLoaded({ id: project.id, project, status: "ready", error: "" }),
-    [],
-  );
+  // Ref para que `setProject` sea estable y descarte respuestas de otro proyecto.
+  const currentId = useRef(projectId);
+  currentId.current = projectId;
+  const setProject = useCallback((project: Project) => {
+    if (project.id !== currentId.current) return;
+    setLoaded({ id: project.id, project, status: "ready", error: "" });
+  }, []);
 
   const fresh = loaded && loaded.id === projectId ? loaded : null;
   const value: ProjectValue = {

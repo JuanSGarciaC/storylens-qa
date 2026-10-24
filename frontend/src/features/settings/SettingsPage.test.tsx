@@ -225,4 +225,46 @@ describe("SettingsPage", () => {
     expect(screen.getByLabelText("No lista por debajo de")).toBe(low);
     expect(screen.queryByText("Cargando proyecto…")).not.toBeInTheDocument();
   });
+
+  it("un PATCH de p1 que llega tras ir a p2 no bloquea p2", async () => {
+    const p2 = makeProject({ id: "p2", name: "Otro proyecto" });
+    let release: (r: Response) => void = () => {};
+    const pending = new Promise<Response>((resolve) => (release = resolve));
+    const calls = stubFetch({
+      handler: (call) => {
+        if (call.method === "PATCH") return pending as unknown as Response;
+        if (call.path === "/projects/p1") return json(makeProject());
+        if (call.path === "/projects/p2") return json(p2);
+        if (call.path === "/projects") return json([makeProject(), p2]);
+        if (call.path === "/rules") return json(RULES);
+        if (call.path.endsWith("/epics") || call.path.endsWith("/versions")) {
+          return json([]);
+        }
+        return undefined;
+      },
+    });
+    const router = createMemoryRouter(
+      [{ element: <RootLayout />, children: routes[0].children }],
+      { initialEntries: ["/p/p1/settings"] },
+    );
+    render(<RouterProvider router={router} />);
+    const user = userEvent.setup();
+    await screen.findByRole("checkbox", { name: /Términos vagos/ });
+    const save = screen.getByRole("button", { name: "Guardar reglas" });
+    await waitFor(() => expect(save).toBeEnabled());
+    await user.click(save);
+    await waitFor(() =>
+      expect(calls.some((c) => c.method === "PATCH")).toBe(true),
+    );
+    await router.navigate("/p/p2/settings");
+    expect(
+      await screen.findByText("Otro proyecto", { selector: ".page__lead" }),
+    ).toBeInTheDocument();
+    release(json(makeProject()));
+    await new Promise((r) => setTimeout(r, 50));
+    expect(
+      await screen.findByText("Otro proyecto", { selector: ".page__lead" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Cargando proyecto…")).not.toBeInTheDocument();
+  });
 });
