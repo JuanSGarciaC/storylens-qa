@@ -30,9 +30,9 @@
 | botón peligro `#000` / `#ff7b7b` | 8.37 |
 | fg / alerta `#1a0a0a` | 16.43 |
 | danger / alerta `#1a0a0a` | 7.67 |
+| borde de control `--line-control #7a7a7a` / `#000` (no texto, mín. 3:1) | 4.89 |
+| `--line-control` / luz de fondo `#0b1a3a` (no texto) | 4.00 |
 | insignias ok, warn, danger, info, neutral | 10.46, 10.93, 7.57, 7.64, 7.13 |
-
----
 
 ---
 

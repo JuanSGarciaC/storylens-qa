@@ -34,3 +34,5 @@ Thumbs.db
 # Herramientas locales de Claude
 .superpowers/
 .claude/
+
+.impeccable/

@@ -40,7 +40,7 @@ export function Ring({ segments }: { segments: RingSegment[] }) {
       >
         {visible.map((s, i) => (
           <circle
-            key={s.label}
+            key={`${i}-${s.label}`}
             cx="50"
             cy="50"
             r={RADIUS}
@@ -54,8 +54,8 @@ export function Ring({ segments }: { segments: RingSegment[] }) {
         ))}
       </svg>
       <ul className="ring__legend">
-        {segments.map((s) => (
-          <li key={s.label}>
+        {segments.map((s, i) => (
+          <li key={`${i}-${s.label}`}>
             <span
               className="ring__swatch"
               style={{ background: COLORS[s.tone] }}

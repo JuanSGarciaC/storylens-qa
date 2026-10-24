@@ -22,6 +22,7 @@ export function Button({
       disabled={disabled || loading}
       aria-busy={loading || undefined}
     >
+      {loading ? <span className="btn__spinner" aria-hidden="true" /> : null}
       {children}
     </button>
   );

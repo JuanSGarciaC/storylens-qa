@@ -67,6 +67,20 @@ label[for] {
   color: transparent;
 }
 
+@supports not (background-clip: text) {
+  .gradient-text {
+    color: var(--accent);
+    background: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .gradient-text {
+    color: CanvasText;
+    background: none;
+  }
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;

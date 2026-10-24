@@ -114,12 +114,13 @@ describe("Ring", () => {
     expect(svg.getAttribute("aria-label")).toBeTruthy();
     expect(await axe(container)).toHaveNoViolations();
   });
-  it("con todo en 0 muestra EmptyState", () => {
+  it("con todo en 0 muestra EmptyState", async () => {
     const { container } = render(
       <Ring segments={[{ label: "Aprobadas", value: 0, tone: "ok" }]} />,
     );
     expect(container.querySelector("svg")).toBeNull();
     expect(screen.getByText(/sin datos/i)).toBeInTheDocument();
+    expect(await axe(container)).toHaveNoViolations();
   });
 });
 
