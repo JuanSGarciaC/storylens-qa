@@ -173,6 +173,8 @@ export const createAnalysis = (storyId: string, useAi: boolean) =>
 export interface Health {
   status: string;
   ai_configured: boolean;
+  /** Consultas de IA que quedan hoy; ausente o nulo si el servidor no lo informa. */
+  ai_quota_remaining_today?: number | null;
 }
 
 export const getHealth = (signal?: AbortSignal) =>

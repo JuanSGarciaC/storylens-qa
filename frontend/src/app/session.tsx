@@ -22,6 +22,8 @@ export type SessionValue = {
   status: SessionStatus;
   /** Valor de /health: la IA tiene credenciales en el servidor. */
   aiConfigured: boolean;
+  /** Cuota de IA restante hoy según /health; null si no se informa. */
+  aiQuotaRemaining: number | null;
   login(email: string, password: string): Promise<void>;
   logout(): Promise<void>;
   retry(): void;
@@ -53,6 +55,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [me, setMe] = useState<Me | null>(null);
   const [status, setStatus] = useState<SessionStatus>("loading");
   const [aiConfigured, setAiConfigured] = useState(false);
+  const [aiQuotaRemaining, setAiQuotaRemaining] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
   const attemptRef = useRef<object | null>(null); // invalida intentos anteriores
@@ -101,6 +104,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             clearTimers();
             setMe(user);
             setAiConfigured(health?.ai_configured ?? false);
+            setAiQuotaRemaining(health?.ai_quota_remaining_today ?? null);
             setStatus("ready");
           },
           (error: unknown) => {
@@ -167,8 +171,16 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [connect]);
 
   const value = useMemo<SessionValue>(
-    () => ({ me, status, aiConfigured, login, logout, retry }),
-    [me, status, aiConfigured, login, logout, retry],
+    () => ({
+      me,
+      status,
+      aiConfigured,
+      aiQuotaRemaining,
+      login,
+      logout,
+      retry,
+    }),
+    [me, status, aiConfigured, aiQuotaRemaining, login, logout, retry],
   );
 
   let content: ReactNode = children;
