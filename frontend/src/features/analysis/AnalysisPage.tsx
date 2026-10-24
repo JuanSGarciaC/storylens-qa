@@ -10,9 +10,9 @@ import type {
   StoryItem,
 } from "../../api/client";
 import { useProject } from "../../app/ProjectContext";
-import { useSession } from "../../app/session";
 import { useStory } from "../../app/useStory";
 import { useAccess } from "../../shared/useAccess";
+import { useAiGate } from "../../shared/useAiGate";
 import { useLoad } from "../../shared/useLoad";
 import { Badge, type Tone } from "../../shared/ui/Badge";
 import { Button } from "../../shared/ui/Button";
@@ -315,8 +315,8 @@ function AnalysisView({
 }) {
   const navigate = useNavigate();
   const { refreshProjects } = useProject();
-  const { aiQuotaRemaining, refreshHealth } = useSession();
   const access = useAccess(project);
+  const gate = useAiGate(access);
   const analysisId = story.latest_analysis?.id;
   const data = useLoad<Analysis | null>(
     () => (analysisId ? api.getAnalysis(analysisId) : Promise.resolve(null)),
@@ -330,23 +330,10 @@ function AnalysisView({
     id: string;
     message: string;
   } | null>(null);
-  // La IA respondió «no disponible» y /health no pudo confirmarlo: se bloquea hasta el próximo refresco.
-  const [aiDown, setAiDown] = useState(false);
   const [notice, setNotice] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const deleteButton = useRef<HTMLButtonElement>(null);
   const cancelDelete = useRef<HTMLButtonElement>(null);
-
-  // Si la IA quedó marcada como caída, se vuelve a comprobar al volver a la pestaña.
-  useEffect(() => {
-    if (!aiDown) return;
-    const recheck = () => {
-      if (document.visibilityState !== "visible") return;
-      void refreshHealth().then((ok) => ok && setAiDown(false));
-    };
-    document.addEventListener("visibilitychange", recheck);
-    return () => document.removeEventListener("visibilitychange", recheck);
-  }, [aiDown, refreshHealth]);
 
   useEffect(() => {
     if (confirmDelete) cancelDelete.current?.focus();
@@ -356,20 +343,6 @@ function AnalysisView({
   if (data.error)
     return <ErrorNotice message={data.error} onRetry={data.reload} />;
   const analysis = data.data ?? null;
-
-  const outOfQuota = aiQuotaRemaining === 0;
-  const aiEnabled = access.canUseAi && !outOfQuota && !aiDown;
-  const quotaText =
-    access.canUseAi && aiQuotaRemaining !== null
-      ? aiQuotaRemaining === 0
-        ? "Sin consultas de IA hoy."
-        : `${aiQuotaRemaining === 1 ? "Queda 1 consulta" : `Quedan ${aiQuotaRemaining} consultas`} de IA hoy.`
-      : null;
-  const reason =
-    access.reason ??
-    (aiDown && !outOfQuota
-      ? "La IA no está disponible ahora (límite alcanzado o servicio caído)."
-      : quotaText);
 
   async function guard(
     action: () => Promise<void>,
@@ -403,8 +376,7 @@ function AnalysisView({
       } finally {
         if (useAi) {
           // Se refresca siempre: la consulta pudo gastarse aunque la petición fallara.
-          const refreshed = await refreshHealth();
-          setAiDown(unavailable && !refreshed);
+          await gate.afterAiCall(unavailable);
         }
       }
     }, setAnalyzeError);
@@ -445,22 +417,17 @@ function AnalysisView({
         </Button>
         <Button
           variant="ghost"
-          disabled={!aiEnabled || busy}
+          disabled={!gate.enabled || busy}
           loading={running === "ai"}
           onClick={() => void analyze(true)}
         >
           Analizar con IA
         </Button>
       </div>
-      {reason ? <p className="hint">{reason}</p> : null}
-      {aiDown ? (
+      {gate.reason ? <p className="hint">{gate.reason}</p> : null}
+      {gate.aiDown ? (
         <div>
-          <Button
-            variant="ghost"
-            onClick={() =>
-              void refreshHealth().then((ok) => ok && setAiDown(false))
-            }
-          >
+          <Button variant="ghost" onClick={gate.recheck}>
             Comprobar de nuevo
           </Button>
         </div>
