@@ -224,7 +224,7 @@ def compute_metrics(stories: list[StoryMetricsInput]) -> ProjectMetrics:
 class MatrixRow:
     story_id: str
     story_title: str
-    criterion_index: int
+    criterion_index: int  # 1-based, igual que en los casos de prueba
     criterion: str
     cases: list[CaseFacts] = field(default_factory=list)
     last_result: str | None = None  # None = ningún caso ejecutado
@@ -250,7 +250,7 @@ def build_matrix(stories: list[StoryMetricsInput]) -> list[MatrixRow]:
                 MatrixRow(
                     story_id=story.story_id,
                     story_title=story.title,
-                    criterion_index=index,
+                    criterion_index=index + 1,
                     criterion=criterion,
                     cases=cases,
                     last_result=executions[-1].result if executions else None,

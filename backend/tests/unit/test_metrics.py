@@ -128,7 +128,7 @@ def test_matrix_links_criterion_to_case_execution_and_defects():
         )
     ]
     rows = build_matrix(stories)
-    assert [r.criterion_index for r in rows] == [0, 1]
+    assert [r.criterion_index for r in rows] == [1, 2]
     assert [c.id for c in rows[0].cases] == ["1"]
     assert rows[0].last_result == "failed" and rows[0].defects == 1
     assert rows[1].cases == [] and rows[1].last_result is None  # el caso propuesto no cubre

@@ -21,6 +21,21 @@ Con Docker (todo junto, mismo origen): `docker compose up --build` → http://lo
 
 Sin sesión se muestra el proyecto de demostración (solo lectura). El flujo del dueño requiere `OWNER_EMAIL`, `OWNER_PASSWORD` y `SESSION_SECRET` en `backend/.env`. Rutas, scripts y variables (`VITE_API_BASE_URL`) del frontend: [`docs/08-guia-de-desarrollo.md`](docs/08-guia-de-desarrollo.md#frontend-fase-b). Sistema de diseño: [`design-system/storylens-qa/MASTER.md`](design-system/storylens-qa/MASTER.md).
 
+## Capturas
+
+Tomadas con Gemini real (modelo de la capa gratuita) sobre una historia de ejemplo.
+
+| | |
+|---|---|
+| **Análisis con reglas + IA:** puntaje, hallazgos con norma y confianza de la IA | **Casos de prueba generados por IA**, aceptables uno a uno |
+| ![Análisis con IA](docs/screenshots/02-analisis-con-ia.png) | ![Casos de prueba](docs/screenshots/03-casos-de-prueba-ia.png) |
+| **Sesión de QA:** resultado, evidencias y borrador de defecto redactado por IA | **Métricas** con denominadores visibles y matriz de trazabilidad |
+| ![Defecto con IA](docs/screenshots/05-sesion-qa-defecto-ia.png) | ![Métricas](docs/screenshots/08-metricas-y-trazabilidad.png) |
+| **Análisis transversal:** duplicados, dependencias, hipótesis de contradicción, riesgo por épica | **Evaluación de la IA** contra el conjunto de referencia |
+| ![Transversal](docs/screenshots/07-analisis-transversal.png) | ![Evaluación](docs/screenshots/09-evaluacion-ia.png) |
+| **Importación masiva** en segundo plano con progreso | **Gherkin sugerido** por la IA |
+| ![Importación](docs/screenshots/10-importacion-masiva.png) | ![Gherkin](docs/screenshots/04-gherkin-ia.png) |
+
 ---
 
 ## 1. Visión del producto

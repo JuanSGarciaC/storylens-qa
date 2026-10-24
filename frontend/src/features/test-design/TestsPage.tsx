@@ -1,3 +1,4 @@
+import { TECHNIQUE_LABEL } from "./techniques";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import * as api from "../../api/client";
@@ -20,14 +21,6 @@ import { EmptyState } from "../../shared/ui/EmptyState";
 import { ErrorNotice } from "../../shared/ui/ErrorNotice";
 import { Spinner } from "../../shared/ui/Spinner";
 
-const TECHNIQUE_LABEL: Record<TestCase["technique"], string> = {
-  equivalence_partitioning: "Partición de equivalencia",
-  boundary_value: "Valores límite",
-  decision_table: "Tabla de decisión",
-  state_transition: "Transición de estados",
-  scenario: "Escenario",
-  error_guessing: "Predicción de errores",
-};
 const TECHNIQUES = Object.keys(TECHNIQUE_LABEL) as TestCase["technique"][];
 
 // El estado siempre se escribe: el color solo refuerza.

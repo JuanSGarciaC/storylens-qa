@@ -596,3 +596,7 @@
     transition: width 300ms ease;
   }
 }
+
+.metric dd > span {
+  display: block;
+}

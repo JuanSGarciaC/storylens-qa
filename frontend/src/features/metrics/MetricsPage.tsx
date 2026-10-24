@@ -8,6 +8,7 @@ import {
 } from "../../api/client";
 import type { Metric } from "../../api/client";
 import { useProject } from "../../app/ProjectContext";
+import { TECHNIQUE_LABEL } from "../test-design/techniques";
 import { useLoad } from "../../shared/useLoad";
 import { Badge } from "../../shared/ui/Badge";
 import { Button } from "../../shared/ui/Button";
@@ -50,6 +51,18 @@ function formatValue(metric: Metric): string {
   return String(metric.value);
 }
 
+/** De cuántos elementos sale la cifra: «2 de 4» para porcentajes, «sobre N historias» para promedios. */
+function sourceText(metric: Metric): string {
+  if (!metric.denominator) return "Sin elementos para calcularla";
+  if (metric.unit === "score") {
+    return `Promedio de ${metric.denominator} ${metric.denominator === 1 ? "historia analizada" : "historias analizadas"}`;
+  }
+  if (metric.unit === "points") {
+    return `Solo ${metric.denominator} ${metric.denominator === 1 ? "historia" : "historias"} con más de un análisis`;
+  }
+  return `${metric.numerator} de ${metric.denominator}`;
+}
+
 function MetricCard({ metric }: { metric: Metric }) {
   const hasData = metric.value !== null;
   return (
@@ -59,11 +72,7 @@ function MetricCard({ metric }: { metric: Metric }) {
         <span className={hasData ? "stat__value gradient-text" : "hint"}>
           {formatValue(metric)}
         </span>
-        <span className="mono hint">
-          {metric.denominator
-            ? `${metric.numerator} de ${metric.denominator}`
-            : "Sin elementos para calcularla"}
-        </span>
+        <span className="mono hint">{sourceText(metric)}</span>
       </dd>
       <dd className="hint">{metric.definition}</dd>
     </div>
@@ -90,7 +99,9 @@ function Bars({
           {items.map((item) => (
             <li key={item.key}>
               <span className="bars__label">
-                {KEY_LABEL[item.key] ?? item.key}
+                {KEY_LABEL[item.key] ??
+                  (TECHNIQUE_LABEL as Record<string, string>)[item.key] ??
+                  item.key}
               </span>
               <span className="bars__track" aria-hidden="true">
                 <span

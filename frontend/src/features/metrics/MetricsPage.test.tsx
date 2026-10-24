@@ -134,6 +134,17 @@ describe("MetricsPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("el puntaje medio dice cuántas historias promedia, no «130 de 2»", async () => {
+    setup();
+    const card = (await screen.findByText("Puntaje medio")).closest(
+      ".metric",
+    ) as HTMLElement;
+    expect(
+      within(card).getByText("Promedio de 2 historias analizadas"),
+    ).toBeInTheDocument();
+    expect(within(card).queryByText(/130 de 2/)).not.toBeInTheDocument();
+  });
+
   it("sin datos dice «Sin datos» en vez de mostrar un cero", async () => {
     setup();
     const card = (await screen.findByText("Casos que pasan")).closest(
