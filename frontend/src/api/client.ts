@@ -30,6 +30,7 @@ export type ProjectInput = Schemas["ProjectIn"];
 export type ProjectPatch = Schemas["ProjectPatch"];
 export type Me = Schemas["MeOut"];
 export type Named = Schemas["NamedOut"];
+export type Rule = Schemas["RuleOut"];
 export type AuditEvent = Schemas["AuditEventOut"];
 export type Recommendation = NonNullable<SessionDetail["recommendation"]>;
 
@@ -150,6 +151,8 @@ export const listAudit = (projectId: string, limit = 50, offset = 0) =>
   request<AuditEvent[]>(
     `/projects/${projectId}/audit?limit=${limit}&offset=${offset}`,
   );
+
+export const listRules = () => request<Rule[]>("/rules");
 
 // --- historias ---
 export const listStories = (projectId: string) =>
