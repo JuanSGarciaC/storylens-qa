@@ -13,6 +13,7 @@ dependencies = [
     "google-genai>=1.0",
     "python-multipart>=0.0.9",
     "fpdf2>=2.8",
+    "alembic>=1.13",
 ]
 
 [project.optional-dependencies]
@@ -25,6 +26,8 @@ dev = [
     "types-PyYAML",
     "pre-commit>=4.0",
 ]
+# Para PostgreSQL gratuito en la nube (Neon, Supabase): pip install -e ".[postgres]"
+postgres = ["psycopg[binary]>=3.2"]
 
 [build-system]
 requires = ["setuptools>=68"]

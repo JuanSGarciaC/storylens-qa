@@ -36,6 +36,7 @@ from app.application.test_design import (
 from app.config import get_settings
 from app.domain.story_import import ImportFormatError
 from app.infrastructure.persistence.database import get_engine, get_session, init_db
+from app.infrastructure.persistence.migrations import upgrade_to_head
 from app.infrastructure.persistence.sql_project_repository import SqlProjectRepository
 from app.infrastructure.persistence.sql_quota import SqlQuota
 from app.infrastructure.persistence.sql_repository import SqlStoryRepository
@@ -44,8 +45,11 @@ from app.infrastructure.persistence.sql_users import SqlUserRepository
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    init_db()
     settings = get_settings()
+    if settings.run_migrations:
+        upgrade_to_head(settings.database_url)
+    else:
+        init_db()
     with Session(get_engine()) as session:
         ensure_owner(SqlUserRepository(session), settings.owner_email, settings.owner_password)
         if settings.seed_demo:

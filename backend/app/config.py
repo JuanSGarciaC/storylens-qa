@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     cookie_secure: bool = False
     # Crea el proyecto de demostración (solo lectura) al arrancar si no existe.
     seed_demo: bool = True
+    # Aplica las migraciones de Alembic al arrancar (si es False, crea las tablas sin historial).
+    run_migrations: bool = True
 
     # Nunca se registra ni se expone.
     gemini_api_key: str | None = Field(default=None, repr=False)
