@@ -249,3 +249,96 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+/* Módulos 3 y 4: análisis de calidad y asistente de IA. */
+.wrap {
+  overflow-wrap: anywhere;
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+.result {
+  display: grid;
+  gap: var(--space-4);
+}
+.result > h2,
+.story-text > h2,
+[aria-labelledby="findings-title"] > h2 {
+  margin: 0;
+}
+.score-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+.score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.score__value {
+  font-size: clamp(3.5rem, 12vw, 6rem);
+  font-weight: 600;
+  line-height: 1;
+}
+.score__max {
+  color: var(--muted);
+  font-size: 1.25rem;
+}
+.ai-note {
+  margin: 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--accent);
+  max-width: 70ch;
+}
+.finding-group__title {
+  margin: var(--space-6) 0 var(--space-2);
+}
+.findings {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.finding {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--line);
+}
+.finding__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+.finding__message {
+  margin: 0 0 var(--space-2);
+  font-weight: 500;
+}
+.finding .prose p {
+  margin: 0 0 var(--space-2);
+}
+.finding blockquote {
+  margin: 0 0 var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--line-control);
+  color: var(--muted);
+}
+.finding__actions {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 28rem;
+}
+.story-text__body {
+  white-space: pre-wrap;
+}
+.danger-zone {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+}

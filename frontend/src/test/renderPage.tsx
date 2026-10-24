@@ -22,7 +22,7 @@ export type Handler = (call: Call) => Response | undefined;
 
 /** Sustituye `fetch`: `/health` y `/auth/me` por defecto; el resto, por `handler`. */
 export function stubFetch(
-  options: { me?: unknown; handler?: Handler } = {},
+  options: { me?: unknown; handler?: Handler; health?: unknown } = {},
 ): Call[] {
   const calls: Call[] = [];
   vi.stubGlobal(
@@ -34,7 +34,7 @@ export function stubFetch(
       const call = { method, path, body };
       calls.push(call);
       if (path === "/health") {
-        return json({ status: "ok", ai_configured: true });
+        return json(options.health ?? { status: "ok", ai_configured: true });
       }
       if (path === "/auth/me") {
         return json(
@@ -71,6 +71,10 @@ export function renderPage(page: ReactElement, options: { entry: string }) {
           <Route path="/p/:projectId" element={<Scoped>{page}</Scoped>} />
           <Route
             path="/p/:projectId/settings"
+            element={<Scoped>{page}</Scoped>}
+          />
+          <Route
+            path="/p/:projectId/stories/:storyId/analysis"
             element={<Scoped>{page}</Scoped>}
           />
           <Route path="*" element={<div>otra ruta</div>} />

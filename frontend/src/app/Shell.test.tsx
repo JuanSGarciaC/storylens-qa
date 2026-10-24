@@ -216,7 +216,7 @@ describe("Shell", () => {
     stubApi();
     stubWidth(false);
     vi.spyOn(console, "error").mockImplementation(() => {});
-    const own = renderAt("/p/x/stories/s1/analysis");
+    const own = renderAt("/p/x/stories/s1/tests");
     expect(await screen.findByText(/Historia propia/)).toBeVisible();
     own.unmount();
 
