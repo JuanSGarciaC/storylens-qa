@@ -1,19 +1,34 @@
 from app.application.analyze_story import analyze_story
+from app.application.errors import NotFoundError
+from app.application.projects import InvalidProjectError, require_project
 from app.domain.entities import Decision, StoredAnalysis, StoredStory, Story
-from app.domain.ports import LLMPort, StoryRepository
+from app.domain.ports import LLMPort, ProjectRepository, StoryRepository
 from app.domain.ports.sessions import EvidenceStorage, SessionRepository
 
-
-class NotFoundError(Exception):
-    pass
+__all__ = ["NotFoundError"]  # se reexporta para quien ya lo importa desde aquí
 
 
 class InvalidDecisionError(Exception):
     pass
 
 
-def create_story(repo: StoryRepository, story: Story) -> StoredStory:
-    return repo.add_story(story)
+def create_story(
+    repo: StoryRepository,
+    projects: ProjectRepository,
+    project_id: str,
+    story: Story,
+    epic_id: str | None = None,
+    version_id: str | None = None,
+) -> StoredStory:
+    """Guarda la historia en el proyecto; la épica y la versión deben ser de ese proyecto."""
+    require_project(projects, project_id)
+    if epic_id is not None and epic_id not in {e.id for e in projects.list_epics(project_id)}:
+        raise InvalidProjectError("La épica no pertenece a este proyecto")
+    if version_id is not None and version_id not in {
+        v.id for v in projects.list_versions(project_id)
+    }:
+        raise InvalidProjectError("La versión no pertenece a este proyecto")
+    return repo.add_story(project_id, story, epic_id=epic_id, version_id=version_id)
 
 
 def run_analysis(

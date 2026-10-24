@@ -14,7 +14,7 @@ def test_filename_is_ascii_without_path_separators():
 
 
 def test_analysis_report_is_a_markdown_download(client):
-    story_id = client.post("/api/v1/stories", json=STORY).json()["id"]
+    story_id = client.post(f"/api/v1/projects/{client.project_id}/stories", json=STORY).json()["id"]
     analysis = client.post(f"/api/v1/stories/{story_id}/analyses", json={"use_ai": False}).json()
 
     response = client.get(f"/api/v1/analyses/{analysis['id']}/report?format=md")
@@ -33,9 +33,9 @@ def test_analysis_report_is_a_markdown_download(client):
 
 
 def test_report_shows_dismissed_findings_with_their_reason(client):
-    story_id = client.post("/api/v1/stories", json={**STORY, "acceptance_criteria": []}).json()[
-        "id"
-    ]
+    story_id = client.post(
+        f"/api/v1/projects/{client.project_id}/stories", json={**STORY, "acceptance_criteria": []}
+    ).json()["id"]
     analysis = client.post(f"/api/v1/stories/{story_id}/analyses", json={"use_ai": False}).json()
     finding = analysis["findings"][0]
     client.patch(
@@ -51,7 +51,7 @@ def test_report_shows_dismissed_findings_with_their_reason(client):
 
 def test_unknown_analysis_and_unsupported_format(client):
     assert client.get("/api/v1/analyses/nope/report").status_code == 404
-    story_id = client.post("/api/v1/stories", json=STORY).json()["id"]
+    story_id = client.post(f"/api/v1/projects/{client.project_id}/stories", json=STORY).json()["id"]
     analysis = client.post(f"/api/v1/stories/{story_id}/analyses", json={"use_ai": False}).json()
     assert client.get(f"/api/v1/analyses/{analysis['id']}/report?format=docx").status_code == 422
 

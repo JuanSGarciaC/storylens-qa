@@ -15,7 +15,8 @@ def test_create_and_get_project(client: TestClient) -> None:
     assert fetched.status_code == 200
     assert fetched.json()["name"] == "Pagos"
     assert fetched.json()["is_demo"] is False
-    assert [p["id"] for p in client.get("/api/v1/projects").json()] == [created["id"]]
+    listed = {p["id"] for p in client.get("/api/v1/projects").json()}
+    assert listed == {created["id"], client.project_id}
 
 
 def test_rejects_empty_and_too_long_name(client: TestClient) -> None:

@@ -11,14 +11,14 @@ CSV = (
 
 def upload(client, path, content=CSV, name="jira.csv", **data):
     return client.post(
-        f"/api/v1/stories{path}",
+        f"/api/v1/projects/{client.project_id}/stories{path}",
         files={"file": (name, content.encode(), "text/csv")},
         data=data,
     )
 
 
 def stories(client):
-    return client.get("/api/v1/stories").json()
+    return client.get(f"/api/v1/projects/{client.project_id}/stories").json()
 
 
 def test_preview_shows_mapping_rows_and_problems_without_saving(client):

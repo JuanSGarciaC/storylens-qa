@@ -10,6 +10,9 @@ class StoredStory:
     id: str
     story: Story
     created_at: datetime
+    project_id: str
+    epic_id: str | None = None
+    version_id: str | None = None
 
 
 @dataclass(frozen=True)

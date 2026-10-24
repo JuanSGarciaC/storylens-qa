@@ -43,7 +43,7 @@ def use_llm(llm):
 
 def make_story(client, accept=2) -> str:
     """Historia con 3 casos generados; se aceptan los primeros `accept`."""
-    story_id = client.post("/api/v1/stories", json=STORY).json()["id"]
+    story_id = client.post(f"/api/v1/projects/{client.project_id}/stories", json=STORY).json()["id"]
     use_llm(FakeLLM(cases=[case_draft("Caso A"), case_draft("Caso B", 2), case_draft("Caso C")]))
     cases = client.post(f"/api/v1/stories/{story_id}/test-cases:generate").json()
     for case in cases[:accept]:

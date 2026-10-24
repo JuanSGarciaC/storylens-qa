@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Response, status
 
-from app.api.deps import Projects
+from app.api.deps import Projects, Repository, Sessions, Storage
 from app.api.schemas.project import (
     NamedIn,
     NamedOut,
@@ -81,8 +81,14 @@ def update_project(project_id: str, payload: ProjectPatch, projects: Projects) -
 
 
 @router.delete("/projects/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_project(project_id: str, projects: Projects) -> Response:
-    uc.delete_project(projects, project_id)
+def delete_project(
+    project_id: str,
+    projects: Projects,
+    repo: Repository,
+    sessions: Sessions,
+    storage: Storage,
+) -> Response:
+    uc.delete_project(projects, repo, sessions, storage, project_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

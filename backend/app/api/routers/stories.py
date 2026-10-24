@@ -1,28 +1,44 @@
 from fastapi import APIRouter, HTTPException, Response, status
 
-from app.api.deps import LLM, Repository, Sessions, Storage
+from app.api.deps import LLM, Projects, Repository, Sessions, Storage
 from app.api.mappers import analysis_out, story_out
 from app.api.schemas.analysis import AnalysisOut, AnalysisRequest, StoryIn, StoryOut
 from app.application import stories
+from app.application.projects import require_project
 from app.domain.entities import Story
 
 router = APIRouter(tags=["stories"])
 
 
-@router.post("/stories", response_model=StoryOut, status_code=status.HTTP_201_CREATED)
-def create_story(payload: StoryIn, repo: Repository) -> StoryOut:
+@router.post(
+    "/projects/{project_id}/stories", response_model=StoryOut, status_code=status.HTTP_201_CREATED
+)
+def create_story(
+    project_id: str, payload: StoryIn, repo: Repository, projects: Projects
+) -> StoryOut:
     story = Story(
         title=payload.title,
         description=payload.description,
         acceptance_criteria=tuple(payload.acceptance_criteria),
         notes=payload.notes,
     )
-    return story_out(stories.create_story(repo, story), latest=None)
+    stored = stories.create_story(
+        repo, projects, project_id, story, epic_id=payload.epic_id, version_id=payload.version_id
+    )
+    return story_out(stored, latest=None)
 
 
-@router.get("/stories", response_model=list[StoryOut])
-def list_stories(repo: Repository) -> list[StoryOut]:
-    return [story_out(s, repo.latest_analysis(s.id)) for s in repo.list_stories()]
+@router.get("/projects/{project_id}/stories", response_model=list[StoryOut])
+def list_stories(
+    project_id: str,
+    repo: Repository,
+    projects: Projects,
+    epic_id: str | None = None,
+    version_id: str | None = None,
+) -> list[StoryOut]:
+    require_project(projects, project_id)
+    found = repo.list_stories(project_id, epic_id=epic_id, version_id=version_id)
+    return [story_out(s, repo.latest_analysis(s.id)) for s in found]
 
 
 @router.get("/stories/{story_id}", response_model=StoryOut)

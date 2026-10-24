@@ -35,6 +35,9 @@ def story_out(stored: StoredStory, latest: StoredAnalysis | None) -> StoryOut:
     story = stored.story
     return StoryOut(
         id=stored.id,
+        project_id=stored.project_id,
+        epic_id=stored.epic_id,
+        version_id=stored.version_id,
         title=story.title,
         description=story.description,
         notes=story.notes,

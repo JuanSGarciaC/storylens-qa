@@ -38,6 +38,9 @@ class StoryRow(SQLModel, table=True):
     __tablename__ = "story"
 
     id: str = Field(primary_key=True)
+    project_id: str = Field(foreign_key="project.id", index=True)
+    epic_id: str | None = Field(default=None, foreign_key="epic.id", index=True)
+    version_id: str | None = Field(default=None, foreign_key="version.id", index=True)
     title: str
     description: str
     notes: str = ""

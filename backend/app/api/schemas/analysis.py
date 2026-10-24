@@ -11,6 +11,8 @@ class StoryIn(BaseModel):
     description: str = Field(default="")
     acceptance_criteria: list[str] = Field(default_factory=list, max_length=50)
     notes: str = ""
+    epic_id: str | None = None
+    version_id: str | None = None
 
     @model_validator(mode="after")
     def _limit_total_size(self) -> "StoryIn":
@@ -67,6 +69,9 @@ class AnalysisSummary(BaseModel):
 
 class StoryOut(BaseModel):
     id: str
+    project_id: str
+    epic_id: str | None = None
+    version_id: str | None = None
     title: str
     description: str
     notes: str

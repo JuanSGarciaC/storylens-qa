@@ -35,7 +35,7 @@ def use_llm(llm):
 
 
 def analyze(client, **body):
-    story = client.post("/api/v1/stories", json=STORY).json()
+    story = client.post(f"/api/v1/projects/{client.project_id}/stories", json=STORY).json()
     response = client.post(f"/api/v1/stories/{story['id']}/analyses", json=body or None)
     assert response.status_code == 201
     return response.json()

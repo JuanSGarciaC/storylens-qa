@@ -3,10 +3,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
 
-from app.api.deps import Repository
+from app.api.deps import Projects, Repository
 from app.api.mappers import story_out
 from app.api.schemas.story_import import ImportPreviewOut, ImportResultOut, ImportRowOut
 from app.application import story_import
+from app.application.projects import require_project
 from app.domain.story_import import ImportFormatError
 
 router = APIRouter(tags=["import"])
@@ -47,14 +48,19 @@ def _selected(raw: str | None) -> list[int] | None:
     return value
 
 
-@router.post("/stories/import", response_model=ImportPreviewOut)
+@router.post("/projects/{project_id}/stories/import", response_model=ImportPreviewOut)
 def preview_import(
+    project_id: str,
     repo: Repository,
+    projects: Projects,
     file: Annotated[UploadFile, File()],
     mapping: Annotated[str | None, Form()] = None,
 ) -> ImportPreviewOut:
     """Vista previa del archivo de Jira (CSV/JSON) con el mapeo de columnas. No guarda nada."""
-    result = story_import.preview_import(repo, file.filename or "", _read(file), _mapping(mapping))
+    require_project(projects, project_id)
+    result = story_import.preview_import(
+        repo, project_id, file.filename or "", _read(file), _mapping(mapping)
+    )
     return ImportPreviewOut(
         format=result.format,
         headers=result.headers,
@@ -77,18 +83,21 @@ def preview_import(
 
 
 @router.post(
-    "/stories/import:confirm",
+    "/projects/{project_id}/stories/import:confirm",
     response_model=ImportResultOut,
     status_code=status.HTTP_201_CREATED,
 )
 def confirm_import(
+    project_id: str,
     repo: Repository,
+    projects: Projects,
     file: Annotated[UploadFile, File()],
     mapping: Annotated[str | None, Form()] = None,
     selected: Annotated[str | None, Form()] = None,
 ) -> ImportResultOut:
     """Crea las historias elegidas (por número de fila) a partir del mismo archivo."""
+    require_project(projects, project_id)
     created = story_import.confirm_import(
-        repo, file.filename or "", _read(file), _mapping(mapping), _selected(selected)
+        repo, project_id, file.filename or "", _read(file), _mapping(mapping), _selected(selected)
     )
     return ImportResultOut(created=[story_out(s, latest=None) for s in created])

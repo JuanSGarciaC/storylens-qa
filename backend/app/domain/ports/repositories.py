@@ -12,11 +12,21 @@ from app.domain.entities import (
 
 
 class StoryRepository(Protocol):
-    def add_story(self, story: Story) -> StoredStory: ...
+    def add_story(
+        self,
+        project_id: str,
+        story: Story,
+        epic_id: str | None = None,
+        version_id: str | None = None,
+    ) -> StoredStory: ...
 
     def get_story(self, story_id: str) -> StoredStory | None: ...
 
-    def list_stories(self) -> list[StoredStory]: ...
+    def list_stories(
+        self, project_id: str, epic_id: str | None = None, version_id: str | None = None
+    ) -> list[StoredStory]: ...
+
+    def list_story_ids(self, project_id: str) -> list[str]: ...
 
     def delete_story(self, story_id: str) -> bool:
         """Borra la historia con sus análisis, hallazgos y casos. False si no existe."""

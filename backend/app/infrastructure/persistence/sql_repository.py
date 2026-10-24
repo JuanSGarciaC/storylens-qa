@@ -39,9 +39,18 @@ class SqlStoryRepository:
         self._session = session
 
     # --- historias ---
-    def add_story(self, story: Story) -> StoredStory:
+    def add_story(
+        self,
+        project_id: str,
+        story: Story,
+        epic_id: str | None = None,
+        version_id: str | None = None,
+    ) -> StoredStory:
         row = StoryRow(
             id=_new_id(),
+            project_id=project_id,
+            epic_id=epic_id,
+            version_id=version_id,
             title=story.title,
             description=story.description,
             notes=story.notes,
@@ -56,9 +65,21 @@ class SqlStoryRepository:
         row = self._session.get(StoryRow, story_id)
         return self._story(row) if row else None
 
-    def list_stories(self) -> list[StoredStory]:
-        rows = self._session.exec(select(StoryRow).order_by(col(StoryRow.created_at).desc()))
+    def list_stories(
+        self, project_id: str, epic_id: str | None = None, version_id: str | None = None
+    ) -> list[StoredStory]:
+        query = select(StoryRow).where(StoryRow.project_id == project_id)
+        if epic_id is not None:
+            query = query.where(StoryRow.epic_id == epic_id)
+        if version_id is not None:
+            query = query.where(StoryRow.version_id == version_id)
+        rows = self._session.exec(query.order_by(col(StoryRow.created_at).desc()))
         return [self._story(r) for r in rows]
+
+    def list_story_ids(self, project_id: str) -> list[str]:
+        return list(
+            self._session.exec(select(StoryRow.id).where(StoryRow.project_id == project_id))
+        )
 
     def delete_story(self, story_id: str) -> bool:
         row = self._session.get(StoryRow, story_id)
@@ -236,7 +257,14 @@ class SqlStoryRepository:
             acceptance_criteria=tuple(row.criteria),
             notes=row.notes,
         )
-        return StoredStory(id=row.id, story=story, created_at=_aware(row.created_at))
+        return StoredStory(
+            id=row.id,
+            story=story,
+            created_at=_aware(row.created_at),
+            project_id=row.project_id,
+            epic_id=row.epic_id,
+            version_id=row.version_id,
+        )
 
     def _analysis(self, row: AnalysisRow) -> StoredAnalysis:
         finding_rows = self._session.exec(
