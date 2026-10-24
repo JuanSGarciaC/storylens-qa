@@ -89,7 +89,7 @@ const MODULES: Module[] = [
     hint: FROM_STORY,
   },
   { n: "8", label: "Informes", icon: "download", path: "/reports" },
-  { n: "9", label: "Métricas y mejora", icon: "chart" },
+  { n: "9", label: "Métricas y mejora", icon: "chart", path: "/metricas" },
   { n: "10", label: "Evaluación de la IA", icon: "search" },
 ];
 
@@ -282,6 +282,7 @@ const TITLES: [RegExp, string][] = [
   [/\/stories$/, "Historias"],
   [/\/reports$/, "Informes"],
   [/\/transversal$/, "Análisis transversal"],
+  [/\/metricas$/, "Métricas y mejora"],
   [/\/settings$/, "Configuración"],
   [/^\/p\/[^/]+$/, "Resumen"],
   [/^\/$/, "Proyectos"],

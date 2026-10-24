@@ -328,6 +328,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{project_id}/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Project Metrics
+         * @description Métricas con su definición y su denominador; sin datos, el valor es nulo.
+         */
+        get: operations["project_metrics_api_v1_projects__project_id__metrics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/traceability-matrix": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Traceability Matrix
+         * @description Criterio → casos aceptados → última ejecución → defectos, de todo el proyecto.
+         */
+        get: operations["traceability_matrix_api_v1_projects__project_id__traceability_matrix_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/version-comparison": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Version Comparison
+         * @description Qué historias aparecieron, desaparecieron o cambiaron entre dos versiones.
+         */
+        get: operations["version_comparison_api_v1_projects__project_id__version_comparison_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{project_id}/stories": {
         parameters: {
             query?: never;
@@ -829,6 +889,22 @@ export interface components {
              */
             use_ai?: boolean;
         };
+        /** BreakdownItemOut */
+        BreakdownItemOut: {
+            /** Key */
+            key: string;
+            /** Count */
+            count: number;
+        };
+        /** BreakdownOut */
+        BreakdownOut: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Items */
+            items: components["schemas"]["BreakdownItemOut"][];
+        };
         /** CaseIn */
         CaseIn: {
             /** Title */
@@ -912,6 +988,15 @@ export interface components {
             gherkin?: string | null;
             priority?: components["schemas"]["Priority"] | null;
             status?: components["schemas"]["CaseStatus"] | null;
+        };
+        /** ChangedStoryOut */
+        ChangedStoryOut: {
+            /** From Id */
+            from_id: string;
+            /** To Id */
+            to_id: string;
+            /** What */
+            what: string[];
         };
         /** ChecklistItemOut */
         ChecklistItemOut: {
@@ -1381,12 +1466,67 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** MatrixCaseOut */
+        MatrixCaseOut: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
+        };
+        /** MatrixOut */
+        MatrixOut: {
+            /** Total */
+            total: number;
+            /** Rows */
+            rows: components["schemas"]["MatrixRowOut"][];
+        };
+        /** MatrixRowOut */
+        MatrixRowOut: {
+            /** Story Id */
+            story_id: string;
+            /** Story Title */
+            story_title: string;
+            /** Criterion Index */
+            criterion_index: number;
+            /** Criterion */
+            criterion: string;
+            /** Cases */
+            cases: components["schemas"]["MatrixCaseOut"][];
+            /** Last Result */
+            last_result: string | null;
+            /** Defects */
+            defects: number;
+        };
         /** MeOut */
         MeOut: {
             /** Authenticated */
             authenticated: boolean;
             /** Email */
             email?: string | null;
+        };
+        /** MetricOut */
+        MetricOut: {
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /** Definition */
+            definition: string;
+            /** Numerator */
+            numerator: number | null;
+            /** Denominator */
+            denominator: number | null;
+            /** Value */
+            value: number | null;
+            /** Unit */
+            unit: string;
+        };
+        /** MetricsOut */
+        MetricsOut: {
+            /** Metrics */
+            metrics: components["schemas"]["MetricOut"][];
+            /** Breakdowns */
+            breakdowns: components["schemas"]["BreakdownOut"][];
         };
         /** NamedIn */
         NamedIn: {
@@ -1688,6 +1828,24 @@ export interface components {
             input?: unknown;
             /** Context */
             ctx?: Record<string, never>;
+        };
+        /** VersionComparisonOut */
+        VersionComparisonOut: {
+            /** Added */
+            added: components["schemas"]["VersionStoryOut"][];
+            /** Removed */
+            removed: components["schemas"]["VersionStoryOut"][];
+            /** Changed */
+            changed: components["schemas"]["ChangedStoryOut"][];
+            /** Unchanged */
+            unchanged: number;
+        };
+        /** VersionStoryOut */
+        VersionStoryOut: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
         };
     };
     responses: never;
@@ -2409,6 +2567,105 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CrossAnalysisOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    project_metrics_api_v1_projects__project_id__metrics_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MetricsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    traceability_matrix_api_v1_projects__project_id__traceability_matrix_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MatrixOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    version_comparison_api_v1_projects__project_id__version_comparison_get: {
+        parameters: {
+            query: {
+                from: string;
+                to: string;
+            };
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionComparisonOut"];
                 };
             };
             /** @description Validation Error */

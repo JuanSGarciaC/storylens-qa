@@ -27,6 +27,10 @@ export type ImportJob = Schemas["ImportJobOut"];
 export type ImportJobDetail = Schemas["ImportJobDetailOut"];
 export type ImportJobItem = Schemas["ImportItemOut"];
 export type CrossAnalysis = Schemas["CrossAnalysisOut"];
+export type Metric = Schemas["MetricOut"];
+export type Metrics = Schemas["MetricsOut"];
+export type TraceabilityMatrix = Schemas["MatrixOut"];
+export type VersionComparison = Schemas["VersionComparisonOut"];
 export type ImportMapping = Record<string, string | null>;
 export type DefectDraftResult = Schemas["DefectDraftOut"];
 export type Project = Schemas["ProjectOut"];
@@ -354,6 +358,23 @@ export const startImportJob = (
     method: "POST",
     body: importForm(file, mapping, selected, useAi),
   });
+
+export const getMetrics = (projectId: string) =>
+  request<Metrics>(`/projects/${enc(projectId)}/metrics`);
+
+export const getTraceabilityMatrix = (
+  projectId: string,
+  limit: number,
+  offset = 0,
+) =>
+  request<TraceabilityMatrix>(
+    `/projects/${enc(projectId)}/traceability-matrix?limit=${limit}&offset=${offset}`,
+  );
+
+export const compareVersions = (projectId: string, from: string, to: string) =>
+  request<VersionComparison>(
+    `/projects/${enc(projectId)}/version-comparison?from=${enc(from)}&to=${enc(to)}`,
+  );
 
 export const getCrossAnalysis = (projectId: string) =>
   request<CrossAnalysis>(`/projects/${enc(projectId)}/cross-analysis`);

@@ -522,3 +522,77 @@
 .stat {
   align-content: start;
 }
+
+/* --- Métricas (módulo 9) ------------------------------------------------ */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--space-lg, 1.5rem);
+  margin: var(--space-lg, 1.5rem) 0;
+}
+
+.metric dt {
+  color: var(--muted);
+}
+
+.metric dd {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.metric .stat__value {
+  display: block;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.bars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: var(--space-lg, 1.5rem);
+  margin-bottom: var(--space-xl, 2rem);
+}
+
+.bars {
+  margin: 0;
+}
+
+.bars figcaption {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.bars ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.bars li {
+  display: grid;
+  grid-template-columns: 7rem 1fr 3rem;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.bars__track {
+  display: block;
+  height: 0.5rem;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bars__fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bars__fill {
+    transition: width 300ms ease;
+  }
+}
