@@ -162,7 +162,7 @@ function SessionReports({ stories }: { stories: StoryItem[] }) {
             <option value="">Elige una historia…</option>
             {stories.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.title || "Historia sin título"}
+                {`${s.title || "Historia sin título"} (${s.id.slice(0, 8)})`}
               </option>
             ))}
           </select>
@@ -176,7 +176,8 @@ function SessionReports({ stories }: { stories: StoryItem[] }) {
 function AuditSection({ projectId }: { projectId: string }) {
   const [events, setEvents] = useState<AuditEvent[]>([]);
   const [more, setMore] = useState(true);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(true);
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState("");
   const started = useRef(false);
 
@@ -185,13 +186,16 @@ function AuditSection({ projectId }: { projectId: string }) {
     setError("");
     try {
       const page = await api.listAudit(projectId, CHUNK, events.length);
-      setEvents((prev) => [...prev, ...page]);
+      setEvents((prev) => {
+        const seen = new Set(prev.map((e) => e.id));
+        return [...prev, ...page.filter((e) => !seen.has(e.id))];
+      });
+      setLoaded(true);
       setMore(page.length === CHUNK);
     } catch (e) {
       setError(
         e instanceof Error ? e.message : "No se pudo cargar la auditoría.",
       );
-      setMore(false);
     } finally {
       setBusy(false);
     }
@@ -201,22 +205,20 @@ function AuditSection({ projectId }: { projectId: string }) {
     if (started.current) return;
     started.current = true;
     void loadMore();
-    // Solo la primera página al montar; las demás las pide «Cargar más».
+    // Primera página por proyecto (con key en el uso); las demás las pide «Cargar más».
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [projectId]);
 
   return (
     <section aria-labelledby="rep-audit" className="stack">
       <h2 id="rep-audit">Auditoría</h2>
       {error ? (
-        <p role="alert" className="notice wrap">
-          {error}
-        </p>
+        <ErrorNotice message={error} onRetry={() => void loadMore()} />
       ) : null}
       {busy && events.length === 0 ? (
         <Spinner label="Cargando auditoría…" />
       ) : null}
-      {!busy && !error && events.length === 0 ? (
+      {loaded && !busy && !error && events.length === 0 ? (
         <EmptyState
           title="Sin eventos de auditoría"
           body="Las acciones sobre el proyecto quedarán registradas aquí."
@@ -251,7 +253,7 @@ function AuditSection({ projectId }: { projectId: string }) {
           </table>
         </div>
       ) : null}
-      {more && events.length > 0 ? (
+      {more && !error && events.length > 0 ? (
         <div>
           <Button
             variant="ghost"
@@ -293,7 +295,9 @@ export function ReportsPage() {
           <SessionReports stories={stories.data} />
         </>
       )}
-      {me?.authenticated ? <AuditSection projectId={project.id} /> : null}
+      {me?.authenticated ? (
+        <AuditSection key={project.id} projectId={project.id} />
+      ) : null}
     </div>
   );
 }
