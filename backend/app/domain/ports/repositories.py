@@ -48,6 +48,10 @@ class StoryRepository(Protocol):
 
     def latest_analysis(self, story_id: str) -> StoredAnalysis | None: ...
 
+    def list_analyses(self, story_id: str) -> list[StoredAnalysis]:
+        """Todos los análisis de la historia, del más antiguo al más reciente."""
+        ...
+
     def update_finding_decision(
         self, finding_id: str, decision: Decision, reason: str | None
     ) -> str | None:

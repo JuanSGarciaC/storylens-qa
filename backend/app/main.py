@@ -18,6 +18,7 @@ from app.api.routers import (
     cross_analysis,
     findings,
     import_jobs,
+    metrics,
     projects,
     qa_sessions,
     stories,
@@ -161,6 +162,7 @@ def create_app() -> FastAPI:
     app.include_router(story_import.router, prefix="/api/v1")
     app.include_router(import_jobs.router, prefix="/api/v1")
     app.include_router(cross_analysis.router, prefix="/api/v1")
+    app.include_router(metrics.router, prefix="/api/v1")
     app.include_router(stories.router, prefix="/api/v1")
     app.include_router(findings.router, prefix="/api/v1")
     app.include_router(test_design.router, prefix="/api/v1")

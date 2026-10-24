@@ -151,6 +151,14 @@ class SqlStoryRepository:
         ).first()
         return self._analysis(row) if row else None
 
+    def list_analyses(self, story_id: str) -> list[StoredAnalysis]:
+        rows = self._session.exec(
+            select(AnalysisRow)
+            .where(AnalysisRow.story_id == story_id)
+            .order_by(col(AnalysisRow.created_at))
+        )
+        return [self._analysis(row) for row in rows]
+
     def update_finding_decision(
         self, finding_id: str, decision: Decision, reason: str | None
     ) -> str | None:
