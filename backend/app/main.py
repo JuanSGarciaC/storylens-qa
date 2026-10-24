@@ -1,9 +1,11 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import Annotated
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import Engine
 from sqlmodel import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -33,8 +35,9 @@ from app.application.test_design import (
 )
 from app.config import get_settings
 from app.domain.story_import import ImportFormatError
-from app.infrastructure.persistence.database import get_engine, init_db
+from app.infrastructure.persistence.database import get_engine, get_session, init_db
 from app.infrastructure.persistence.sql_project_repository import SqlProjectRepository
+from app.infrastructure.persistence.sql_quota import SqlQuota
 from app.infrastructure.persistence.sql_repository import SqlStoryRepository
 from app.infrastructure.persistence.sql_users import SqlUserRepository
 
@@ -129,8 +132,19 @@ def create_app() -> FastAPI:
         return await call_next(request)
 
     @app.get("/api/v1/health")
-    def health() -> dict[str, object]:
-        return {"status": "ok", "ai_configured": settings.ai_configured}
+    def health(session: Annotated[Session, Depends(get_session)]) -> dict[str, object]:
+        current = get_settings()  # al momento de la petición, no al importar el módulo
+        remaining: int | None = None
+        if current.ai_configured and current.gemini_model:
+            engine = session.get_bind()
+            assert isinstance(engine, Engine)
+            quota = SqlQuota(engine, current.ai_requests_per_minute, current.ai_daily_limit)
+            remaining = quota.remaining_today(current.gemini_model)
+        return {
+            "status": "ok",
+            "ai_configured": current.ai_configured,
+            "ai_quota_remaining_today": remaining,
+        }
 
     app.include_router(auth.router, prefix="/api/v1")
     app.include_router(projects.router, prefix="/api/v1")

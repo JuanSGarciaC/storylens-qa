@@ -6,6 +6,8 @@ from google.genai import types
 from app.config import get_settings
 from app.domain.ports import LLMPort
 from app.infrastructure.llm.gemini import GeminiAdapter
+from app.infrastructure.persistence.database import get_engine
+from app.infrastructure.persistence.sql_quota import SqlQuota
 
 RETRYABLE_STATUS = [429, 500, 503]
 
@@ -35,4 +37,5 @@ def build_llm() -> LLMPort | None:
         fallback_model=settings.gemini_fallback_model,
         requests_per_minute=settings.ai_requests_per_minute,
         daily_limit=settings.ai_daily_limit,
+        quota=SqlQuota(get_engine(), settings.ai_requests_per_minute, settings.ai_daily_limit),
     )

@@ -310,7 +310,7 @@ def test_empty_and_oversized_images_are_rejected(client, storage_dir):
 
     assert upload(client, execution["id"], b"").status_code == 422
     too_big = PNG + b"\x00" * 5_000_000
-    assert upload(client, execution["id"], too_big).status_code == 422
+    assert upload(client, execution["id"], too_big).status_code == 413  # tope: 1 MB
     assert not storage_dir.exists() or not list(storage_dir.iterdir())
 
 

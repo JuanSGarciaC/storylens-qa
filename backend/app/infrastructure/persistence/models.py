@@ -56,6 +56,14 @@ class AuditEventRow(SQLModel, table=True):
     detail: str = ""
 
 
+class AIUsageRow(SQLModel, table=True):
+    __tablename__ = "ai_usage"
+
+    id: int | None = Field(default=None, primary_key=True)
+    key: str = Field(index=True)  # modelo al que se le descontó la llamada
+    at: datetime = Field(index=True)
+
+
 class StoryRow(SQLModel, table=True):
     __tablename__ = "story"
 

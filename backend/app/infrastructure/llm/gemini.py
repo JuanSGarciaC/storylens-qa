@@ -26,6 +26,7 @@ from app.domain.ports import (
     LLMTestCases,
     LLMUnavailableError,
 )
+from app.domain.ports.quota import QuotaPort
 from app.domain.rules.catalog import RuleDef
 from app.infrastructure.llm.prompts import (
     ANALYSIS_PROMPT_VERSION,
@@ -39,7 +40,7 @@ from app.infrastructure.llm.prompts import (
     build_system_prompt,
     build_test_cases_prompt,
 )
-from app.infrastructure.llm.rate_limiter import SlidingWindowLimiter
+from app.infrastructure.llm.quota import InMemoryQuota
 
 logger = logging.getLogger(__name__)
 
@@ -115,18 +116,13 @@ class GeminiAdapter:
         temperature: float = ANALYSIS_TEMPERATURE,
         cache_size: int = 128,
         clock: Callable[[], float] = time.monotonic,
+        quota: QuotaPort | None = None,
     ) -> None:
         self._client = client
         self._models = [model, *([fallback_model] if fallback_model else [])]
         self._analysis_temperature = temperature
         # La cuota de Gemini es por modelo, así que cada modelo tiene sus propios topes.
-        self._limits = {
-            m: (
-                SlidingWindowLimiter(requests_per_minute, 60, clock),
-                SlidingWindowLimiter(daily_limit, ONE_DAY_SECONDS, clock),
-            )
-            for m in self._models
-        }
+        self._quota = quota or InMemoryQuota(requests_per_minute, daily_limit, clock)
         self._cache: OrderedDict[str, tuple[Any, LLMMeta]] = OrderedDict()
         self._cache_size = cache_size
         self._cache_lock = threading.Lock()
@@ -257,8 +253,7 @@ class GeminiAdapter:
         raise LLMInvalidResponseError(f"Respuesta de {model} fuera del esquema")
 
     def _acquire(self, model: str) -> bool:
-        per_minute, per_day = self._limits[model]
-        return per_minute.try_acquire() and per_day.try_acquire()
+        return self._quota.try_acquire(model)
 
     def _cache_get(self, key: str) -> tuple[Any, LLMMeta] | None:
         with self._cache_lock:
