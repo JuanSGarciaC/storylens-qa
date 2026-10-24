@@ -6,7 +6,7 @@ from app.domain.scoring import calculate_score
 
 
 def analysis_out(analysis: StoredAnalysis) -> AnalysisOut:
-    score = calculate_score(analysis.findings)
+    score = calculate_score(analysis.findings, analysis.settings)
     return AnalysisOut(
         id=analysis.id,
         story_id=analysis.story_id,
@@ -25,7 +25,7 @@ def analysis_out(analysis: StoredAnalysis) -> AnalysisOut:
 def story_out(stored: StoredStory, latest: StoredAnalysis | None) -> StoryOut:
     summary = None
     if latest is not None:
-        score = calculate_score(latest.findings)
+        score = calculate_score(latest.findings, latest.settings)
         summary = AnalysisSummary(
             id=latest.id,
             score=score.value,

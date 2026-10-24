@@ -5,6 +5,7 @@ from sqlmodel import Session, col, delete, or_, select
 
 from app.domain.entities.project import Epic, ProjectSettings, StoredProject, Version
 from app.infrastructure.persistence.models import EpicRow, ProjectRow, VersionRow
+from app.infrastructure.persistence.settings_codec import settings_from_json, settings_to_json
 
 
 def _now() -> datetime:
@@ -18,26 +19,6 @@ def _aware(value: datetime) -> datetime:
 
 def _new_id() -> str:
     return str(uuid.uuid4())
-
-
-def _settings_to_json(settings: ProjectSettings) -> dict[str, object]:
-    return {
-        "disabled_rules": list(settings.disabled_rules),
-        "penalties": settings.penalties,
-        "not_ready_below": settings.not_ready_below,
-        "ready_from": settings.ready_from,
-    }
-
-
-def _settings_from_json(raw: dict[str, object]) -> ProjectSettings:
-    defaults = ProjectSettings()
-    penalties = raw.get("penalties")
-    return ProjectSettings(
-        disabled_rules=tuple(raw.get("disabled_rules", ())),  # type: ignore[call-overload]
-        penalties=dict(penalties) if isinstance(penalties, dict) else None,
-        not_ready_below=int(raw.get("not_ready_below", defaults.not_ready_below)),  # type: ignore[call-overload]
-        ready_from=int(raw.get("ready_from", defaults.ready_from)),  # type: ignore[call-overload]
-    )
 
 
 class SqlProjectRepository:
@@ -57,7 +38,7 @@ class SqlProjectRepository:
             name=name,
             description=description,
             objective=objective,
-            settings=_settings_to_json(ProjectSettings()),
+            settings=settings_to_json(ProjectSettings()),
             is_demo=is_demo,
             owner_id=owner_id,
             created_at=_now(),
@@ -102,7 +83,7 @@ class SqlProjectRepository:
         if objective is not None:
             row.objective = objective
         if settings is not None:
-            row.settings = _settings_to_json(settings)
+            row.settings = settings_to_json(settings)
         self._session.add(row)
         self._session.commit()
         return self._project(row)
@@ -156,7 +137,7 @@ class SqlProjectRepository:
             name=row.name,
             description=row.description,
             objective=row.objective,
-            settings=_settings_from_json(row.settings),
+            settings=settings_from_json(row.settings),
             is_demo=row.is_demo,
             owner_id=row.owner_id,
             created_at=_aware(row.created_at),

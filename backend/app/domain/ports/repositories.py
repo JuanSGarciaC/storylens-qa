@@ -4,6 +4,7 @@ from app.domain.entities import (
     AIStatus,
     Decision,
     Finding,
+    ProjectSettings,
     QATestCase,
     StoredAnalysis,
     StoredStory,
@@ -40,6 +41,7 @@ class StoryRepository(Protocol):
         catalog_version: str,
         model_name: str | None = None,
         prompt_version: str | None = None,
+        settings: ProjectSettings | None = None,
     ) -> StoredAnalysis: ...
 
     def get_analysis(self, analysis_id: str) -> StoredAnalysis | None: ...

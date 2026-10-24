@@ -1,7 +1,7 @@
 from app.application.analyze_story import analyze_story
 from app.application.errors import NotFoundError
 from app.application.projects import InvalidProjectError, require_project
-from app.domain.entities import Decision, StoredAnalysis, StoredStory, Story
+from app.domain.entities import Decision, ProjectSettings, StoredAnalysis, StoredStory, Story
 from app.domain.ports import LLMPort, ProjectRepository, StoryRepository
 from app.domain.ports.sessions import EvidenceStorage, SessionRepository
 
@@ -32,13 +32,17 @@ def create_story(
 
 
 def run_analysis(
-    repo: StoryRepository, story_id: str, llm: LLMPort | None = None, use_ai: bool = False
+    repo: StoryRepository,
+    story_id: str,
+    llm: LLMPort | None = None,
+    use_ai: bool = False,
+    settings: ProjectSettings | None = None,
 ) -> StoredAnalysis:
     """Analiza la historia guardada y persiste el resultado como un análisis nuevo."""
     stored = repo.get_story(story_id)
     if stored is None:
         raise NotFoundError(f"Historia {story_id} no encontrada")
-    result = analyze_story(stored.story, llm=llm, use_ai=use_ai)
+    result = analyze_story(stored.story, llm=llm, use_ai=use_ai, settings=settings)
     return repo.add_analysis(
         story_id=story_id,
         findings=result.findings,
@@ -46,6 +50,7 @@ def run_analysis(
         catalog_version=result.catalog_version,
         model_name=result.model_name,
         prompt_version=result.prompt_version,
+        settings=settings,
     )
 
 

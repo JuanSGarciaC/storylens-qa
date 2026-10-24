@@ -41,3 +41,38 @@ def test_dismissed_findings_do_not_penalize():
 
 def test_score_never_below_zero():
     assert calculate_score([finding(Severity.BLOCKING)] * 5).value == 0
+
+
+def test_custom_thresholds_change_the_verdict():
+    from app.domain.entities import ProjectSettings
+
+    findings = [finding(Severity.MAJOR), finding(Severity.MAJOR), finding(Severity.MINOR)]  # 76
+
+    default = calculate_score(findings)
+    relaxed = calculate_score(findings, ProjectSettings(ready_from=70))
+    strict = calculate_score(findings, ProjectSettings(not_ready_below=80, ready_from=95))
+
+    assert (default.value, default.verdict) == (76, Verdict.READY_WITH_NOTES)
+    assert (relaxed.value, relaxed.verdict) == (76, Verdict.READY)
+    assert (strict.value, strict.verdict) == (76, Verdict.NOT_READY)
+
+
+def test_blocking_finding_still_not_ready_with_relaxed_thresholds():
+    from app.domain.entities import ProjectSettings
+
+    score = calculate_score(
+        [finding(Severity.BLOCKING)], ProjectSettings(not_ready_below=0, ready_from=1)
+    )
+
+    assert score.value == 70
+    assert score.verdict == Verdict.NOT_READY
+
+
+def test_custom_penalties_override_only_the_given_severities():
+    from app.domain.entities import ProjectSettings
+
+    settings = ProjectSettings(penalties={"major": 20})
+
+    score = calculate_score([finding(Severity.MAJOR), finding(Severity.MINOR)], settings)
+
+    assert score.value == 100 - 20 - 4

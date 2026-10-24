@@ -36,13 +36,13 @@ def test_patch_settings_persists_thresholds(client: TestClient) -> None:
 
     response = client.patch(
         f"/api/v1/projects/{project['id']}",
-        json={"settings": {"ready_from": 90, "disabled_rules": ["R-004"]}},
+        json={"settings": {"ready_from": 90, "disabled_rules": ["US-AMB-001"]}},
     )
 
     assert response.status_code == 200
     settings = client.get(f"/api/v1/projects/{project['id']}").json()["settings"]
     assert settings["ready_from"] == 90
-    assert settings["disabled_rules"] == ["R-004"]
+    assert settings["disabled_rules"] == ["US-AMB-001"]
     assert settings["not_ready_below"] == 60
 
 

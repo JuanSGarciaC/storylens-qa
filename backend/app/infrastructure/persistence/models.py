@@ -79,6 +79,9 @@ class AnalysisRow(SQLModel, table=True):
     model_name: str | None = None
     prompt_version: str | None = None
     catalog_version: str
+    settings_snapshot: dict[str, Any] = Field(
+        default_factory=dict, sa_column=Column(JSON, nullable=False)
+    )
     created_at: datetime
 
 

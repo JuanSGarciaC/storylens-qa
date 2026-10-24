@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from app.domain.entities.finding import AIStatus, Finding
+from app.domain.entities.project import ProjectSettings
 from app.domain.entities.story import Story
 
 
@@ -25,6 +26,8 @@ class StoredAnalysis:
     created_at: datetime
     model_name: str | None = None
     prompt_version: str | None = None
+    # Configuración con la que se calculó: así el historial no cambia si luego se edita.
+    settings: ProjectSettings = ProjectSettings()
 
     @property
     def used_ai(self) -> bool:

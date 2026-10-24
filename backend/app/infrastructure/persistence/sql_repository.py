@@ -10,6 +10,7 @@ from app.domain.entities import (
     Decision,
     Finding,
     Priority,
+    ProjectSettings,
     QATestCase,
     Severity,
     Source,
@@ -19,6 +20,7 @@ from app.domain.entities import (
     Technique,
 )
 from app.infrastructure.persistence.models import AnalysisRow, CaseRow, FindingRow, StoryRow
+from app.infrastructure.persistence.settings_codec import settings_from_json, settings_to_json
 
 
 def _now() -> datetime:
@@ -102,6 +104,7 @@ class SqlStoryRepository:
         catalog_version: str,
         model_name: str | None = None,
         prompt_version: str | None = None,
+        settings: ProjectSettings | None = None,
     ) -> StoredAnalysis:
         analysis = AnalysisRow(
             id=_new_id(),
@@ -110,6 +113,7 @@ class SqlStoryRepository:
             model_name=model_name,
             prompt_version=prompt_version,
             catalog_version=catalog_version,
+            settings_snapshot=settings_to_json(settings or ProjectSettings()),
             created_at=_now(),
         )
         self._session.add(analysis)
@@ -297,4 +301,5 @@ class SqlStoryRepository:
             created_at=_aware(row.created_at),
             model_name=row.model_name,
             prompt_version=row.prompt_version,
+            settings=settings_from_json(row.settings_snapshot),
         )

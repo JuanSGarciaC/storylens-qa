@@ -1,8 +1,9 @@
 from app.application.errors import NotFoundError
-from app.domain.entities import Epic, ProjectSettings, StoredProject, Version
+from app.domain.entities import Epic, ProjectSettings, Severity, StoredProject, Version
 from app.domain.ports import StoryRepository
 from app.domain.ports.projects import ProjectRepository
 from app.domain.ports.sessions import EvidenceStorage, SessionRepository
+from app.domain.rules.catalog import load_catalog
 
 MAX_NAME_CHARS = 120
 
@@ -31,6 +32,20 @@ def create_project(
     return repo.add_project(owner_id, _clean_name(name), description.strip(), objective.strip())
 
 
+def validate_settings(settings: ProjectSettings) -> None:
+    """Rechaza configuraciones incoherentes antes de guardarlas."""
+    if not 0 <= settings.not_ready_below < settings.ready_from <= 100:
+        raise InvalidProjectError("Los umbrales deben cumplir 0 <= no lista < lista <= 100")
+    known_rules = {rule.id for rule in load_catalog().rules}
+    unknown = sorted(set(settings.disabled_rules) - known_rules)
+    if unknown:
+        raise InvalidProjectError(f"Reglas desconocidas: {', '.join(unknown)}")
+    severities = {severity.value for severity in Severity}
+    for name, weight in (settings.penalties or {}).items():
+        if name not in severities or weight < 0:
+            raise InvalidProjectError(f"Penalización no válida para '{name}'")
+
+
 def update_project(
     repo: ProjectRepository,
     project_id: str,
@@ -41,6 +56,8 @@ def update_project(
     settings: ProjectSettings | None = None,
 ) -> StoredProject:
     require_project(repo, project_id)
+    if settings is not None:
+        validate_settings(settings)
     updated = repo.update_project(
         project_id,
         name=_clean_name(name) if name is not None else None,

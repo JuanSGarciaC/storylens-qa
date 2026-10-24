@@ -82,13 +82,16 @@ def create_analysis(
     story_id: str,
     repo: Repository,
     llm: LLM,
+    projects: Projects,
     audit: Audit,
     actor: Actor,
     payload: AnalysisRequest | None = None,
 ) -> AnalysisOut:
     use_ai = payload.use_ai if payload else True
-    analysis = stories.run_analysis(repo, story_id, llm=llm, use_ai=use_ai)
     stored = repo.get_story(story_id)
+    project = projects.get_project(stored.project_id) if stored is not None else None
+    settings = project.settings if project is not None else None
+    analysis = stories.run_analysis(repo, story_id, llm=llm, use_ai=use_ai, settings=settings)
     if stored is not None:
         audit.record(actor, "analysis.run", "analysis", analysis.id, stored.project_id)
     return analysis_out(analysis)
