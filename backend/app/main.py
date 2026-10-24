@@ -1,12 +1,13 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlmodel import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.api.access import enforce_access
 from app.api.problems import problem
 from app.api.routers import (
     analysis,
@@ -20,6 +21,7 @@ from app.api.routers import (
     test_design,
 )
 from app.application.auth import LoginThrottle, ensure_owner
+from app.application.errors import ForbiddenError, NotAuthenticatedError
 from app.application.projects import InvalidProjectError
 from app.application.qa_sessions import ConflictError, InvalidSessionDataError
 from app.application.stories import InvalidDecisionError, NotFoundError
@@ -45,7 +47,12 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title="StoryLens QA API", version="0.4.0", lifespan=lifespan)
+    app = FastAPI(
+        title="StoryLens QA API",
+        version="0.4.0",
+        lifespan=lifespan,
+        dependencies=[Depends(enforce_access)],
+    )
     app.state.login_throttle = LoginThrottle()
     app.add_middleware(
         CORSMiddleware,
@@ -65,6 +72,14 @@ def create_app() -> FastAPI:
     @app.exception_handler(InvalidDecisionError)
     async def invalid_decision(_: Request, exc: InvalidDecisionError) -> JSONResponse:
         return problem(422, "Decisión no válida", str(exc))
+
+    @app.exception_handler(NotAuthenticatedError)
+    async def not_authenticated(_: Request, exc: NotAuthenticatedError) -> JSONResponse:
+        return problem(401, "Sesión requerida", str(exc))
+
+    @app.exception_handler(ForbiddenError)
+    async def forbidden(_: Request, exc: ForbiddenError) -> JSONResponse:
+        return problem(403, "Acción no permitida", str(exc))
 
     @app.exception_handler(InvalidProjectError)
     async def invalid_project(_: Request, exc: InvalidProjectError) -> JSONResponse:

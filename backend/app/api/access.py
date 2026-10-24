@@ -1,35 +1,53 @@
-import time
-from dataclasses import dataclass
-from typing import Annotated
+from fastapi import Request
 
-from fastapi import Depends, Request
+from app.api.deps import Projects, Resolver
+from app.api.principal import CurrentPrincipal
+from app.application.errors import ForbiddenError, NotAuthenticatedError, NotFoundError
 
-from app.api.deps import Users
-from app.config import get_settings
-from app.domain.auth import read_session
-
-SESSION_COOKIE = "storylens_session"
-
-
-@dataclass(frozen=True)
-class Principal:
-    user_id: str | None = None
-    email: str | None = None
-
-    @property
-    def is_owner(self) -> bool:
-        return self.user_id is not None
-
-
-def get_principal(request: Request, users: Users) -> Principal:
-    """Quién hace la petición. Cualquier cookie inválida cuenta como anónimo."""
-    secret = get_settings().session_secret
-    token = request.cookies.get(SESSION_COOKIE)
-    if not secret or not token:
-        return Principal()
-    user_id = read_session(token, secret, time.time())
-    user = users.get_by_id(user_id) if user_id else None
-    return Principal(user.id, user.email) if user else Principal()
+# Rutas (sin el prefijo /api/v1) que cualquiera puede usar: no guardan nada ni usan IA.
+PUBLIC_PATHS = frozenset(
+    {
+        "/health",
+        "/rules",
+        "/analyze",
+        "/auth/login",
+        "/auth/logout",
+        "/auth/me",
+    }
+)
+LIST_PROJECTS_PATH = "/projects"
+SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
+DEMO_READ_ONLY = "El proyecto de demostración es de solo lectura"
 
 
-CurrentPrincipal = Annotated[Principal, Depends(get_principal)]
+def enforce_access(
+    request: Request, principal: CurrentPrincipal, projects: Projects, resolver: Resolver
+) -> None:
+    """Regla única de acceso para todas las rutas.
+
+    Escribir exige ser el dueño y que el proyecto no sea la demo. Leer exige que el proyecto sea
+    la demo o del dueño; si no, 404 para no revelar que existe.
+    """
+    # FastAPI registra las rutas incluidas sin el prefijo; /health sí lo lleva.
+    template = getattr(request.scope.get("route"), "path", request.url.path)
+    template = template.removeprefix("/api/v1")
+    if template in PUBLIC_PATHS:
+        return
+    is_write = request.method not in SAFE_METHODS
+    if is_write and not principal.is_owner:
+        raise NotAuthenticatedError("Inicia sesión para hacer cambios")
+
+    project_id = resolver.project_of(request.path_params)
+    project = projects.get_project(project_id) if project_id else None
+    if project is None:
+        # Recurso inexistente: la ruta responde 404 al dueño; el anónimo nunca llega a saberlo.
+        if principal.is_owner or template == LIST_PROJECTS_PATH:
+            return
+        raise NotFoundError("Recurso no encontrado")
+    if project.is_demo:
+        if is_write:
+            raise ForbiddenError(DEMO_READ_ONLY)
+        return
+    if principal.is_owner and project.owner_id == principal.user_id:
+        return
+    raise NotFoundError("Recurso no encontrado")

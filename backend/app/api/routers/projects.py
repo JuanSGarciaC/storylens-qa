@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Response, status
 
 from app.api.deps import Actor, Audit, Projects, Repository, Sessions, Storage
+from app.api.principal import CurrentPrincipal
 from app.api.schemas.project import (
     NamedIn,
     NamedOut,
@@ -13,9 +14,6 @@ from app.application import projects as uc
 from app.domain.entities import Epic, ProjectSettings, StoredProject, Version
 
 router = APIRouter(tags=["projects"])
-
-# Provisional: la cuenta de dueño llega con la sesión (Tarea 5); hasta entonces todo es del "dueño".
-OWNER_PLACEHOLDER = "owner"
 
 
 def _project_out(project: StoredProject) -> ProjectOut:
@@ -42,18 +40,22 @@ def _named_out(item: Epic | Version) -> NamedOut:
 
 @router.post("/projects", response_model=ProjectOut, status_code=status.HTTP_201_CREATED)
 def create_project(
-    payload: ProjectIn, projects: Projects, audit: Audit, actor: Actor
+    payload: ProjectIn,
+    projects: Projects,
+    audit: Audit,
+    actor: Actor,
+    principal: CurrentPrincipal,
 ) -> ProjectOut:
     project = uc.create_project(
-        projects, OWNER_PLACEHOLDER, payload.name, payload.description, payload.objective
+        projects, principal.user_id, payload.name, payload.description, payload.objective
     )
     audit.record(actor, "project.created", "project", project.id, project.id, project.name)
     return _project_out(project)
 
 
 @router.get("/projects", response_model=list[ProjectOut])
-def list_projects(projects: Projects) -> list[ProjectOut]:
-    return [_project_out(p) for p in projects.list_projects(OWNER_PLACEHOLDER)]
+def list_projects(projects: Projects, principal: CurrentPrincipal) -> list[ProjectOut]:
+    return [_project_out(p) for p in projects.list_projects(principal.user_id)]
 
 
 @router.get("/projects/{project_id}", response_model=ProjectOut)

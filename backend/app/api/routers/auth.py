@@ -2,8 +2,7 @@ import time
 
 from fastapi import APIRouter, Request, Response, status
 
-from app.api.access import SESSION_COOKIE, CurrentPrincipal
-from app.api.deps import Users
+from app.api.principal import SESSION_COOKIE, CurrentPrincipal, Users
 from app.api.problems import problem
 from app.api.schemas.auth import LoginIn, MeOut
 from app.application.auth import LoginThrottle, authenticate
