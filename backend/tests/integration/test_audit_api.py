@@ -31,7 +31,7 @@ def test_creating_project_and_story_records_events(client: TestClient) -> None:
     assert [e["action"] for e in events] == ["story.created", "project.created"]
     assert events[0]["entity"] == "story" and events[0]["entity_id"] == story_id
     assert events[1]["entity_id"] == project
-    assert all(e["project_id"] == project and e["actor"] == "sistema" for e in events)
+    assert all(e["project_id"] == project and e["actor"] == "owner@test.local" for e in events)
 
 
 def test_audit_pagination_returns_newest_first(client: TestClient) -> None:

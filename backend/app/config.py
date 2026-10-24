@@ -14,6 +14,13 @@ class Settings(BaseSettings):
     evidence_dir: str = "./storage/evidence"
     max_evidence_mb: int = 5
 
+    # Cuenta del dueño y sesión. Sin estos valores no hay dueño: solo se ve la demo.
+    owner_email: str | None = None
+    owner_password: str | None = Field(default=None, repr=False)
+    session_secret: str | None = Field(default=None, repr=False)
+    session_ttl_hours: int = 12
+    cookie_secure: bool = False
+
     # Nunca se registra ni se expone.
     gemini_api_key: str | None = Field(default=None, repr=False)
     gemini_model: str | None = None

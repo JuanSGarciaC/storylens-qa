@@ -5,6 +5,15 @@ from sqlalchemy import JSON, Column
 from sqlmodel import Field, SQLModel
 
 
+class UserRow(SQLModel, table=True):
+    __tablename__ = "app_user"
+
+    id: str = Field(primary_key=True)
+    email: str = Field(unique=True, index=True)
+    password_hash: str
+    created_at: datetime
+
+
 class ProjectRow(SQLModel, table=True):
     __tablename__ = "project"
 

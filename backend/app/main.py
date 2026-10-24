@@ -4,11 +4,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlmodel import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.api.problems import problem
 from app.api.routers import (
     analysis,
     audit,
+    auth,
     findings,
     projects,
     qa_sessions,
@@ -16,6 +19,7 @@ from app.api.routers import (
     story_import,
     test_design,
 )
+from app.application.auth import LoginThrottle, ensure_owner
 from app.application.projects import InvalidProjectError
 from app.application.qa_sessions import ConflictError, InvalidSessionDataError
 from app.application.stories import InvalidDecisionError, NotFoundError
@@ -26,24 +30,23 @@ from app.application.test_design import (
 )
 from app.config import get_settings
 from app.domain.story_import import ImportFormatError
-from app.infrastructure.persistence.database import init_db
-
-
-def problem(status_code: int, title: str, detail: str | None = None) -> JSONResponse:
-    """Respuesta de error en formato Problem Details (RFC 9457)."""
-    body = {"type": "about:blank", "title": title, "status": status_code, "detail": detail or title}
-    return JSONResponse(body, status_code=status_code, media_type="application/problem+json")
+from app.infrastructure.persistence.database import get_engine, init_db
+from app.infrastructure.persistence.sql_users import SqlUserRepository
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     init_db()
+    settings = get_settings()
+    with Session(get_engine()) as session:
+        ensure_owner(SqlUserRepository(session), settings.owner_email, settings.owner_password)
     yield
 
 
 def create_app() -> FastAPI:
     settings = get_settings()
     app = FastAPI(title="StoryLens QA API", version="0.4.0", lifespan=lifespan)
+    app.state.login_throttle = LoginThrottle()
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
@@ -109,6 +112,7 @@ def create_app() -> FastAPI:
     def health() -> dict[str, object]:
         return {"status": "ok", "ai_configured": settings.ai_configured}
 
+    app.include_router(auth.router, prefix="/api/v1")
     app.include_router(projects.router, prefix="/api/v1")
     app.include_router(audit.router, prefix="/api/v1")
     app.include_router(analysis.router, prefix="/api/v1")

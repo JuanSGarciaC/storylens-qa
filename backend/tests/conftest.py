@@ -41,6 +41,11 @@ def _never_call_real_gemini(monkeypatch: pytest.MonkeyPatch):
     """Ninguna prueba puede usar la clave real de backend/.env ni gastar cuota."""
     monkeypatch.setenv("GEMINI_API_KEY", "")
     monkeypatch.setenv("GEMINI_MODEL", "")
+    monkeypatch.setenv("OWNER_EMAIL", "owner@test.local")
+    monkeypatch.setenv("OWNER_PASSWORD", "test-pass-123")
+    monkeypatch.setenv("SESSION_SECRET", "test-secret")
+    # scrypt barato: en producción se usa 2**14; aquí solo importa que el flujo funcione.
+    monkeypatch.setattr("app.domain.auth._SCRYPT_N", 16)
     get_settings.cache_clear()
     build_llm.cache_clear()
     yield

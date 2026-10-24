@@ -23,8 +23,10 @@ from app.domain.entities.test_case import (
     QATestCase,
     Technique,
 )
+from app.domain.entities.user import StoredUser
 
 __all__ = [
+    "StoredUser",
     "Epic",
     "ProjectSettings",
     "StoredProject",
