@@ -157,3 +157,90 @@
   padding: 0;
   margin: 0;
 }
+
+/* Módulo 2: historias e importación. */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: flex-end;
+}
+.filters .field input,
+.filters .field select {
+  padding: 0.5rem 0.75rem;
+  color: var(--fg);
+  background: transparent;
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius);
+  font: inherit;
+}
+.table-wrap {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th,
+.table td {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line);
+}
+.table th {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.table .table__num {
+  text-align: right;
+  white-space: nowrap;
+}
+.table .table__id {
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.import summary {
+  cursor: pointer;
+  font-weight: 500;
+}
+.mapping {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.import-rows {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.import-rows li {
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+.import-rows li.disabled {
+  color: var(--muted);
+}
+.import-rows__check {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+.import-rows__text {
+  display: grid;
+  gap: var(--space-1);
+}
+.import-rows__problem {
+  color: var(--danger);
+  font-size: 0.875rem;
+}

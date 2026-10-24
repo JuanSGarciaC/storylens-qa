@@ -102,7 +102,9 @@ export function ProjectProvider({
 
   // Ref para que `setProject` sea estable y descarte respuestas de otro proyecto.
   const currentId = useRef(projectId);
-  currentId.current = projectId;
+  useEffect(() => {
+    currentId.current = projectId;
+  }, [projectId]);
   const setProject = useCallback((project: Project) => {
     if (project.id !== currentId.current) return;
     setLoaded({ id: project.id, project, status: "ready", error: "" });

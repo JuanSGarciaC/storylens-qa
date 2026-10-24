@@ -1,4 +1,6 @@
 import { useState, type ChangeEvent } from "react";
+import { Button } from "../../shared/ui/Button";
+import { Field } from "../../shared/ui/Field";
 import {
   confirmImport,
   previewImport,
@@ -60,6 +62,8 @@ export function ImportPanel({ projectId, busy, onImported, run }: Props) {
 
   const chosenRows =
     preview?.rows.filter((r) => r.importable && !skipped.has(r.index)) ?? [];
+  const validCount = preview?.rows.filter((r) => r.importable).length ?? 0;
+  const invalidCount = (preview?.rows.length ?? 0) - validCount;
 
   function handleImport() {
     if (!file || !mapping) return;
@@ -77,28 +81,26 @@ export function ImportPanel({ projectId, busy, onImported, run }: Props) {
   }
 
   return (
-    <details className="card import">
+    <details className="panel import">
       <summary>Importar historias desde Jira (CSV o JSON)</summary>
       <p className="hint">
         Exporta tus incidencias de Jira y súbelas aquí. Verás una vista previa
         antes de crear nada.
       </p>
-      <label>
-        Archivo de Jira (.csv o .json, máximo 1 MB)
+      <Field label="Archivo de Jira (.csv o .json, máximo 1 MB)">
         <input
           type="file"
           accept=".csv,.json,text/csv,application/json"
           onChange={handleFile}
         />
-      </label>
+      </Field>
 
       {preview && mapping && (
         <>
           <fieldset className="mapping">
             <legend>Mapeo de columnas</legend>
             {Object.keys(FIELD_LABEL).map((field) => (
-              <label key={field}>
-                {FIELD_LABEL[field]}
+              <Field key={field} label={FIELD_LABEL[field]}>
                 <select
                   value={mapping[field] ?? ""}
                   onChange={(e) => handleMapping(field, e.target.value)}
@@ -111,16 +113,21 @@ export function ImportPanel({ projectId, busy, onImported, run }: Props) {
                     </option>
                   ))}
                 </select>
-              </label>
+              </Field>
             ))}
           </fieldset>
 
           {preview.truncated && (
-            <p className="notice warn">
+            <p className="notice">
               El archivo tiene más de 200 filas: solo se muestran las primeras
               200.
             </p>
           )}
+
+          <p className="hint">
+            {validCount} {validCount === 1 ? "válida" : "válidas"} ·{" "}
+            {invalidCount} {invalidCount === 1 ? "inválida" : "inválidas"}
+          </p>
 
           <ul
             className="import-rows"
@@ -128,7 +135,7 @@ export function ImportPanel({ projectId, busy, onImported, run }: Props) {
           >
             {preview.rows.map((row) => (
               <li key={row.index} className={row.importable ? "" : "disabled"}>
-                <label className="check">
+                <label className="import-rows__check">
                   <input
                     type="checkbox"
                     disabled={!row.importable}
@@ -136,9 +143,11 @@ export function ImportPanel({ projectId, busy, onImported, run }: Props) {
                     onChange={() => toggle(row.index)}
                     aria-label={`Importar fila ${row.index}`}
                   />
-                  <span>
-                    <strong>{row.title || "(sin título)"}</strong>
-                    {row.key && <span className="chip">{row.key}</span>}
+                  <span className="import-rows__text">
+                    <span>
+                      <strong>{row.title || "(sin título)"}</strong>
+                      {row.key && <span className="mono"> {row.key}</span>}
+                    </span>
                     <span className="hint">
                       {row.acceptance_criteria.length} criterios ·{" "}
                       {row.description.slice(0, 120) || "sin descripción"}
@@ -149,7 +158,7 @@ export function ImportPanel({ projectId, busy, onImported, run }: Props) {
                       </span>
                     )}
                     {row.issues.map((issue) => (
-                      <span key={issue} className="hint problem">
+                      <span key={issue} className="import-rows__problem">
                         {issue}: no se puede importar.
                       </span>
                     ))}
@@ -159,13 +168,14 @@ export function ImportPanel({ projectId, busy, onImported, run }: Props) {
             ))}
           </ul>
 
-          <button
-            type="button"
-            onClick={handleImport}
-            disabled={busy || chosenRows.length === 0}
-          >
-            {`Importar ${chosenRows.length} ${chosenRows.length === 1 ? "historia" : "historias"}`}
-          </button>
+          <div>
+            <Button
+              onClick={handleImport}
+              disabled={busy || chosenRows.length === 0}
+            >
+              {`Importar ${chosenRows.length} ${chosenRows.length === 1 ? "historia" : "historias"}`}
+            </Button>
+          </div>
         </>
       )}
     </details>

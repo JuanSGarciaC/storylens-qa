@@ -15,7 +15,7 @@ import {
 } from "../api/client";
 import { AnalysisResult } from "../features/analysis/AnalysisResult";
 import { StoryForm } from "../features/analysis/StoryForm";
-import { ImportPanel } from "../features/import/ImportPanel";
+import { ImportPanel } from "../features/stories/ImportPanel";
 import { QASessionPanel } from "../features/qa-session/QASessionPanel";
 import { TestDesignPanel } from "../features/test-design/TestDesignPanel";
 import { StoryHistory } from "../features/stories/StoryHistory";
