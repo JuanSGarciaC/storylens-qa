@@ -1,9 +1,10 @@
 import { useState, type ChangeEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../shared/ui/Button";
 import { Field } from "../../shared/ui/Field";
 import {
-  confirmImport,
   previewImport,
+  startImportJob,
   type ImportMapping,
   type ImportPreview,
 } from "../../api/client";
@@ -11,7 +12,8 @@ import {
 interface Props {
   projectId: string;
   busy: boolean;
-  onImported: (count: number) => void | Promise<void>;
+  /** La IA solo se ofrece si el dueño la tiene disponible. */
+  canUseAi: boolean;
   /** Ejecuta la acción mostrando carga y errores de la app. */
   run: (action: () => Promise<void>) => Promise<void>;
 }
@@ -23,7 +25,9 @@ const FIELD_LABEL: Record<string, string> = {
   key: "Clave (Jira)",
 };
 
-export function ImportPanel({ projectId, busy, onImported, run }: Props) {
+export function ImportPanel({ projectId, busy, canUseAi, run }: Props) {
+  const navigate = useNavigate();
+  const [useAi, setUseAi] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [mapping, setMapping] = useState<ImportMapping | null>(null);
@@ -68,15 +72,16 @@ export function ImportPanel({ projectId, busy, onImported, run }: Props) {
   function handleImport() {
     if (!file || !mapping) return;
     void run(async () => {
-      const result = await confirmImport(
+      const job = await startImportJob(
         projectId,
         file,
         mapping,
         chosenRows.map((r) => r.index),
+        canUseAi && useAi,
       );
       setPreview(null);
       setFile(null);
-      await onImported(result.created.length);
+      navigate(`/p/${projectId}/imports/${job.id}`);
     });
   }
 
@@ -84,8 +89,9 @@ export function ImportPanel({ projectId, busy, onImported, run }: Props) {
     <details className="panel import">
       <summary>Importar historias desde Jira (CSV o JSON)</summary>
       <p className="hint">
-        Exporta tus incidencias de Jira y súbelas aquí. Verás una vista previa
-        antes de crear nada.
+        Exporta tus incidencias de Jira y súbelas aquí (hasta 500 historias).
+        Verás una vista previa antes de crear nada y después el avance de la
+        importación.
       </p>
       <Field label="Archivo de Jira (.csv o .json, máximo 1 MB)">
         <input
@@ -119,8 +125,8 @@ export function ImportPanel({ projectId, busy, onImported, run }: Props) {
 
           {preview.truncated && (
             <p className="notice">
-              El archivo tiene más de 200 filas: solo se muestran las primeras
-              200.
+              El archivo tiene más de 500 filas: divídelo en partes, porque una
+              importación admite hasta 500 historias.
             </p>
           )}
 
@@ -168,6 +174,17 @@ export function ImportPanel({ projectId, busy, onImported, run }: Props) {
             ))}
           </ul>
 
+          {canUseAi && (
+            <label className="import-ai">
+              <input
+                type="checkbox"
+                checked={useAi}
+                onChange={(e) => setUseAi(e.target.checked)}
+              />{" "}
+              Analizar también con IA mientras haya cuota (si se agota, el resto
+              se analiza solo con reglas)
+            </label>
+          )}
           <div>
             <Button
               onClick={handleImport}

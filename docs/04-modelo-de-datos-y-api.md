@@ -77,6 +77,9 @@ erDiagram
 | POST/GET | `/projects/{id}/epics`, `/projects/{id}/versions` | Épicas y versiones |
 | POST/GET | `/projects/{id}/stories` | Crear / listar (`?epic_id=&version_id=`) |
 | POST | `/projects/{id}/stories/import`, `/projects/{id}/stories/import:confirm` | Importación con vista previa; los duplicados se detectan dentro del proyecto |
+| POST | `/projects/{id}/import-jobs` | Crea una importación en segundo plano (hasta 500 filas, `use_ai` opcional) → `202` con el trabajo |
+| GET | `/projects/{id}/import-jobs`, `/import-jobs/{job_id}` | Trabajos recientes; avance con filas paginadas (`limit`, `offset`, `status`) |
+| POST | `/import-jobs/{job_id}:retry`, `/import-jobs/{job_id}:cancel` | Reintenta filas fallidas o pendientes / cancela un trabajo activo. Ver ADR-006 |
 | GET | `/projects/{id}/audit?limit=&offset=` | Historial de acciones, el más reciente primero |
 | POST | `/auth/login`, `/auth/logout` · GET `/auth/me` | Sesión del dueño |
 

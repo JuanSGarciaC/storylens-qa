@@ -23,6 +23,9 @@ export type Defect = Schemas["DefectOut"];
 export type DefectUpdate = Schemas["DefectUpdate"];
 export type ImportPreview = Schemas["ImportPreviewOut"];
 export type ImportRow = Schemas["ImportRowOut"];
+export type ImportJob = Schemas["ImportJobOut"];
+export type ImportJobDetail = Schemas["ImportJobDetailOut"];
+export type ImportJobItem = Schemas["ImportItemOut"];
 export type ImportMapping = Record<string, string | null>;
 export type DefectDraftResult = Schemas["DefectDraftOut"];
 export type Project = Schemas["ProjectOut"];
@@ -318,11 +321,13 @@ function importForm(
   file: File,
   mapping: ImportMapping | null,
   selected?: number[],
+  useAi?: boolean,
 ) {
   const form = new FormData();
   form.append("file", file);
   if (mapping) form.append("mapping", JSON.stringify(mapping));
   if (selected) form.append("selected", JSON.stringify(selected));
+  if (useAi !== undefined) form.append("use_ai", String(useAi));
   return form;
 }
 
@@ -336,16 +341,36 @@ export const previewImport = (
     body: importForm(file, mapping),
   });
 
-export const confirmImport = (
+/** Crea la importación en segundo plano; el avance se consulta con `getImportJob`. */
+export const startImportJob = (
   projectId: string,
   file: File,
   mapping: ImportMapping | null,
   selected: number[],
+  useAi: boolean,
 ) =>
-  request<{ created: StoryItem[] }>(
-    `/projects/${enc(projectId)}/stories/import:confirm`,
-    {
-      method: "POST",
-      body: importForm(file, mapping, selected),
-    },
-  );
+  request<ImportJob>(`/projects/${enc(projectId)}/import-jobs`, {
+    method: "POST",
+    body: importForm(file, mapping, selected, useAi),
+  });
+
+export const listImportJobs = (projectId: string) =>
+  request<ImportJob[]>(`/projects/${enc(projectId)}/import-jobs`);
+
+export const getImportJob = (
+  jobId: string,
+  options: { limit?: number; offset?: number; status?: string } = {},
+) => {
+  const query = new URLSearchParams();
+  if (options.limit !== undefined) query.set("limit", String(options.limit));
+  if (options.offset !== undefined) query.set("offset", String(options.offset));
+  if (options.status) query.set("status", options.status);
+  const suffix = query.size ? `?${query}` : "";
+  return request<ImportJobDetail>(`/import-jobs/${enc(jobId)}${suffix}`);
+};
+
+export const retryImportJob = (jobId: string) =>
+  request<ImportJob>(`/import-jobs/${enc(jobId)}:retry`, { method: "POST" });
+
+export const cancelImportJob = (jobId: string) =>
+  request<ImportJob>(`/import-jobs/${enc(jobId)}:cancel`, { method: "POST" });

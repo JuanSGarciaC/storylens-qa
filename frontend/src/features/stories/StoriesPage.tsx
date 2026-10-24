@@ -12,6 +12,7 @@ import { ErrorNotice } from "../../shared/ui/ErrorNotice";
 import { Spinner } from "../../shared/ui/Spinner";
 import { classifyStory, type StoryState } from "../projects/classifyStory";
 import { ImportPanel } from "./ImportPanel";
+import { RecentImports } from "./RecentImports";
 import { StoryCreateForm } from "./StoryCreateForm";
 
 const PAGE_SIZE = 50;
@@ -172,13 +173,6 @@ export function StoriesPage() {
     });
   }
 
-  async function handleImported(count: number) {
-    data.set([await api.listStories(pid), epics, versions]);
-    setNotice(
-      `Se ${count === 1 ? "importó" : "importaron"} ${count} ${count === 1 ? "historia" : "historias"}.`,
-    );
-  }
-
   function change(patch: Partial<Filters>) {
     setFilters({ ...filters, ...patch });
     setLimit(PAGE_SIZE);
@@ -203,8 +197,9 @@ export function StoriesPage() {
         projectId={pid}
         busy={busy}
         run={run}
-        onImported={handleImported}
+        canUseAi={access.canUseAi}
       />
+      <RecentImports projectId={pid} />
     </>
   ) : (
     <p className="hint">{access.reason}</p>

@@ -197,7 +197,7 @@ describe("StoriesPage", () => {
     });
   });
 
-  it("importa un CSV con una fila inválida y confirma solo las válidas", async () => {
+  it("importa un CSV con una fila inválida: inicia el trabajo solo con las válidas y abre su avance", async () => {
     const preview = {
       format: "csv",
       headers: ["Summary", "Description"],
@@ -229,8 +229,8 @@ describe("StoriesPage", () => {
     const { calls } = setup([], {
       extra: ({ method, path }) => {
         if (path === "/projects/p1/stories/import") return json(preview);
-        if (path === "/projects/p1/stories/import:confirm" && method === "POST")
-          return json({ created: [story(1, { title: "Retirar" })] }, 201);
+        if (path === "/projects/p1/import-jobs" && method === "POST")
+          return json({ id: "j1", project_id: "p1" }, 202);
         return undefined;
       },
     });
@@ -253,8 +253,14 @@ describe("StoriesPage", () => {
       screen.getByRole("button", { name: "Importar 1 historia" }),
     );
     await waitFor(() =>
-      expect(calls.some((c) => c.path.endsWith("import:confirm"))).toBe(true),
+      expect(
+        calls.some(
+          (c) => c.method === "POST" && c.path.endsWith("/import-jobs"),
+        ),
+      ).toBe(true),
     );
-    expect(await screen.findByText("Se importó 1 historia.")).toBeVisible();
+    expect(await screen.findByTestId("where")).toHaveTextContent(
+      "/p/p1/imports/j1",
+    );
   });
 });
