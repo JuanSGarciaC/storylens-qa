@@ -1,3 +1,5 @@
+import { apiUrl } from "../../api/client";
+
 /** El backend rechaza imágenes de más de `max_evidence_mb` (1 MB = 1 000 000 bytes). */
 export const MAX_IMAGE_BYTES = 1_000_000;
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
@@ -34,9 +36,15 @@ export function imageError(file: File): string {
   return "";
 }
 
-/** Los archivos de evidencia solo se cargan desde el endpoint propio de la API. */
+/**
+ * Los archivos de evidencia solo se cargan desde el endpoint propio de la API.
+ * El backend entrega `/api/v1/evidences/<id>/file`; se reconstruye con la base
+ * configurada (`VITE_API_BASE_URL`, relativa o absoluta) y se descarta
+ * cualquier otra ruta u origen.
+ */
 export function evidenceFileUrl(value: string | null): string | null {
-  return value && /^\/api\/v1\/evidences\/[^/?#]+\/file$/.test(value)
-    ? value
-    : null;
+  const match = value?.match(
+    /^(?:https?:\/\/[^/?#]+)?\/api\/v1(\/evidences\/[^/?#]+\/file)$/,
+  );
+  return match ? apiUrl(match[1]) : null;
 }
