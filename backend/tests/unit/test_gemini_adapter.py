@@ -9,7 +9,7 @@ from app.infrastructure.llm.gemini import GeminiAdapter, _AnalysisDTO, _FindingD
 from tests.conftest import make_story
 
 AI_RULES = load_catalog().of_type("ai")
-SECRET = "AIzaSyFAKEKEYFORTESTING1234567890abcde"
+SECRET = "clave-falsa-solo-para-pruebas-0000"
 
 
 def ok_response(*rule_ids: str):

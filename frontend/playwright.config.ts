@@ -11,6 +11,7 @@ import { defineConfig } from "@playwright/test";
  *   CHROMIUM_PATH  ejecutable de Chromium/Chrome ya instalado (si no, el de Playwright)
  */
 const python = process.env.E2E_PYTHON ?? "python";
+// Valores de pruebas para una base desechable: no son credenciales de ningún entorno real.
 const backendEnv = {
   // Base nueva en cada corrida, en la carpeta temporal del sistema.
   DATABASE_URL: `sqlite:///${join(tmpdir(), `storylens-e2e-${Date.now()}.db`).replaceAll("\\", "/")}`,
