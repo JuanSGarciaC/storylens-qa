@@ -41,6 +41,10 @@ function stubApi(opts: { me?: unknown; health?: unknown } = {}) {
           title: own ? "Historia propia" : "Historia ajena",
         });
       }
+      if (url.endsWith("/stories/s1/test-cases")) return json([]);
+      if (url.endsWith("/stories/s1/traceability")) {
+        return json({ rows: [], unlinked_ids: [], coverage: 0 });
+      }
       if (url.endsWith("/projects/x")) {
         return json(makeProject({ id: "x", name: "Proyecto X" }));
       }

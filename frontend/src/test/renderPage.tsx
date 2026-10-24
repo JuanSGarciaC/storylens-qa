@@ -86,6 +86,10 @@ export function renderPage(page: ReactElement, options: { entry: string }) {
             path="/p/:projectId/stories/:storyId/analysis"
             element={<Scoped>{page}</Scoped>}
           />
+          <Route
+            path="/p/:projectId/stories/:storyId/tests"
+            element={<Scoped>{page}</Scoped>}
+          />
           <Route path="*" element={<div>otra ruta</div>} />
         </Routes>
         <Where />
