@@ -1,3 +1,5 @@
+import { apiUrl } from "../../api/client";
+
 interface Props {
   /** Ruta del reporte sin formato, p. ej. `/analyses/ID/report`. */
   path: string;
@@ -17,7 +19,7 @@ export function ReportLinks({ path, what }: Props) {
       {FORMATS.map(({ format, label }, index) => (
         <span key={format}>
           {index > 0 && " · "}
-          <a href={`/api/v1${path}?format=${format}`} download>
+          <a href={apiUrl(`${path}?format=${format}`)} download>
             {`Descargar ${what} (${label})`}
           </a>
         </span>

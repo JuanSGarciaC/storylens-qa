@@ -36,6 +36,9 @@ export type Recommendation = NonNullable<SessionDetail["recommendation"]>;
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api/v1";
 
+/** URL del API para enlaces de descarga; única fuente de la base. */
+export const apiUrl = (path: string): string => `${BASE_URL}${path}`;
+
 export class ApiError extends Error {
   constructor(
     message: string,
