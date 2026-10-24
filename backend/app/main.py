@@ -6,7 +6,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.api.routers import analysis, findings, qa_sessions, stories, story_import, test_design
+from app.api.routers import (
+    analysis,
+    findings,
+    projects,
+    qa_sessions,
+    stories,
+    story_import,
+    test_design,
+)
+from app.application.projects import InvalidProjectError
 from app.application.qa_sessions import ConflictError, InvalidSessionDataError
 from app.application.stories import InvalidDecisionError, NotFoundError
 from app.application.test_design import (
@@ -53,6 +62,10 @@ def create_app() -> FastAPI:
     async def invalid_decision(_: Request, exc: InvalidDecisionError) -> JSONResponse:
         return problem(422, "Decisión no válida", str(exc))
 
+    @app.exception_handler(InvalidProjectError)
+    async def invalid_project(_: Request, exc: InvalidProjectError) -> JSONResponse:
+        return problem(422, "Proyecto no válido", str(exc))
+
     @app.exception_handler(InvalidCaseError)
     async def invalid_case(_: Request, exc: InvalidCaseError) -> JSONResponse:
         return problem(422, "Caso de prueba no válido", str(exc))
@@ -95,6 +108,7 @@ def create_app() -> FastAPI:
     def health() -> dict[str, object]:
         return {"status": "ok", "ai_configured": settings.ai_configured}
 
+    app.include_router(projects.router, prefix="/api/v1")
     app.include_router(analysis.router, prefix="/api/v1")
     app.include_router(story_import.router, prefix="/api/v1")
     app.include_router(stories.router, prefix="/api/v1")
