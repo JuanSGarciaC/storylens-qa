@@ -22,9 +22,13 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [missing, setMissing] = useState({ email: false, password: false });
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    const next = { email: !email.trim(), password: !password };
+    setMissing(next);
+    if (next.email || next.password) return;
     setBusy(true);
     setError(null);
     try {
@@ -40,7 +44,10 @@ export function LoginPage() {
     <main className="login">
       <h1>Iniciar sesión</h1>
       <form onSubmit={onSubmit} noValidate>
-        <Field label="Correo electrónico">
+        <Field
+          label="Correo electrónico"
+          error={missing.email ? "Escribe tu correo electrónico." : undefined}
+        >
           <input
             type="email"
             autoComplete="username"
@@ -49,7 +56,10 @@ export function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </Field>
-        <Field label="Contraseña">
+        <Field
+          label="Contraseña"
+          error={missing.password ? "Escribe tu contraseña." : undefined}
+        >
           <input
             type="password"
             autoComplete="current-password"

@@ -116,4 +116,22 @@ describe("LoginPage", () => {
       "Demasiados intentos. Intenta de nuevo en 60 s.",
     );
   });
+
+  it("con campos vacíos muestra validación y no envía nada", async () => {
+    stubApi(() => json({ authenticated: true, email: "a@b.co" }));
+    await setup("/login");
+    const calls = () =>
+      (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.length;
+    const before = calls();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Iniciar sesión" }),
+    );
+    expect(screen.getByText("Escribe tu correo electrónico.")).toBeVisible();
+    expect(screen.getByText("Escribe tu contraseña.")).toBeVisible();
+    expect(screen.getByLabelText("Correo electrónico")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    expect(calls()).toBe(before);
+  });
 });

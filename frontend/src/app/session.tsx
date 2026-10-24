@@ -28,6 +28,8 @@ export type SessionValue = {
 };
 
 const WAKING_AFTER_MS = 4000;
+/** Una petición inicial sin respuesta tras este tiempo se aborta y se reintenta. */
+export const ATTEMPT_TIMEOUT_MS = 15000;
 const BACKOFF_MS = [1000, 2000, 4000];
 
 const SessionContext = createContext<SessionValue | null>(null);
@@ -39,7 +41,10 @@ export function useSession(): SessionValue {
 }
 
 function isConnectionProblem(error: unknown) {
-  return error instanceof api.ApiError && error.status === 0;
+  // Sin red, abortada por tiempo, o 5xx (el proxy de un host dormido responde 502/503).
+  return (
+    error instanceof api.ApiError && (error.status === 0 || error.status >= 500)
+  );
 }
 
 export function SessionProvider({ children }: { children: ReactNode }) {
@@ -51,6 +56,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [errorMessage, setErrorMessage] = useState("");
 
   const attemptRef = useRef<object | null>(null); // invalida intentos anteriores
+  const abortRef = useRef<AbortController | null>(null);
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const statusRef = useRef(status);
   useEffect(() => {
@@ -71,6 +77,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     (first: number) => {
       function run(autoRetries: number) {
         clearTimers();
+        abortRef.current?.abort();
+        const controller = new AbortController();
+        abortRef.current = controller;
         const attempt = {};
         attemptRef.current = attempt;
         const current = () => attempt === attemptRef.current;
@@ -79,12 +88,19 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             if (current()) setStatus("waking");
           }, WAKING_AFTER_MS),
         );
-        Promise.all([api.getMe(), api.getHealth()]).then(
+        timersRef.current.push(
+          setTimeout(() => controller.abort(), ATTEMPT_TIMEOUT_MS),
+        );
+        // /health es opcional: si falla, la IA se da por no configurada.
+        Promise.all([
+          api.getMe(controller.signal),
+          api.getHealth(controller.signal).catch(() => null),
+        ]).then(
           ([user, health]) => {
             if (!current()) return;
             clearTimers();
             setMe(user);
-            setAiConfigured(health.ai_configured);
+            setAiConfigured(health?.ai_configured ?? false);
             setStatus("ready");
           },
           (error: unknown) => {
@@ -119,6 +135,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     connect(0);
     return () => {
       attemptRef.current = null;
+      abortRef.current?.abort();
       clearTimers();
     };
   }, [connect, clearTimers]);

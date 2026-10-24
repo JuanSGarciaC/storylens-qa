@@ -104,7 +104,8 @@ export const login = (email: string, password: string) =>
 
 export const logout = () => request<void>("/auth/logout", { method: "POST" });
 
-export const getMe = () => request<Me>("/auth/me");
+export const getMe = (signal?: AbortSignal) =>
+  request<Me>("/auth/me", { signal });
 
 // --- proyectos ---
 export const listProjects = () => request<Project[]>("/projects");
@@ -174,7 +175,8 @@ export interface Health {
   ai_configured: boolean;
 }
 
-export const getHealth = () => request<Health>("/health");
+export const getHealth = (signal?: AbortSignal) =>
+  request<Health>("/health", { signal });
 
 export const getAnalysis = (analysisId: string) =>
   request<Analysis>(`/analyses/${analysisId}`);

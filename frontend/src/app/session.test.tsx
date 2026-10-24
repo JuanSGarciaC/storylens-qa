@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { listProjects, type Project } from "../api/client";
 import { makeMe, makeProject } from "../test/fakeApi";
 import { useAccess } from "../shared/useAccess";
-import { SessionProvider, useSession } from "./session";
+import { ATTEMPT_TIMEOUT_MS, SessionProvider, useSession } from "./session";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -81,6 +81,60 @@ describe("SessionProvider", () => {
     await act(() => vi.advanceTimersByTimeAsync(60000));
     expect(calls()).toBe(base * 4);
     expect(screen.getByText(/despertando/i)).toBeVisible();
+  });
+
+  it("un 503 inicial se trata como waking con reintento automático", async () => {
+    const fetchMock = vi.fn(async () => json({ detail: "caído" }, 503));
+    vi.stubGlobal("fetch", fetchMock);
+    renderApp();
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(screen.getByText(/despertando/i)).toBeVisible();
+    const base = fetchMock.mock.calls.length;
+    await act(() => vi.advanceTimersByTimeAsync(1000));
+    expect(fetchMock.mock.calls.length).toBe(base * 2);
+  });
+
+  it("un 4xx inicial sigue siendo error", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => json({ detail: "Prohibido" }, 403)),
+    );
+    renderApp();
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(screen.getByRole("alert")).toHaveTextContent("Prohibido");
+  });
+
+  it("si /health falla, la sesión sigue y la IA queda sin configurar", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) =>
+        url.endsWith("/health")
+          ? json({ detail: "x" }, 500)
+          : json({ authenticated: false }),
+      ),
+    );
+    renderApp();
+    await act(() => vi.advanceTimersByTimeAsync(0));
+    expect(screen.getByTestId("status")).toHaveTextContent("ready");
+  });
+
+  it("una petición colgada se aborta por tiempo y entra en backoff", async () => {
+    const fetchMock = vi.fn(
+      (_url: string, init?: RequestInit) =>
+        new Promise<Response>((_, reject) => {
+          init?.signal?.addEventListener("abort", () =>
+            reject(new DOMException("aborted", "AbortError")),
+          );
+        }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    renderApp();
+    await act(() => vi.advanceTimersByTimeAsync(ATTEMPT_TIMEOUT_MS - 1));
+    const base = fetchMock.mock.calls.length;
+    await act(() => vi.advanceTimersByTimeAsync(1));
+    expect(fetchMock.mock.calls.length).toBe(base);
+    await act(() => vi.advanceTimersByTimeAsync(1000));
+    expect(fetchMock.mock.calls.length).toBe(base * 2);
   });
 
   it("el botón Reintentar vuelve a intentar y llega a ready", async () => {
