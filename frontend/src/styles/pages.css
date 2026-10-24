@@ -1,4 +1,18 @@
 /* Pantallas del módulo 1: proyectos, resumen y configuración. */
+.page,
+.stack,
+.result,
+.panel,
+.execution {
+  grid-template-columns: minmax(0, 1fr);
+}
+.field {
+  min-width: 0;
+}
+.field input[type="file"] {
+  max-width: 100%;
+}
+
 .page {
   display: grid;
   gap: var(--space-6);
@@ -100,6 +114,14 @@
   font-size: 2.5rem;
   font-weight: 600;
   line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+/* Una nota bajo la cifra no hereda su tamaño. */
+.stat dd.hint {
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
 }
 
 .hint {
@@ -122,7 +144,10 @@
   align-items: flex-start;
 }
 
-.rule-list input {
+.rule-list input,
+.check input,
+.import-rows__check input {
+  flex: none;
   margin-top: 0.25rem;
 }
 
@@ -165,8 +190,13 @@
   gap: var(--space-4);
   align-items: flex-end;
 }
+.filters .field {
+  min-width: 0;
+  max-width: 100%;
+}
 .filters .field input,
 .filters .field select {
+  max-width: 100%;
   padding: 0.5rem 0.75rem;
   color: var(--fg);
   background: transparent;
@@ -246,8 +276,8 @@
 }
 
 .table .table__title {
-  min-width: 0;
-  overflow-wrap: anywhere;
+  min-width: 12rem;
+  overflow-wrap: break-word;
 }
 
 /* Módulos 3 y 4: análisis de calidad y asistente de IA. */
@@ -480,4 +510,15 @@
   display: flex;
   gap: var(--space-3);
   align-items: flex-start;
+}
+
+/* Tablas con desplazamiento propio: columnas legibles en móvil. */
+.trace {
+  min-width: 36rem;
+}
+.trace__cases {
+  min-width: 12rem;
+}
+.stat {
+  align-content: start;
 }

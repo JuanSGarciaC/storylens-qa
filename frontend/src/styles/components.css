@@ -53,6 +53,7 @@
 
 .field {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-2);
 }
 .field__label {
@@ -69,6 +70,7 @@
 .field input,
 .field select,
 .field textarea {
+  max-width: 100%;
   padding: 0.5rem 0.75rem;
   color: var(--fg);
   background: transparent;
@@ -183,4 +185,35 @@
   width: 1.25rem;
   height: 1.25rem;
   flex: none;
+}
+
+/* Objetivos táctiles de al menos 44 px en móvil, tableta y punteros gruesos. */
+@media (max-width: 48rem), (pointer: coarse) {
+  .btn,
+  .field input:not([type="checkbox"], [type="radio"]),
+  .field select,
+  .filters .field input,
+  .filters .field select,
+  .project-select select {
+    min-height: 2.75rem;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  .project-list a,
+  .session-row a,
+  .import summary,
+  .page__head .hint a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+  .rule-list label,
+  .check,
+  .import-rows__check {
+    min-height: 2.75rem;
+    align-items: center;
+  }
 }

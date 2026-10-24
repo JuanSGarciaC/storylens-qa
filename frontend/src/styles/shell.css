@@ -236,3 +236,26 @@ a.nav__item:hover {
     animation: none;
   }
 }
+
+.nav__label {
+  flex: 1 1 6rem;
+  min-width: 0;
+}
+.nav__item {
+  min-height: 2.5rem;
+}
+.nav__num {
+  min-width: 1.5rem;
+}
+.status a,
+.empty a,
+.brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+}
+@media (max-width: 48rem), (pointer: coarse) {
+  .nav__item {
+    min-height: 2.75rem;
+  }
+}

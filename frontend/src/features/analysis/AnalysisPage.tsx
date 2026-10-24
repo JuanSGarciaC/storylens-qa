@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { enter } from "../../shared/ui/motion";
 import { useNavigate, useParams } from "react-router-dom";
 import * as api from "../../api/client";
 import type {
@@ -48,12 +49,14 @@ type OnDecide = (
 ) => Promise<boolean>;
 
 function FindingItem({
+  index,
   finding,
   canDecide,
   busy,
   error,
   onDecide,
 }: {
+  index: number;
   finding: Finding;
   canDecide: boolean;
   busy: boolean;
@@ -83,8 +86,14 @@ function FindingItem({
     void decide("dismissed", reason.trim());
   }
 
+  const animation = enter(index);
   return (
-    <li className="finding" ref={item} tabIndex={-1}>
+    <li
+      className={`finding${animation.className ? ` ${animation.className}` : ""}`}
+      style={animation.style}
+      ref={item}
+      tabIndex={-1}
+    >
       <div className="finding__head">
         <code className="mono">{finding.rule_id}</code>
         {finding.source === "ai" ? (
@@ -245,8 +254,9 @@ function Findings({
               {label} <span className="hint">({group.length})</span>
             </h3>
             <ul className="findings">
-              {group.map((finding) => (
+              {group.map((finding, index) => (
                 <FindingItem
+                  index={index}
                   key={finding.id ?? `${finding.rule_id}-${finding.message}`}
                   finding={finding}
                   canDecide={canDecide}

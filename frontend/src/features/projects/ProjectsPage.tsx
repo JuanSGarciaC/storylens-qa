@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { enter } from "../../shared/ui/motion";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import * as api from "../../api/client";
@@ -109,8 +110,8 @@ export function ProjectsPage() {
   } else {
     body = (
       <ul className="project-list">
-        {list.data.map((project) => (
-          <li key={project.id}>
+        {list.data.map((project, index) => (
+          <li key={project.id} {...enter(index)}>
             <span className="project-list__name">
               <Link to={`/p/${project.id}`}>{project.name}</Link>
               {project.is_demo ? <Badge tone="info">Demostración</Badge> : null}
