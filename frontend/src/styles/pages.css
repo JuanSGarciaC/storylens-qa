@@ -244,3 +244,8 @@
   color: var(--danger);
   font-size: 0.875rem;
 }
+
+.table .table__title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}

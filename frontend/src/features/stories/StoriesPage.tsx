@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import * as api from "../../api/client";
 import type { Named, StoryInput, StoryItem } from "../../api/client";
@@ -99,6 +99,51 @@ export function StoriesPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
+  const rawStories = data.data?.[0];
+  const settings = project?.settings;
+  const filtered = useMemo(() => {
+    if (!rawStories || !settings) return [];
+    const needle = filters.text.trim().toLowerCase();
+    const rows = rawStories
+      .map((story) => ({
+        story,
+        state: classifyStory(story, settings),
+        haystack:
+          `${story.id} ${story.title} ${story.description}`.toLowerCase(),
+      }))
+      .filter(
+        (r) =>
+          (!needle || r.haystack.includes(needle)) &&
+          (!filters.epic || r.story.epic_id === filters.epic) &&
+          (!filters.version || r.story.version_id === filters.version) &&
+          (!filters.state || r.state === filters.state),
+      );
+    if (filters.order) {
+      const sign = filters.order === "score-asc" ? 1 : -1;
+      const score = (s: StoryItem) => s.latest_analysis?.score ?? null;
+      rows.sort((a, b) => {
+        const x = score(a.story);
+        const y = score(b.story);
+        if (x === null || y === null) {
+          return x === y ? 0 : x === null ? 1 : -1;
+        }
+        return (x - y) * sign;
+      });
+    }
+    return rows;
+  }, [rawStories, settings, filters]);
+
+  // Tras «Mostrar más», el foco pasa a la primera fila nueva (el botón puede desaparecer).
+  const focusFrom = useRef<number | null>(null);
+  const tableRef = useRef<HTMLTableSectionElement>(null);
+  useEffect(() => {
+    if (focusFrom.current === null) return;
+    const link = tableRef.current?.rows[focusFrom.current]?.querySelector("a");
+    focusFrom.current = null;
+    link?.focus();
+  }, [limit]);
+
+  // Sin proyecto, el Shell ya muestra carga, «no encontrado» o error.
   if (!project) return <Spinner label="Cargando proyecto…" />;
   if (data.loading) return <Spinner label="Cargando historias…" />;
   if (data.error || !data.data) {
@@ -139,27 +184,6 @@ export function StoriesPage() {
     setLimit(PAGE_SIZE);
   }
 
-  const needle = filters.text.trim().toLowerCase();
-  const filtered = stories.filter(
-    (s) =>
-      (!needle ||
-        `${s.id} ${s.title} ${s.description}`.toLowerCase().includes(needle)) &&
-      (!filters.epic || s.epic_id === filters.epic) &&
-      (!filters.version || s.version_id === filters.version) &&
-      (!filters.state || classifyStory(s, project.settings) === filters.state),
-  );
-  if (filters.order) {
-    const sign = filters.order === "score-asc" ? 1 : -1;
-    const score = (s: StoryItem) => s.latest_analysis?.score ?? null;
-    filtered.sort((a, b) => {
-      const x = score(a);
-      const y = score(b);
-      if (x === null || y === null) {
-        return x === y ? 0 : x === null ? 1 : -1;
-      }
-      return (x - y) * sign;
-    });
-  }
   const visible = filtered.slice(0, limit);
   const nameOf = (list: Named[], id?: string | null) =>
     list.find((n) => n.id === id)?.name ?? "—";
@@ -304,15 +328,14 @@ export function StoriesPage() {
                       <th scope="col">Estado</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {visible.map((s) => {
-                      const state = classifyStory(s, project.settings);
+                  <tbody ref={tableRef}>
+                    {visible.map(({ story: s, state }) => {
                       return (
                         <tr key={s.id}>
                           <td className="mono table__id" title={s.id}>
                             {s.id}
                           </td>
-                          <td>
+                          <td className="table__title">
                             <Link
                               to={`/p/${project.id}/stories/${s.id}/analysis`}
                             >
@@ -337,14 +360,17 @@ export function StoriesPage() {
                   </tbody>
                 </table>
               </div>
-              <p className="hint">
+              <p className="hint" aria-live="polite">
                 Mostrando {visible.length} de {filtered.length}.
               </p>
               {filtered.length > visible.length ? (
                 <div>
                   <Button
                     variant="ghost"
-                    onClick={() => setLimit(limit + PAGE_SIZE)}
+                    onClick={() => {
+                      focusFrom.current = visible.length;
+                      setLimit(limit + PAGE_SIZE);
+                    }}
                   >
                     Mostrar más
                   </Button>

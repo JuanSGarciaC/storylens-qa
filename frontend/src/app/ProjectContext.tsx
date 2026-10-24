@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -102,7 +103,7 @@ export function ProjectProvider({
 
   // Ref para que `setProject` sea estable y descarte respuestas de otro proyecto.
   const currentId = useRef(projectId);
-  useEffect(() => {
+  useLayoutEffect(() => {
     currentId.current = projectId;
   }, [projectId]);
   const setProject = useCallback((project: Project) => {

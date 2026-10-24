@@ -74,6 +74,26 @@ describe("StoriesPage", () => {
     );
   });
 
+  it("tras «Mostrar más» el foco pasa a la primera fila nueva y se anuncia", async () => {
+    setup(Array.from({ length: 60 }, (_, i) => story(i + 1)));
+    await screen.findByRole("table");
+    const more = screen.getByRole("button", { name: "Mostrar más" });
+    await userEvent.click(more);
+    expect(
+      screen.queryByRole("button", { name: "Mostrar más" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Historia 51" })).toHaveFocus();
+    const hint = screen.getByText("Mostrando 60 de 60.");
+    expect(hint).toHaveAttribute("aria-live", "polite");
+  });
+
+  it("un título largo sin espacios no rompe la tabla", async () => {
+    const { view } = setup([story(1, { title: "x".repeat(500) })]);
+    const link = await screen.findByRole("link", { name: "x".repeat(500) });
+    expect(link.closest("td")).toHaveClass("table__title");
+    expect(view.container.querySelectorAll("th")).toHaveLength(6);
+  });
+
   it("sin coincidencias ofrece limpiar filtros", async () => {
     setup([story(1), story(2)]);
     await screen.findByRole("table");
