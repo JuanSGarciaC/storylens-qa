@@ -1,4 +1,5 @@
 from app.domain.entities.finding import AIStatus, Decision, Finding, Severity, Source
+from app.domain.entities.project import Epic, ProjectSettings, StoredProject, Version
 from app.domain.entities.qa_session import (
     ChecklistItem,
     ChecklistPhase,
@@ -24,6 +25,10 @@ from app.domain.entities.test_case import (
 )
 
 __all__ = [
+    "Epic",
+    "ProjectSettings",
+    "StoredProject",
+    "Version",
     "AIStatus",
     "CaseOrigin",
     "CaseStatus",

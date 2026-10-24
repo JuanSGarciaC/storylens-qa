@@ -1,7 +1,37 @@
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import JSON, Column
 from sqlmodel import Field, SQLModel
+
+
+class ProjectRow(SQLModel, table=True):
+    __tablename__ = "project"
+
+    id: str = Field(primary_key=True)
+    name: str
+    description: str = ""
+    objective: str = ""
+    settings: dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON, nullable=False))
+    is_demo: bool = Field(default=False, index=True)
+    owner_id: str | None = Field(default=None, index=True)
+    created_at: datetime
+
+
+class EpicRow(SQLModel, table=True):
+    __tablename__ = "epic"
+
+    id: str = Field(primary_key=True)
+    project_id: str = Field(foreign_key="project.id", index=True)
+    name: str
+
+
+class VersionRow(SQLModel, table=True):
+    __tablename__ = "version"
+
+    id: str = Field(primary_key=True)
+    project_id: str = Field(foreign_key="project.id", index=True)
+    name: str
 
 
 class StoryRow(SQLModel, table=True):

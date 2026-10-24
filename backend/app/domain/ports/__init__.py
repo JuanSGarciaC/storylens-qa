@@ -14,6 +14,7 @@ from app.domain.ports.llm import (
     LLMTestCases,
     LLMUnavailableError,
 )
+from app.domain.ports.projects import ProjectRepository
 from app.domain.ports.repositories import StoryRepository
 
 __all__ = [
@@ -31,5 +32,6 @@ __all__ = [
     "LLMPort",
     "LLMTestCases",
     "LLMUnavailableError",
+    "ProjectRepository",
     "StoryRepository",
 ]
