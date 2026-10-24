@@ -388,6 +388,61 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{project_id}/evaluations/info": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Evaluation Info */
+        get: operations["evaluation_info_api_v1_projects__project_id__evaluations_info_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_id}/evaluations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Evaluations */
+        get: operations["list_evaluations_api_v1_projects__project_id__evaluations_get"];
+        put?: never;
+        /**
+         * Start Evaluation
+         * @description Inicia la evaluación en segundo plano; el avance se consulta por su id.
+         */
+        post: operations["start_evaluation_api_v1_projects__project_id__evaluations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/evaluations/{run_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Evaluation */
+        get: operations["get_evaluation_api_v1_evaluations__run_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{project_id}/stories": {
         parameters: {
             query?: never;
@@ -1170,6 +1225,69 @@ export interface components {
             level: string;
             /** Reason */
             reason: string;
+        };
+        /**
+         * EvaluationInfoOut
+         * @description Lo que la pantalla necesita saber antes de ejecutar una evaluación.
+         */
+        EvaluationInfoOut: {
+            /** Golden Stories */
+            golden_stories: number;
+            /** Injection Cases */
+            injection_cases: number;
+            /** Ai Available */
+            ai_available: boolean;
+            /** Ai Quota Remaining Today */
+            ai_quota_remaining_today: number | null;
+        };
+        /**
+         * EvaluationMode
+         * @enum {string}
+         */
+        EvaluationMode: "rules" | "rules_ai" | "injection";
+        /** EvaluationRunOut */
+        EvaluationRunOut: {
+            /** Id */
+            id: string;
+            /** Project Id */
+            project_id: string;
+            /** Mode */
+            mode: string;
+            /** Status */
+            status: string;
+            /** Actor */
+            actor: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Finished At */
+            finished_at: string | null;
+            /** Catalog Version */
+            catalog_version: string;
+            /** Model Name */
+            model_name: string | null;
+            /** Prompt Version */
+            prompt_version: string | null;
+            /** Total */
+            total: number;
+            /** Processed */
+            processed: number;
+            /** Metrics */
+            metrics: {
+                [key: string]: unknown;
+            };
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /** Note */
+            note: string;
+        };
+        /** EvaluationStartIn */
+        EvaluationStartIn: {
+            mode: components["schemas"]["EvaluationMode"];
         };
         /**
          * EvidenceIn
@@ -2666,6 +2784,134 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["VersionComparisonOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    evaluation_info_api_v1_projects__project_id__evaluations_info_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationInfoOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_evaluations_api_v1_projects__project_id__evaluations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    start_evaluation_api_v1_projects__project_id__evaluations_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EvaluationStartIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_evaluation_api_v1_evaluations__run_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EvaluationRunOut"];
                 };
             };
             /** @description Validation Error */

@@ -27,6 +27,8 @@ export type ImportJob = Schemas["ImportJobOut"];
 export type ImportJobDetail = Schemas["ImportJobDetailOut"];
 export type ImportJobItem = Schemas["ImportItemOut"];
 export type CrossAnalysis = Schemas["CrossAnalysisOut"];
+export type EvaluationRun = Schemas["EvaluationRunOut"];
+export type EvaluationInfo = Schemas["EvaluationInfoOut"];
 export type Metric = Schemas["MetricOut"];
 export type Metrics = Schemas["MetricsOut"];
 export type TraceabilityMatrix = Schemas["MatrixOut"];
@@ -357,6 +359,22 @@ export const startImportJob = (
   request<ImportJob>(`/projects/${enc(projectId)}/import-jobs`, {
     method: "POST",
     body: importForm(file, mapping, selected, useAi),
+  });
+
+export const getEvaluationInfo = (projectId: string) =>
+  request<EvaluationInfo>(`/projects/${enc(projectId)}/evaluations/info`);
+
+export const listEvaluations = (projectId: string) =>
+  request<EvaluationRun[]>(`/projects/${enc(projectId)}/evaluations`);
+
+export const startEvaluation = (
+  projectId: string,
+  mode: "rules" | "rules_ai" | "injection",
+) =>
+  request<EvaluationRun>(`/projects/${enc(projectId)}/evaluations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mode }),
   });
 
 export const getMetrics = (projectId: string) =>

@@ -125,6 +125,13 @@ export const routes: RouteObject[] = [
                 ),
               },
               {
+                path: "p/:projectId/evaluacion",
+                element: screen(
+                  () => import("../features/evaluation/EvaluationPage"),
+                  "EvaluationPage",
+                ),
+              },
+              {
                 path: "p/:projectId/reports",
                 element: screen(
                   () => import("../features/reports/ReportsPage"),

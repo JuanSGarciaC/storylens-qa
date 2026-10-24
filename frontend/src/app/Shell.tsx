@@ -90,7 +90,12 @@ const MODULES: Module[] = [
   },
   { n: "8", label: "Informes", icon: "download", path: "/reports" },
   { n: "9", label: "Métricas y mejora", icon: "chart", path: "/metricas" },
-  { n: "10", label: "Evaluación de la IA", icon: "search" },
+  {
+    n: "10",
+    label: "Evaluación de la IA",
+    icon: "search",
+    path: "/evaluacion",
+  },
 ];
 
 function ModuleNav({
@@ -283,6 +288,7 @@ const TITLES: [RegExp, string][] = [
   [/\/reports$/, "Informes"],
   [/\/transversal$/, "Análisis transversal"],
   [/\/metricas$/, "Métricas y mejora"],
+  [/\/evaluacion$/, "Evaluación de la IA"],
   [/\/settings$/, "Configuración"],
   [/^\/p\/[^/]+$/, "Resumen"],
   [/^\/$/, "Proyectos"],

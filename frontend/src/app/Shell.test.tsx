@@ -92,8 +92,8 @@ describe("Shell", () => {
       "href",
       "/p/x/reports",
     );
-    const soon = within(nav).getAllByText("Próximamente");
-    expect(soon).toHaveLength(1);
+    const soon = within(nav).queryAllByText("Próximamente");
+    expect(soon).toHaveLength(0);
     expect(
       within(nav).getByRole("link", { name: /Análisis transversal/ }),
     ).toHaveAttribute("href", "/p/x/transversal");
