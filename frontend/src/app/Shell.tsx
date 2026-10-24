@@ -10,6 +10,7 @@ import {
   Link,
   Outlet,
   useLocation,
+  useMatch,
   useNavigate,
   useParams,
 } from "react-router-dom";
@@ -45,57 +46,31 @@ function useIsNarrow() {
   );
 }
 
-type Module = {
-  n: string;
+type NavItem = {
   label: string;
   icon: IconName;
-  /** Ruta relativa al proyecto; undefined si el módulo aún no existe. */
-  path?: string;
-  global?: boolean;
-  /** Se abre desde una historia: el enlace lleva al listado. */
-  hint?: string;
+  /** Ruta relativa al proyecto (o a la historia, en el grupo de la historia). */
+  path: string;
 };
 
-// Módulos del README (1–10). Los de las fases D–F aparecen deshabilitados.
-const FROM_STORY = "Desde una historia";
-const MODULES: Module[] = [
-  { n: "1", label: "Proyectos", icon: "home", global: true },
-  { n: "2", label: "Historias", icon: "list", path: "/stories" },
-  {
-    n: "3-4",
-    label: "Análisis de calidad e IA",
-    icon: "check",
-    path: "/stories",
-    hint: FROM_STORY,
-  },
-  {
-    n: "5",
-    label: "Análisis transversal",
-    icon: "alert",
-    path: "/transversal",
-  },
-  {
-    n: "6",
-    label: "Casos de prueba",
-    icon: "check",
-    path: "/stories",
-    hint: FROM_STORY,
-  },
-  {
-    n: "7",
-    label: "Sesiones QA",
-    icon: "bug",
-    path: "/stories",
-    hint: FROM_STORY,
-  },
-  { n: "8", label: "Informes", icon: "download", path: "/reports" },
-  { n: "9", label: "Métricas y mejora", icon: "chart", path: "/metricas" },
-  {
-    n: "10",
-    label: "Evaluación de la IA",
-    icon: "search",
-    path: "/evaluacion",
-  },
+// Tres grupos con un solo criterio cada uno: lo del proyecto, lo que mira todo el proyecto
+// y lo que se hace dentro de una historia (este último solo aparece al abrir una).
+const PROJECT_ITEMS: NavItem[] = [
+  { label: "Historias", icon: "list", path: "/stories" },
+  { label: "Configuración", icon: "settings", path: "/settings" },
+];
+
+const QUALITY_ITEMS: NavItem[] = [
+  { label: "Análisis transversal", icon: "alert", path: "/transversal" },
+  { label: "Métricas y mejora", icon: "chart", path: "/metricas" },
+  { label: "Informes", icon: "download", path: "/reports" },
+  { label: "Evaluación de la IA", icon: "search", path: "/evaluacion" },
+];
+
+const STORY_ITEMS: NavItem[] = [
+  { label: "Análisis de calidad", icon: "check", path: "/analysis" },
+  { label: "Casos de prueba", icon: "check", path: "/tests" },
+  { label: "Sesiones QA", icon: "bug", path: "/sessions" },
 ];
 
 function ModuleNav({
@@ -107,85 +82,88 @@ function ModuleNav({
 }) {
   const { pathname } = useLocation();
   const base = projectId ? `/p/${projectId}` : null;
+  const story = useMatch("/p/:projectId/stories/:storyId/*");
+  const storyBase =
+    base && story?.params.storyId
+      ? `${base}/stories/${story.params.storyId}`
+      : null;
 
-  function isCurrent(module: Module) {
-    if (module.global) return pathname === "/";
-    if (!base || module.hint || module.path === undefined) return false;
+  function link(item: NavItem, prefix: string, key = item.path): ReactNode {
+    const to = prefix + item.path;
+    const current = pathname === to || pathname.startsWith(`${to}/`);
     return (
-      pathname === base + module.path ||
-      pathname.startsWith(`${base}${module.path}/`)
+      <li key={key}>
+        <Link
+          to={to}
+          className="nav__item"
+          aria-current={current ? "page" : undefined}
+          onClick={onNavigate}
+        >
+          <Icon name={item.icon} />
+          <span className="nav__label">{item.label}</span>
+        </Link>
+      </li>
     );
   }
 
-  function row(module: Module): ReactNode {
-    const content = (
-      <>
-        <Icon name={module.icon} />
-        <span className="nav__num mono" aria-hidden="true">
-          {module.n}
-        </span>
-        <span className="nav__label">{module.label}</span>
-      </>
-    );
-    if (module.path === undefined && !module.global) {
-      return (
-        <span className="nav__item is-disabled" aria-disabled="true">
-          {content}
-          <Badge tone="neutral">Próximamente</Badge>
-        </span>
-      );
-    }
-    const to = module.global ? "/" : base ? base + module.path : null;
-    if (to === null) {
-      return (
-        <span className="nav__item is-disabled" aria-disabled="true">
-          {content}
-          <span className="nav__note">Elige un proyecto</span>
-        </span>
-      );
-    }
+  function group(title: string, items: ReactNode, id: string): ReactNode {
     return (
-      <Link
-        to={to}
-        className="nav__item"
-        aria-current={isCurrent(module) ? "page" : undefined}
-        onClick={onNavigate}
-      >
-        {content}
-        {module.hint ? <span className="nav__note">{module.hint}</span> : null}
-      </Link>
+      <section className="nav__group" aria-labelledby={id}>
+        <h2 id={id} className="nav__title">
+          {title}
+        </h2>
+        <ul className="nav__list">{items}</ul>
+      </section>
     );
   }
 
   return (
     <nav aria-label="Módulos" className="nav">
+      <Link
+        to="/"
+        className="nav__item"
+        aria-current={pathname === "/" ? "page" : undefined}
+        onClick={onNavigate}
+      >
+        <Icon name="home" />
+        <span className="nav__label">Todos los proyectos</span>
+      </Link>
       {base ? (
-        <Link
-          to={base}
-          className="nav__item"
-          aria-current={pathname === base ? "page" : undefined}
-          onClick={onNavigate}
-        >
-          <Icon name="chart" />
-          <span className="nav__label">Resumen del proyecto</span>
-        </Link>
-      ) : null}
-      <ul className="nav__list">
-        {MODULES.map((module) => (
-          <li key={module.n}>{row(module)}</li>
-        ))}
-      </ul>
-      {base ? (
-        <Link
-          to={`${base}/settings`}
-          className="nav__item"
-          aria-current={pathname === `${base}/settings` ? "page" : undefined}
-          onClick={onNavigate}
-        >
-          <Icon name="settings" />
-          <span className="nav__label">Configuración</span>
-        </Link>
-      ) : null}
+        <>
+          {group(
+            "Proyecto",
+            <>
+              <li>
+                <Link
+                  to={base}
+                  className="nav__item"
+                  aria-current={pathname === base ? "page" : undefined}
+                  onClick={onNavigate}
+                >
+                  <Icon name="chart" />
+                  <span className="nav__label">Resumen</span>
+                </Link>
+              </li>
+              {PROJECT_ITEMS.map((item) => link(item, base))}
+            </>,
+            "nav-project",
+          )}
+          {storyBase
+            ? group(
+                "Historia abierta",
+                STORY_ITEMS.map((item) => link(item, storyBase)),
+                "nav-story",
+              )
+            : null}
+          {group(
+            "Calidad del proyecto",
+            QUALITY_ITEMS.map((item) => link(item, base)),
+            "nav-quality",
+          )}
+        </>
+      ) : (
+        <p className="nav__note">Elige un proyecto para ver su menú.</p>
+      )}
     </nav>
   );
 }

@@ -80,7 +80,7 @@ function renderAt(path: string, customRoutes = routes) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("Shell", () => {
-  it("muestra los módulos, los próximos deshabilitados y el estado de IA", async () => {
+  it("agrupa el menú en proyecto y calidad del proyecto, sin entradas muertas, y muestra el estado de IA", async () => {
     stubApi();
     stubWidth(false);
     renderAt("/p/x");
@@ -92,8 +92,17 @@ describe("Shell", () => {
       "href",
       "/p/x/reports",
     );
-    const soon = within(nav).queryAllByText("Próximamente");
-    expect(soon).toHaveLength(0);
+    expect(within(nav).queryByText("Próximamente")).toBeNull();
+    expect(
+      within(nav).getByRole("heading", { name: "Proyecto" }),
+    ).toBeInTheDocument();
+    expect(
+      within(nav).getByRole("heading", { name: "Calidad del proyecto" }),
+    ).toBeInTheDocument();
+    // Sin una historia abierta no se ofrece el grupo de la historia.
+    expect(
+      within(nav).queryByRole("heading", { name: "Historia abierta" }),
+    ).toBeNull();
     expect(
       within(nav).getByRole("link", { name: /Análisis transversal/ }),
     ).toHaveAttribute("href", "/p/x/transversal");
@@ -265,6 +274,25 @@ describe("Shell", () => {
     await screen.findByRole("navigation", { name: "Módulos" });
     await screen.findByText(/7 consultas de IA hoy/);
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("dentro de una historia el menú ofrece sus tres pantallas, con la actual marcada", async () => {
+    stubApi();
+    stubWidth(false);
+    renderAt("/p/x/stories/s1/tests");
+    const nav = await screen.findByRole("navigation", { name: "Módulos" });
+    const group = within(nav)
+      .getByRole("heading", { name: "Historia abierta" })
+      .closest("section") as HTMLElement;
+    expect(
+      within(group).getByRole("link", { name: "Análisis de calidad" }),
+    ).toHaveAttribute("href", "/p/x/stories/s1/analysis");
+    expect(
+      within(group).getByRole("link", { name: "Casos de prueba" }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(
+      within(group).getByRole("link", { name: "Sesiones QA" }),
+    ).toHaveAttribute("href", "/p/x/stories/s1/sessions");
   });
 
   it("una historia propia se carga; una ajena o inexistente da el mismo NotFound", async () => {

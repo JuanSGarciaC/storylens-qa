@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useSession } from "../../app/session";
 import * as api from "../../api/client";
 import type { Named, StoryInput, StoryItem } from "../../api/client";
 import { useProject } from "../../app/ProjectContext";
@@ -83,6 +84,7 @@ const named = (list: Named[]) =>
 export function StoriesPage() {
   const { project, projectId } = useProject();
   const access = useAccess(project);
+  const authenticated = useSession().me?.authenticated ?? false;
   const pid = projectId ?? "";
   const data = useLoad(
     () =>
@@ -202,7 +204,24 @@ export function StoriesPage() {
       <RecentImports projectId={pid} />
     </>
   ) : (
-    <p className="hint">{access.reason}</p>
+    <div className="panel">
+      <p>{access.reason}</p>
+      <p className="hint">
+        Para analizar tus propias historias,{" "}
+        {authenticated ? (
+          <>
+            abre o crea un proyecto tuyo en{" "}
+            <Link to="/">Todos los proyectos</Link>
+          </>
+        ) : (
+          <>
+            <Link to="/login">inicia sesión</Link> y crea un proyecto
+          </>
+        )}
+        : ahí podrás escribir tus historias o cargar un archivo de Jira (CSV o
+        JSON).
+      </p>
+    </div>
   );
 
   const createButton =

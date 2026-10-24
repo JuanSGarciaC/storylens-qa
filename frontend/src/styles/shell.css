@@ -259,3 +259,16 @@ a.nav__item:hover {
     min-height: 2.75rem;
   }
 }
+
+.nav__group {
+  margin-top: var(--space-3);
+}
+.nav__title {
+  margin: 0 0 var(--space-1);
+  padding: 0 var(--space-3);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
