@@ -121,7 +121,9 @@ function ModuleNav({
     const content = (
       <>
         <Icon name={module.icon} />
-        <span className="nav__num mono">{module.n}</span>
+        <span className="nav__num mono" aria-hidden="true">
+          {module.n}
+        </span>
         <span className="nav__label">{module.label}</span>
       </>
     );

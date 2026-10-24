@@ -17,6 +17,8 @@ cd backend && uvicorn app.main:app --reload
 cd frontend && npm install && npm run dev
 ```
 
+Con Docker (todo junto, mismo origen): `docker compose up --build` → http://localhost:8080. Pruebas, despliegue gratuito y documentación de la API: [`docs/09-despliegue.md`](docs/09-despliegue.md).
+
 Sin sesión se muestra el proyecto de demostración (solo lectura). El flujo del dueño requiere `OWNER_EMAIL`, `OWNER_PASSWORD` y `SESSION_SECRET` en `backend/.env`. Rutas, scripts y variables (`VITE_API_BASE_URL`) del frontend: [`docs/08-guia-de-desarrollo.md`](docs/08-guia-de-desarrollo.md#frontend-fase-b). Sistema de diseño: [`design-system/storylens-qa/MASTER.md`](design-system/storylens-qa/MASTER.md).
 
 ---

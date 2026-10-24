@@ -11,5 +11,6 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: "./src/test/setup.ts",
     testTimeout: 15000,
+    include: ["src/**/*.test.{ts,tsx}"], // tests/e2e los corre Playwright
   },
 });

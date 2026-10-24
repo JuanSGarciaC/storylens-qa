@@ -1,0 +1,27 @@
+# Todo el sistema en local: http://localhost:8080
+#   cp .env.example .env   (y completa al menos OWNER_EMAIL, OWNER_PASSWORD y SESSION_SECRET)
+#   docker compose up --build
+# Sin esas tres variables solo se ve la demostración de solo lectura.
+services:
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      # En compose la base y las evidencias viven en el volumen, no en el contenedor.
+      DATABASE_URL: sqlite:////data/storylens.db
+      EVIDENCE_DIR: /data/evidence
+      CORS_ORIGINS: http://localhost:8080
+    volumes:
+      - storylens-data:/data
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  storylens-data:
