@@ -20,7 +20,7 @@ El dueño quiere que StoryLens QA sea una plataforma **usable de punta a punta c
 - **No** multiusuario con equipos/roles complejos: cuentas simples y permisos por proyecto básicos.
 - **Anti-objetivo (duro): costo > 0.** Nunca se pagan ni se piden pagos por APIs, IA, hosting ni dominio. Si un servicio gratuito se agota o bloquea, el sistema **se cierra de forma controlada** (la función de IA se desactiva) y todo sigue funcionando con las **reglas determinísticas**. Nunca se activa facturación en ningún proveedor.
 - Anti-objetivo: gráficos o cifras inventadas. Todo gráfico se calcula con datos reales; sin datos, estado vacío claro.
-- Anti-objetivo: una puntuación alta que oculte un bloqueante (regla ya existente en README §4).
+- Anti-objetivo: una puntuación alta que oculte un bloqueante (regla ya existente en docs/00-especificacion-del-producto.md §4).
 
 ## 4. Dirección visual (decidida con el dueño mediante maquetas)
 
@@ -51,7 +51,7 @@ El dueño quiere que StoryLens QA sea una plataforma **usable de punta a punta c
 | F. Evaluación de IA en la app | `EvaluationRun`: golden-set, comparación de prompts/modelos, modo reglas vs reglas+IA, pruebas de inyección, historial |
 | G. Calidad y despliegue | E2E con Playwright, axe-core, Docker/compose, despliegue gratuito, README final y documentación de API |
 
-Los criterios de "terminado" son los del README §9.
+Los criterios de "terminado" son los del docs/00-especificacion-del-producto.md §9.
 
 ## 6. Despliegue con costo 0
 
@@ -71,7 +71,7 @@ Decisión de arquitectura (propuesta del asistente, **sujeta a verificar los pla
 
 ## 8. Seguridad y confiabilidad
 
-Se mantienen las reglas del README §6 (clave solo en backend, entradas no confiables, límites, auditoría). Adicional: secretos solo en variables del host; `gitleaks` y pre-commit ya existentes; CORS restringido al dominio del frontend; el modo demo no acepta escrituras.
+Se mantienen las reglas del docs/00-especificacion-del-producto.md §6 (clave solo en backend, entradas no confiables, límites, auditoría). Adicional: secretos solo en variables del host; `gitleaks` y pre-commit ya existentes; CORS restringido al dominio del frontend; el modo demo no acepta escrituras.
 
 ## 9. Decisiones dejadas al constructor
 
@@ -84,7 +84,7 @@ Se mantienen las reglas del README §6 (clave solo en backend, entradas no confi
 
 ## 10. Estrategia de pruebas
 
-Se conserva la del README §7 (pytest, Vitest, Testing Library, Playwright, axe-core, evaluación de IA). Ningún test llama a Gemini real (ya hay un test que lo impide). Cada fase termina con sus pruebas verdes y una revisión visual con Impeccable.
+Se conserva la del docs/00-especificacion-del-producto.md §7 (pytest, Vitest, Testing Library, Playwright, axe-core, evaluación de IA). Ningún test llama a Gemini real (ya hay un test que lo impide). Cada fase termina con sus pruebas verdes y una revisión visual con Impeccable.
 
 ## 11. Riesgos
 

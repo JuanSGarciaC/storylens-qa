@@ -1,510 +1,163 @@
+<div align="center">
+
 # StoryLens QA
-## Plataforma inteligente de análisis de requisitos, diseño de pruebas y gestión de calidad de software
 
-**Versión del documento:** 2.0 — Propuesta de evolución del proyecto  
-**Tipo:** Proyecto de portafolio de Software Quality Engineering  
-**Enfoque:** QA, Requirements Engineering, Test Design, Quality Analytics e IA generativa.
+**Revisa requisitos, diseña pruebas y mide la calidad de tu software. Con reglas QA y, solo si quieres, con IA.**
 
-## Cómo ejecutarlo (desarrollo)
+[![CI](https://github.com/JuanSGarciaC/storylens-qa/actions/workflows/ci.yml/badge.svg)](https://github.com/JuanSGarciaC/storylens-qa/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+![Costo](https://img.shields.io/badge/costo-0-2ea44f)
 
-En dos terminales separadas:
+<img src="docs/screenshots/05-analisis-con-ia.png" alt="Análisis de una historia con reglas e IA: puntaje, hallazgos con su norma y la confianza de la IA" width="900">
+
+</div>
+
+StoryLens QA toma historias de usuario (escritas a mano o importadas de Jira), detecta lo que está mal redactado **antes** de que se convierta en un defecto, genera casos de prueba trazables, organiza sesiones de ejecución con evidencias y defectos, y resume todo en métricas con su denominador a la vista.
+
+**Idea central:** un motor de reglas determinístico hace el trabajo siempre; la IA solo complementa. Si la IA falla o se agota la cuota gratuita, la app sigue funcionando con las reglas, sin errores. Todo corre **sin costo**.
+
+## Qué incluye
+
+| | Módulo | Qué hace |
+|---|---|---|
+| 1 | **Proyectos** | Aislamiento de datos, épicas, versiones, reglas y umbrales por proyecto, auditoría |
+| 2 | **Historias e importación** | Alta manual o carga de CSV/JSON de Jira (hasta 500 filas) en segundo plano, con progreso y reintentos seguros |
+| 3–4 | **Calidad de requisitos + IA** | Reglas citadas a normas (ISO/IEC/IEEE 29148, INVEST, ISTQB), puntaje, hallazgos que se aceptan o descartan, y hallazgos de IA con su confianza |
+| 5 | **Análisis transversal** | Duplicados, dependencias, posibles contradicciones (siempre marcadas como hipótesis) y riesgo por épica |
+| 6 | **Casos de prueba** | Generación con técnicas ISTQB, Gherkin sugerido y trazabilidad criterio → caso |
+| 7 | **Sesiones de QA** | Checklist, resultados, evidencias (notas, enlaces, imágenes) y borradores de defecto |
+| 8 | **Informes** | PDF y Markdown por análisis y por sesión |
+| 9 | **Métricas** | Cada cifra con su definición y su denominador; «Sin datos» en vez de un cero inventado |
+| 10 | **Evaluación de la IA** | Precisión, exhaustividad y F1 contra un conjunto de referencia, solo reglas frente a reglas e IA, y pruebas de inyección de instrucciones |
+
+## Capturas
+
+Tomadas con Gemini real (capa gratuita) sobre una historia de ejemplo de banca móvil.
+
+### Análisis de una historia con IA
+
+Las reglas y la IA conviven en el mismo resultado. Cada hallazgo cita su norma; los de IA llevan su confianza y siempre son sugerencias: tú decides.
+
+<img src="docs/screenshots/05-analisis-con-ia.png" alt="Análisis con reglas e IA" width="900">
+
+### Casos de prueba y Gherkin
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/06-casos-de-prueba-ia.png" alt="Casos de prueba generados por IA"><br><sub><b>Casos generados por IA</b>, aceptables o rechazables uno a uno.</sub></td>
+    <td width="50%"><img src="docs/screenshots/07-gherkin-ia.png" alt="Escenario Gherkin sugerido por IA"><br><sub><b>Gherkin sugerido</b> para automatizar el caso.</sub></td>
+  </tr>
+</table>
+
+### Sesión de QA con defecto redactado por IA
+
+Resultados, evidencias y un borrador de defecto con la plantilla de ISO/IEC/IEEE 29119-3, para revisar antes de guardar.
+
+<img src="docs/screenshots/08-sesion-qa-defecto-ia.png" alt="Borrador de defecto redactado por IA" width="900">
+
+### Visión del proyecto
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/03-resumen-proyecto.png" alt="Resumen del proyecto"><br><sub><b>Resumen</b> con el estado real de las historias.</sub></td>
+    <td width="50%"><img src="docs/screenshots/09-analisis-transversal.png" alt="Análisis transversal"><br><sub><b>Análisis transversal:</b> duplicados, dependencias y riesgo por épica.</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/10-metricas.png" alt="Métricas con denominadores"><br><sub><b>Métricas</b> con definición y denominador visibles.</sub></td>
+    <td width="50%"><img src="docs/screenshots/11-matriz-de-trazabilidad.png" alt="Matriz de trazabilidad"><br><sub><b>Matriz de trazabilidad</b> criterio → caso → ejecución → defecto.</sub></td>
+  </tr>
+</table>
+
+### Importación masiva y evaluación de la IA
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/13-importacion-masiva.png" alt="Importación masiva con progreso"><br><sub><b>Importación en segundo plano</b> con resultado por fila y reintento.</sub></td>
+    <td width="50%"><img src="docs/screenshots/12-evaluacion-de-la-ia.png" alt="Evaluación de la IA"><br><sub><b>Evaluación de la IA</b> contra un conjunto de referencia.</sub></td>
+  </tr>
+</table>
+
+### Modo demo público (solo lectura)
+
+Cualquiera con el enlace ve un proyecto ficticio, sin IA y sin poder modificar nada.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/01-modo-demo-proyectos.png" alt="Lista de proyectos en modo demo"></td>
+    <td width="50%"><img src="docs/screenshots/02-modo-demo-historias.png" alt="Historias de la demo en solo lectura"></td>
+  </tr>
+</table>
+
+## Cómo ejecutarlo
+
+**Con Docker** (todo junto, mismo origen):
+
+```bash
+cp .env.example .env     # completa OWNER_EMAIL, OWNER_PASSWORD y SESSION_SECRET
+docker compose up --build
+# http://localhost:8080
+```
+
+**En desarrollo**, en dos terminales:
 
 ```bash
 # Terminal 1: API en http://localhost:8000
-cd backend && uvicorn app.main:app --reload
+cd backend && pip install -e ".[dev]" && uvicorn app.main:app --reload
 
 # Terminal 2: interfaz en http://localhost:5173
 cd frontend && npm install && npm run dev
 ```
 
-Con Docker (todo junto, mismo origen): `docker compose up --build` → http://localhost:8080. Pruebas, despliegue gratuito y documentación de la API: [`docs/09-despliegue.md`](docs/09-despliegue.md).
+Sin sesión se ve la demo de solo lectura. Para crear tus propios proyectos hace falta la cuenta del dueño: define `OWNER_EMAIL`, `OWNER_PASSWORD` y `SESSION_SECRET` en `backend/.env` (hay una plantilla en [`.env.example`](.env.example)). Para activar la IA añade `GEMINI_API_KEY` y `GEMINI_MODEL` (capa gratuita de Google AI Studio); sin ellas todo funciona solo con reglas.
 
-Sin sesión se muestra el proyecto de demostración (solo lectura). El flujo del dueño requiere `OWNER_EMAIL`, `OWNER_PASSWORD` y `SESSION_SECRET` en `backend/.env`. Rutas, scripts y variables (`VITE_API_BASE_URL`) del frontend: [`docs/08-guia-de-desarrollo.md`](docs/08-guia-de-desarrollo.md#frontend-fase-b). Sistema de diseño: [`design-system/storylens-qa/MASTER.md`](design-system/storylens-qa/MASTER.md).
+Más detalle: [guía de desarrollo](docs/08-guia-de-desarrollo.md) · [despliegue](docs/09-despliegue.md).
 
-## Capturas
+## Pruebas y calidad
 
-Tomadas con Gemini real (modelo de la capa gratuita) sobre una historia de ejemplo.
+| Capa | Comando |
+|---|---|
+| Backend (pytest, ruff, mypy) | `cd backend && pytest` |
+| Frontend (Vitest + Testing Library + axe) | `cd frontend && npm test` |
+| Extremo a extremo (Playwright + axe, WCAG 2.1 AA) | `cd frontend && npm run test:e2e` |
+| Evaluación de la IA | pantalla «Evaluación de la IA» o `python evaluation/run_eval.py [--ai]` |
+
+Ninguna prueba llama a Gemini. La integración continua ejecuta todo lo anterior en cada cambio y busca secretos en el historial.
+
+## Seguridad y costo cero
+
+- La clave de Gemini vive **solo en el backend**, en una variable de entorno; nunca llega al navegador (la CI lo comprueba sobre el bundle).
+- Solo el dueño autenticado puede escribir o usar IA. La demo pública es de solo lectura y sin IA.
+- Topes propios y persistentes de IA (5 por minuto, 50 por día): al agotarse, la IA se apaga y la app sigue con las reglas.
+- Sesión por cookie firmada, bloqueo temporal ante intentos repetidos de inicio de sesión, límites de tamaño en archivos y evidencias.
+- Nada pide tarjeta ni activa facturación en ningún proveedor.
+
+## Arquitectura
+
+Python 3.12 + FastAPI + SQLModel/Alembic por detrás; React 19 + TypeScript + Vite por delante. Arquitectura hexagonal (`domain` → `application` → `infrastructure`/`api`), con el motor de reglas y las métricas como lógica pura y testeable. Más en [`docs/03-arquitectura.md`](docs/03-arquitectura.md) y en las [decisiones de arquitectura](docs/adr/).
+
+## Documentación
 
 | | |
 |---|---|
-| **Análisis con reglas + IA:** puntaje, hallazgos con norma y confianza de la IA | **Casos de prueba generados por IA**, aceptables uno a uno |
-| ![Análisis con IA](docs/screenshots/02-analisis-con-ia.png) | ![Casos de prueba](docs/screenshots/03-casos-de-prueba-ia.png) |
-| **Sesión de QA:** resultado, evidencias y borrador de defecto redactado por IA | **Métricas** con denominadores visibles y matriz de trazabilidad |
-| ![Defecto con IA](docs/screenshots/05-sesion-qa-defecto-ia.png) | ![Métricas](docs/screenshots/08-metricas-y-trazabilidad.png) |
-| **Análisis transversal:** duplicados, dependencias, hipótesis de contradicción, riesgo por épica | **Evaluación de la IA** contra el conjunto de referencia |
-| ![Transversal](docs/screenshots/07-analisis-transversal.png) | ![Evaluación](docs/screenshots/09-evaluacion-ia.png) |
-| **Importación masiva** en segundo plano con progreso | **Gherkin sugerido** por la IA |
-| ![Importación](docs/screenshots/10-importacion-masiva.png) | ![Gherkin](docs/screenshots/04-gherkin-ia.png) |
+| [Especificación del producto](docs/00-especificacion-del-producto.md) | Visión, módulos, modelo de calidad y criterios de terminado |
+| [Visión y alcance](docs/01-vision-y-alcance.md) · [Marco normativo QA](docs/02-marco-normativo-qa.md) | Por qué y con qué normas |
+| [Arquitectura](docs/03-arquitectura.md) · [Modelo de datos y API](docs/04-modelo-de-datos-y-api.md) | Cómo está hecho |
+| [Integración con Gemini](docs/05-integracion-gemini.md) · [Estrategia de pruebas](docs/06-estrategia-de-pruebas.md) | IA y calidad |
+| [Hoja de ruta](docs/07-hoja-de-ruta.md) · [Guía de desarrollo](docs/08-guia-de-desarrollo.md) · [Despliegue](docs/09-despliegue.md) | Cómo seguir |
+| [Decisiones de arquitectura (ADR)](docs/adr/) | El porqué de cada decisión importante |
 
----
+La API se documenta sola: con el backend en marcha, `/docs` (Swagger) y `/openapi.json`.
 
-## 1. Visión del producto
+## Estado
 
-StoryLens QA es una plataforma web que permite a analistas QA, analistas de negocio y equipos de desarrollo evaluar la calidad de múltiples historias de usuario, identificar riesgos antes de iniciar las pruebas, diseñar casos de prueba trazables, gestionar sesiones de ejecución y generar informes de calidad a nivel individual y de proyecto.
+Las siete fases del plan están construidas: fundaciones, frontend, importación masiva, análisis transversal, métricas, evaluación de la IA, y pruebas de extremo a extremo con Docker. Lo que falta y se sabe:
 
-La plataforma combina un motor de reglas determinístico con inteligencia artificial para detectar deficiencias en los requisitos, proponer mejoras, generar criterios de aceptación y diseñar pruebas basadas en técnicas reconocidas de testing.
+- El despliegue público gratuito está preparado y documentado, pero no ejecutado.
+- Las imágenes de evidencia se guardan en disco: en hosts gratuitos sin disco persistente se pierden (las notas y los enlaces no).
+- El listado de historias se filtra y pagina en el navegador, pensado para hasta unos 500 por proyecto.
 
-Su objetivo es transformar información funcional dispersa en un proceso de calidad estructurado, medible, reproducible y auditable.
+## Licencia
 
-StoryLens QA no se limita a generar recomendaciones. Mantiene la trazabilidad entre requisitos, hallazgos, criterios de aceptación, casos de prueba, ejecuciones, evidencias, defectos e informes.
-
-### Propuesta de valor
-
-- Detectar problemas de requisitos antes de que se conviertan en defectos durante el desarrollo o la ejecución de pruebas.
-- Analizar historias de manera individual y colectiva.
-- Reducir el trabajo manual de diseño y documentación de pruebas.
-- Identificar riesgos y vacíos de cobertura.
-- Proporcionar evidencia cuantificable sobre la calidad del proyecto.
-- Recomendar mejoras concretas y permitir evaluar su efecto.
-- Mantener la supervisión humana sobre las decisiones importantes.
-
-## 2. Objetivos
-
-### Objetivo general
-
-Construir una plataforma de Quality Engineering asistida por IA que permita gestionar el ciclo de calidad desde la revisión de requisitos hasta la ejecución de pruebas y la generación de informes consolidados.
-
-### Objetivos específicos
-
-1. Importar y organizar historias de usuario de distintas fuentes.
-2. Evaluar su calidad mediante reglas configurables y análisis semántico.
-3. Identificar ambigüedades, omisiones, contradicciones, dependencias y riesgos.
-4. Proponer versiones mejoradas de las historias y sus criterios de aceptación.
-5. Generar casos de prueba con técnicas de diseño apropiadas.
-6. Medir la cobertura y la trazabilidad de las pruebas.
-7. Gestionar sesiones QA, evidencias y borradores de defectos.
-8. Consolidar métricas y generar informes ejecutivos y técnicos.
-9. Evaluar la calidad y consistencia de las respuestas de la IA.
-10. Mantener un historial de cambios y decisiones para facilitar auditorías y comparaciones.
-
-## 3. Alcance funcional
-
-### Módulo 1. Gestión de proyectos
-
-Cada proyecto tendrá un espacio de trabajo independiente con:
-
-- Nombre, descripción y objetivo.
-- Producto, módulo, épica, sprint o versión.
-- Historias importadas y estado de revisión.
-- Resultados de análisis y recomendaciones.
-- Casos de prueba y sesiones de ejecución.
-- Defectos registrados.
-- Informes históricos y métricas.
-- Configuración de reglas y parámetros de análisis.
-
-Los datos de distintos proyectos deberán mantenerse aislados.
-
-### Módulo 2. Importación y gestión de historias
-
-La plataforma permitirá crear historias manualmente e importarlas desde CSV y JSON, con posibilidad de ampliar la integración con Jira mediante API.
-
-Funciones:
-
-- Vista previa antes de importar.
-- Mapeo de columnas y validación de campos.
-- Identificadores externos para conservar la trazabilidad.
-- Detección de duplicados.
-- Identificación de filas inválidas.
-- Selección de registros que se desea importar.
-- Clasificación por épica, módulo, prioridad y etiquetas.
-- Actualización controlada de historias existentes.
-- Seguimiento del estado de procesamiento de cada historia.
-
-Las importaciones masivas deberán ejecutarse mediante trabajos por lotes, con progreso, resultados parciales, manejo de errores y reintentos seguros.
-
-### Módulo 3. Motor de calidad de requisitos
-
-El motor determinístico evaluará aspectos verificables de la historia sin depender de un modelo generativo.
-
-Áreas de evaluación:
-
-- Estructura y completitud.
-- Claridad del rol, necesidad y beneficio.
-- Independencia, negociabilidad, valor, estimabilidad, tamaño y verificabilidad de INVEST.
-- Presencia y calidad estructural de los criterios de aceptación.
-- Ambigüedades y términos subjetivos.
-- Condiciones límite y escenarios de error.
-- Consistencia entre historia y criterios.
-- Dependencias y posibles contradicciones.
-- Trazabilidad y referencias a requisitos relacionados.
-
-Cada regla tendrá un identificador estable, una descripción, una categoría, una severidad, una explicación, una recomendación y una referencia normativa cuando exista justificación documental.
-
-La evaluación normativa no afirmará conformidad certificada con una norma. Distinguirá entre requisitos explícitos, buenas prácticas derivadas y heurísticas propias de la herramienta.
-
-### Módulo 4. Análisis asistido por IA
-
-Gemini complementará las reglas determinísticas mediante análisis semántico y generación controlada de propuestas.
-
-Capacidades:
-
-- Detectar vacíos funcionales.
-- Señalar ambigüedades difíciles de evaluar mediante reglas simples.
-- Proponer preguntas de aclaración para negocio.
-- Recomendar una redacción mejorada de la historia.
-- Proponer criterios de aceptación en Gherkin.
-- Sugerir escenarios positivos, negativos y alternativos.
-- Detectar posibles contradicciones entre historias relacionadas.
-- Explicar los riesgos y justificar las recomendaciones.
-
-Cada hallazgo incluirá su origen —regla, IA o ambos—, la evidencia textual, la explicación, la severidad sugerida, la acción recomendada y su estado de revisión humana.
-
-Las sugerencias generadas por IA no se incorporarán automáticamente al requisito original.
-
-### Módulo 5. Análisis transversal del conjunto de historias
-
-Además del análisis individual, la plataforma evaluará el conjunto de requisitos.
-
-Funciones:
-
-- Identificar historias duplicadas o muy similares.
-- Detectar dependencias explícitas e implícitas.
-- Encontrar criterios contradictorios.
-- Identificar flujos funcionales incompletos.
-- Detectar historias sin criterios de aceptación.
-- Encontrar requisitos sin casos de prueba.
-- Identificar riesgos concentrados en módulos o épicas.
-- Señalar posibles duplicidades en los casos de prueba.
-- Identificar elementos que requieren aclaración antes de planificar la ejecución.
-
-Las relaciones inferidas por IA se mostrarán como hipótesis que deben validarse, no como hechos confirmados.
-
-### Módulo 6. Diseño y gestión de casos de prueba
-
-La plataforma generará propuestas de casos de prueba a partir de las historias y sus criterios aceptados.
-
-Técnicas contempladas:
-
-- Partición de equivalencia.
-- Análisis de valores límite.
-- Tablas de decisión.
-- Transición de estados.
-- Pruebas positivas y negativas.
-- Pruebas basadas en escenarios y flujos alternativos.
-- Pruebas exploratorias sugeridas cuando sean apropiadas.
-
-Cada caso contendrá identificador, objetivo, precondiciones, datos de prueba, pasos, resultado esperado, prioridad, técnica aplicada y vínculos con los criterios de aceptación que cubre.
-
-Funciones adicionales:
-
-- Aceptar, rechazar y editar casos sugeridos.
-- Detectar casos redundantes.
-- Identificar criterios sin cobertura.
-- Calcular cobertura de criterios.
-- Priorizar casos según riesgo.
-- Exportar casos en formatos documentales o estructurados.
-
-La cobertura se calculará mediante relaciones explícitas y verificables entre criterios y casos, no mediante estimaciones libres del modelo.
-
-### Módulo 7. Sesiones de ejecución QA
-
-Las sesiones agruparán los casos de prueba seleccionados para una ronda de validación.
-
-Funciones:
-
-- Crear sesiones por proyecto, versión o conjunto de historias.
-- Preparar el entorno mediante checklist.
-- Registrar estados: pendiente, aprobado, fallido, bloqueado y no ejecutado.
-- Registrar resultados reales y compararlos con los esperados.
-- Adjuntar notas, enlaces e imágenes como evidencias.
-- Mantener la relación entre ejecución, caso, criterio e historia.
-- Generar borradores de defectos para los casos fallidos.
-- Registrar severidad, prioridad, pasos para reproducir y comportamiento observado.
-- Cerrar sesiones conservando su historial.
-
-La severidad y prioridad podrán derivarse de reglas configuradas y decisiones humanas. La IA podrá mejorar la redacción de un defecto, pero no sustituirá la evidencia ni modificará silenciosamente los resultados registrados.
-
-### Módulo 8. Informes de calidad
-
-StoryLens QA generará informes individuales, por grupo de historias y a nivel de proyecto.
-
-**Informe de análisis de requisitos**
-
-- Puntuación de calidad por historia.
-- Hallazgos agrupados por categoría y severidad.
-- Historias que requieren aclaración.
-- Principales ambigüedades y omisiones.
-- Recomendaciones de mejora.
-- Comparación entre redacción original y propuesta.
-- Referencias a reglas y criterios de evaluación.
-
-**Informe de diseño de pruebas**
-
-- Casos generados, aceptados y rechazados.
-- Distribución por técnica.
-- Cobertura de criterios de aceptación.
-- Criterios sin pruebas.
-- Riesgos no cubiertos.
-- Casos potencialmente redundantes.
-
-**Informe de ejecución QA**
-
-- Casos aprobados, fallidos, bloqueados y pendientes.
-- Evidencias asociadas.
-- Defectos registrados y su estado.
-- Resultados por historia, módulo y versión.
-- Riesgos pendientes de resolución.
-
-**Informe ejecutivo del proyecto**
-
-- Estado general de la calidad.
-- Historias listas, condicionadas y bloqueadas.
-- Distribución de riesgos.
-- Cobertura de requisitos y pruebas.
-- Principales problemas recurrentes.
-- Recomendaciones priorizadas.
-- Limitaciones de los datos y aspectos que necesitan validación.
-
-Los informes estarán disponibles en Markdown y PDF, con exportación estructurada para facilitar análisis posteriores.
-
-### Módulo 9. Métricas y mejora continua
-
-La plataforma mantendrá indicadores con definiciones explícitas y denominadores visibles.
-
-Indicadores iniciales:
-
-- Porcentaje de historias con criterios de aceptación.
-- Porcentaje de historias sin bloqueantes conocidos.
-- Hallazgos por historia y por categoría.
-- Distribución de historias según su nivel de preparación.
-- Cobertura de criterios de aceptación por casos de prueba.
-- Porcentaje de casos ejecutados.
-- Tasa de aprobación de casos ejecutados.
-- Defectos por módulo y severidad.
-- Porcentaje de hallazgos resueltos o rechazados.
-- Evolución de la calidad entre versiones.
-- Diferencia de puntuación antes y después de aceptar mejoras.
-
-La plataforma distinguirá entre métricas de calidad de requisitos, diseño de pruebas y ejecución. Una historia con una puntuación alta no implica que el software esté libre de defectos.
-
-### Módulo 10. Evaluación de la IA
-
-Se incorporará un subsistema de evaluación que permita comprobar la utilidad de los resultados generados.
-
-Funciones:
-
-- Conjunto de historias de referencia con evaluaciones esperadas.
-- Comparación entre respuestas de distintas versiones de prompts.
-- Validación de esquemas y consistencia de datos.
-- Medición de hallazgos correctos, incorrectos y omitidos cuando exista una referencia de evaluación.
-- Evaluación de la validez de los casos de prueba.
-- Pruebas de inyección de prompts y contenido malicioso.
-- Registro de modelo, configuración, prompt y fecha.
-- Informe de calidad y regresión de resultados.
-- Comparación del modo determinístico con el modo asistido por IA.
-
-Los resultados de evaluación deberán interpretarse con criterios documentados y revisión humana. La fluidez de una respuesta no se considerará evidencia de exactitud.
-
-## 4. Modelo de calidad y puntuación
-
-Cada historia tendrá una puntuación de calidad de 0 a 100 basada en dimensiones configurables, por ejemplo:
-
-- Completitud.
-- Claridad y ausencia de ambigüedad.
-- Verificabilidad.
-- Calidad de los criterios de aceptación.
-- Consistencia y trazabilidad.
-
-La ponderación y los umbrales serán configurables y estarán documentados. Las penalizaciones por hallazgos deberán evitar contabilizar varias veces el mismo problema.
-
-Los bloqueantes conocidos se mostrarán por separado: una puntuación agregada no podrá ocultar un problema crítico.
-
-Los resultados distinguirán entre:
-
-- **Preparada:** cumple los controles definidos y no presenta bloqueantes conocidos.
-- **Preparada con observaciones:** tiene riesgos o mejoras pendientes que no impiden necesariamente comenzar.
-- **Requiere aclaración:** faltan decisiones o información necesaria.
-- **Bloqueada:** existe una condición impeditiva identificada.
-- **Sin evaluar:** no se dispone de resultados suficientes.
-
-Estas categorías representan el criterio de la herramienta y deberán poder ajustarse a las políticas del equipo.
-
-## 5. Arquitectura técnica
-
-### Frontend
-
-- React.
-- Vite.
-- TypeScript.
-- Tailwind CSS.
-- Vitest.
-- Testing Library.
-- Playwright.
-- axe-core.
-
-Interfaz organizada en proyectos, historias, análisis, casos de prueba, sesiones QA, defectos e informes.
-
-### Backend
-
-- Python 3.12 o superior.
-- FastAPI.
-- Pydantic v2.
-- SQLModel.
-- SQLite para desarrollo.
-- PostgreSQL como opción para despliegues con múltiples usuarios.
-- Alembic para migraciones.
-- pytest.
-- Ruff y mypy.
-
-### Inteligencia artificial
-
-- Gemini API mediante el SDK `google-genai`.
-- Adaptador desacoplado del proveedor.
-- Salidas estructuradas y validadas.
-- Prompts versionados por tarea.
-- Límites de consumo, tiempos de espera y reintentos.
-- Degradación controlada al motor determinístico.
-- Evaluaciones automatizadas con datos de referencia.
-
-### Procesamiento masivo
-
-Para cargas grandes, el análisis se ejecutará mediante trabajos asíncronos o una cola de tareas cuando el volumen lo justifique.
-
-Cada trabajo tendrá identificador, estado, progreso, resultados parciales y errores recuperables. Se evitará mantener una petición HTTP abierta durante análisis prolongados.
-
-### Persistencia
-
-Entidades principales:
-
-- Project
-- Epic o agrupación funcional
-- UserStory
-- AcceptanceCriterion
-- AnalysisRun
-- Finding
-- ImprovementProposal
-- TestCase
-- TestCaseCriterionLink
-- QASession
-- TestExecution
-- Evidence
-- DefectDraft
-- Report
-- EvaluationRun
-- AuditEvent
-
-Las relaciones y restricciones garantizarán la trazabilidad y evitarán que una modificación posterior altere silenciosamente los resultados históricos.
-
-## 6. Seguridad, confiabilidad y costos
-
-- La clave de Gemini permanecerá exclusivamente en el backend.
-- Los secretos no se incluirán en el repositorio.
-- Las entradas importadas se tratarán como datos no confiables.
-- Las instrucciones incluidas dentro de una historia no podrán modificar las políticas del sistema.
-- Se validarán los tipos, tamaños y formatos de las entradas.
-- Las evidencias y enlaces se validarán según políticas de seguridad.
-- Se establecerán límites de peticiones, concurrencia y consumo.
-- Se aplicarán permisos por proyecto si se habilita acceso multiusuario.
-- Se registrarán las operaciones relevantes sin exponer secretos.
-- Se permitirá ejecutar análisis determinísticos cuando la IA no esté disponible.
-- Los cambios de reglas, prompts o modelos quedarán versionados para interpretar correctamente los resultados históricos.
-
-## 7. Estrategia de pruebas
-
-**Backend**
-
-- Pruebas unitarias del motor de reglas y de puntuación.
-- Pruebas de contratos y validación de datos.
-- Pruebas de persistencia y migraciones.
-- Pruebas de importación, duplicados y procesamiento masivo.
-- Pruebas de trazabilidad y permisos.
-- Pruebas de integración con el adaptador de IA.
-- Pruebas de recuperación ante errores y límites de consumo.
-
-**Frontend**
-
-- Pruebas de componentes.
-- Pruebas de formularios, tablas y filtros.
-- Pruebas de revisión humana de hallazgos.
-- Pruebas de progreso y errores en importaciones.
-- Pruebas de visualización y exportación de informes.
-- Pruebas de accesibilidad.
-
-**End-to-end**
-
-- Importar un conjunto de historias.
-- Ejecutar un análisis completo.
-- Revisar y aceptar recomendaciones.
-- Generar y aprobar casos de prueba.
-- Ejecutar casos y registrar evidencias.
-- Crear un borrador de defecto.
-- Generar el informe consolidado.
-
-**Evaluación de IA**
-
-- Exactitud y utilidad de los hallazgos.
-- Calidad y verificabilidad de los casos generados.
-- Consistencia entre ejecuciones.
-- Resistencia a inyección de prompts.
-- Regresión entre versiones de prompts y modelos.
-
-## 8. Roadmap de evolución
-
-### Fase 6 — Consolidación del producto
-
-- Completar las pruebas E2E.
-- Validar CI y configuración de contenedores.
-- Completar la integración real con Gemini.
-- Verificar la experiencia de usuario.
-- Añadir un modo demo con datos ficticios.
-
-### Fase 7 — Gestión de proyectos e importación masiva
-
-- Crear espacios de trabajo.
-- Agrupar historias por épica y versión.
-- Gestionar lotes de importación.
-- Añadir procesamiento asíncrono, progreso y reintentos.
-- Consolidar los resultados de múltiples historias.
-
-### Fase 8 — Análisis transversal e inteligencia de calidad
-
-- Detectar duplicidades y dependencias.
-- Identificar contradicciones entre historias.
-- Añadir panel de métricas por proyecto.
-- Incorporar riesgos agregados y recomendaciones priorizadas.
-
-### Fase 9 — Trazabilidad avanzada y mejora continua
-
-- Ampliar la matriz requisito–criterio–caso–ejecución–defecto.
-- Comparar versiones de historias.
-- Medir el efecto de las mejoras aceptadas.
-- Conservar historial de análisis e informes.
-
-### Fase 10 — Evaluación avanzada de IA
-
-- Crear un conjunto de referencia.
-- Comparar prompts y modelos.
-- Medir precisión, omisiones y falsos positivos.
-- Automatizar pruebas de regresión y seguridad.
-
-### Fase 11 — Despliegue y presentación profesional
-
-- Desplegar el backend y frontend.
-- Migrar a PostgreSQL cuando sea necesario.
-- Configurar observabilidad y gestión de secretos.
-- Documentar API y arquitectura.
-- Preparar un proyecto de demostración completo.
-- Publicar ejemplos de informes y métricas de evaluación.
-
-## 9. Criterios generales de terminado
-
-El producto se considerará listo para una demostración integral cuando pueda:
-
-1. Importar múltiples historias de forma fiable.
-2. Analizarlas con reglas determinísticas e IA opcional.
-3. Identificar y priorizar problemas individuales y transversales.
-4. Proponer mejoras y conservar las decisiones humanas.
-5. Generar casos de prueba trazables.
-6. Ejecutar casos y asociar evidencias y defectos.
-7. Calcular métricas con definiciones documentadas.
-8. Generar informes individuales y consolidados.
-9. Recuperarse de fallos de IA sin perder los resultados ya guardados.
-10. Superar las pruebas automatizadas y ejecutarse en un entorno desplegado.
-11. Demostrar la calidad de sus resultados mediante un conjunto de evaluación reproducible.
-12. Explicar el origen de los hallazgos y las limitaciones de sus conclusiones.
-
-## 10. Resultado esperado
-
-StoryLens QA será una plataforma demostrable de ingeniería de calidad que integra análisis de requisitos, generación de pruebas, gestión de ejecución y analítica de calidad en un mismo flujo.
-
-Su principal diferenciador será combinar automatización determinística, IA supervisada por humanos, trazabilidad integral y métricas verificables para ayudar a los equipos a decidir qué revisar, qué probar, qué riesgos resolver y dónde invertir el esfuerzo de QA.
+Aún sin licencia definida: el código es visible, pero sin una licencia explícita no se concede permiso de reutilización.
