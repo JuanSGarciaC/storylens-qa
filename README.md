@@ -9,6 +9,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![Costo](https://img.shields.io/badge/costo-0-2ea44f)
+[![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
 
 <img src="docs/screenshots/05-analisis-con-ia.png" alt="Análisis de una historia con reglas e IA: puntaje, hallazgos con su norma y la confianza de la IA" width="900">
 
@@ -160,4 +161,4 @@ Las siete fases del plan están construidas: fundaciones, frontend, importación
 
 ## Licencia
 
-Aún sin licencia definida: el código es visible, pero sin una licencia explícita no se concede permiso de reutilización.
+[MIT](LICENSE): puedes usar, copiar, modificar y distribuir el código, incluso con fines comerciales, conservando el aviso de copyright. Se ofrece tal cual, sin garantía.

@@ -3,6 +3,7 @@ name = "storylens-backend"
 version = "0.1.0"
 description = "Backend de StoryLens QA: revisión de historias de usuario con reglas QA e IA"
 requires-python = ">=3.12"
+license = { text = "MIT" }
 dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
