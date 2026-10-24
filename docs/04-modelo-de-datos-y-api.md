@@ -4,6 +4,10 @@
 
 ```mermaid
 erDiagram
+    PROJECT ||--o{ STORY : contiene
+    PROJECT ||--o{ EPIC : agrupa
+    PROJECT ||--o{ VERSION : versiona
+    PROJECT ||--o{ AUDIT_EVENT : registra
     STORY ||--o{ ANALYSIS : tiene
     ANALYSIS ||--o{ FINDING : contiene
     STORY ||--o{ ACCEPTANCE_CRITERION : tiene
@@ -18,6 +22,20 @@ erDiagram
 ```
 
 ### Entidades
+
+**Project** *(Fase A)*
+`id` · `name` · `description` · `objective` · `settings` (JSON: `disabled_rules`, `penalties`, `not_ready_below`, `ready_from`) · `is_demo` · `owner_id` · `created_at`. Cada historia pertenece a un proyecto; los datos de proyectos distintos están aislados. `Epic` y `Version` (`id`, `project_id`, `name`) agrupan historias.
+
+**User** *(Fase A)*
+`id` · `email` (único, en minúsculas) · `password_hash` (scrypt). Solo existe la cuenta del dueño (ver ADR-004).
+
+**AuditEvent** *(Fase A)*
+`id` (autoincremental) · `at` · `actor` (email o `sistema`) · `action` (`project.created`, `story.imported`, `analysis.run`, `finding.decided`, `session.closed`, `settings.changed`…) · `entity` · `entity_id` · `project_id` · `detail`.
+
+**AIUsage** *(Fase A)*
+`id` · `key` (modelo) · `at`. Es el contador persistente de la cuota de IA (ver ADR-005).
+
+`Analysis` guarda además `settings_snapshot`: la configuración del proyecto con la que se calculó, para que el historial no cambie al editar los umbrales.
 
 **Story**
 `id` (UUID) · `external_key` (p. ej. "PROJ-123", opcional) · `title` · `description` · `notes` · `priority` · `source` (`manual` | `import_csv` | `import_json`) · `created_at` · `updated_at`
@@ -50,6 +68,19 @@ erDiagram
 `id` · `execution_id` · campos de la plantilla 29119-3 (ver doc 02 §6) · `exported` (bool)
 
 ## 2. API REST (v1)
+
+### Proyectos, acceso y auditoría *(Fase A)*
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST/GET | `/projects` | Crear / listar (el anónimo solo ve la demo) |
+| GET/PATCH/DELETE | `/projects/{id}` | Detalle / editar nombre, objetivo y `settings` / borrar con todo su contenido |
+| POST/GET | `/projects/{id}/epics`, `/projects/{id}/versions` | Épicas y versiones |
+| POST/GET | `/projects/{id}/stories` | Crear / listar (`?epic_id=&version_id=`) |
+| POST | `/projects/{id}/stories/import`, `/projects/{id}/stories/import:confirm` | Importación con vista previa; los duplicados se detectan dentro del proyecto |
+| GET | `/projects/{id}/audit?limit=&offset=` | Historial de acciones, el más reciente primero |
+| POST | `/auth/login`, `/auth/logout` · GET `/auth/me` | Sesión del dueño |
+
+Los recursos por id (`/stories/{id}`, `/analyses/{id}`, `/qa-sessions/{id}`…) conservan su ruta y comprueban a qué proyecto pertenecen. Escribir exige sesión (401) y no se permite en la demo (403); leer un proyecto ajeno responde 404.
 
 Base: `/api/v1`. JSON. Errores con formato **RFC 9457 (Problem Details)**: `type`, `title`, `status`, `detail`, `instance`.
 

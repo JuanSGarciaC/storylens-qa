@@ -1,13 +1,76 @@
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import JSON, Column
 from sqlmodel import Field, SQLModel
+
+
+class UserRow(SQLModel, table=True):
+    __tablename__ = "app_user"
+
+    id: str = Field(primary_key=True)
+    email: str = Field(unique=True, index=True)
+    password_hash: str
+    created_at: datetime
+
+
+class ProjectRow(SQLModel, table=True):
+    __tablename__ = "project"
+
+    id: str = Field(primary_key=True)
+    name: str
+    description: str = ""
+    objective: str = ""
+    settings: dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON, nullable=False))
+    is_demo: bool = Field(default=False, index=True)
+    owner_id: str | None = Field(default=None, index=True)
+    created_at: datetime
+
+
+class EpicRow(SQLModel, table=True):
+    __tablename__ = "epic"
+
+    id: str = Field(primary_key=True)
+    project_id: str = Field(foreign_key="project.id", index=True)
+    name: str
+
+
+class VersionRow(SQLModel, table=True):
+    __tablename__ = "version"
+
+    id: str = Field(primary_key=True)
+    project_id: str = Field(foreign_key="project.id", index=True)
+    name: str
+
+
+class AuditEventRow(SQLModel, table=True):
+    __tablename__ = "audit_event"
+
+    id: int | None = Field(default=None, primary_key=True)  # autoincremental: da el orden
+    at: datetime
+    actor: str
+    action: str
+    entity: str
+    entity_id: str
+    project_id: str | None = Field(default=None, index=True)
+    detail: str = ""
+
+
+class AIUsageRow(SQLModel, table=True):
+    __tablename__ = "ai_usage"
+
+    id: int | None = Field(default=None, primary_key=True)
+    key: str = Field(index=True)  # modelo al que se le descontó la llamada
+    at: datetime = Field(index=True)
 
 
 class StoryRow(SQLModel, table=True):
     __tablename__ = "story"
 
     id: str = Field(primary_key=True)
+    project_id: str = Field(foreign_key="project.id", index=True)
+    epic_id: str | None = Field(default=None, foreign_key="epic.id", index=True)
+    version_id: str | None = Field(default=None, foreign_key="version.id", index=True)
     title: str
     description: str
     notes: str = ""
@@ -24,6 +87,9 @@ class AnalysisRow(SQLModel, table=True):
     model_name: str | None = None
     prompt_version: str | None = None
     catalog_version: str
+    settings_snapshot: dict[str, Any] = Field(
+        default_factory=dict, sa_column=Column(JSON, nullable=False)
+    )
     created_at: datetime
 
 

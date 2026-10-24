@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile, status
 from fastapi.responses import FileResponse
 
-from app.api.deps import LLM, Repository, Sessions, Storage
+from app.api.deps import LLM, Actor, Audit, Repository, Sessions, Storage
 from app.api.downloads import ReportFormat, report_download
 from app.api.mappers_sessions import (
     checklist_out,
@@ -83,9 +83,18 @@ def session_report(
 
 @router.post("/qa-sessions/{session_id}:close", response_model=SessionDetailOut)
 def close_session(
-    session_id: str, payload: CloseRequest, repo: Repository, sessions: Sessions
+    session_id: str,
+    payload: CloseRequest,
+    repo: Repository,
+    sessions: Sessions,
+    audit: Audit,
+    actor: Actor,
 ) -> SessionDetailOut:
     qa_sessions.close_session(sessions, session_id, payload.recommendation, payload.summary)
+    closed = sessions.get_session(session_id)
+    stored = repo.get_story(closed.story_id) if closed else None
+    if stored is not None:
+        audit.record(actor, "session.closed", "session", session_id, stored.project_id)
     return detail_out(qa_sessions.get_detail(repo, sessions, session_id))
 
 

@@ -51,3 +51,15 @@ def test_catalog_ids_are_unique_and_have_references():
     catalog = load_catalog()
     assert len({r.id for r in catalog.rules}) == len(catalog.rules)
     assert all(r.reference for r in catalog.rules)
+
+
+def test_disabled_rule_produces_no_finding():
+    from app.domain.entities import Story
+    from app.domain.rules.engine import evaluate_story
+
+    story = Story("Pago", "El sistema permite pagar.", ())  # sin criterios: dispara US-AC-001
+
+    assert "US-AC-001" in {f.rule_id for f in evaluate_story(story)}
+    assert "US-AC-001" not in {
+        f.rule_id for f in evaluate_story(story, disabled_rules=["US-AC-001"])
+    }

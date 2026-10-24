@@ -1,12 +1,31 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import Annotated
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import Engine
+from sqlmodel import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.api.routers import analysis, findings, qa_sessions, stories, story_import, test_design
+from app.api.access import enforce_access
+from app.api.problems import problem
+from app.api.routers import (
+    analysis,
+    audit,
+    auth,
+    findings,
+    projects,
+    qa_sessions,
+    stories,
+    story_import,
+    test_design,
+)
+from app.application.auth import LoginThrottle, ensure_owner
+from app.application.demo import seed_demo
+from app.application.errors import ForbiddenError, NotAuthenticatedError
+from app.application.projects import InvalidProjectError
 from app.application.qa_sessions import ConflictError, InvalidSessionDataError
 from app.application.stories import InvalidDecisionError, NotFoundError
 from app.application.test_design import (
@@ -16,24 +35,37 @@ from app.application.test_design import (
 )
 from app.config import get_settings
 from app.domain.story_import import ImportFormatError
-from app.infrastructure.persistence.database import init_db
-
-
-def problem(status_code: int, title: str, detail: str | None = None) -> JSONResponse:
-    """Respuesta de error en formato Problem Details (RFC 9457)."""
-    body = {"type": "about:blank", "title": title, "status": status_code, "detail": detail or title}
-    return JSONResponse(body, status_code=status_code, media_type="application/problem+json")
+from app.infrastructure.persistence.database import get_engine, get_session, init_db
+from app.infrastructure.persistence.migrations import upgrade_to_head
+from app.infrastructure.persistence.sql_project_repository import SqlProjectRepository
+from app.infrastructure.persistence.sql_quota import SqlQuota
+from app.infrastructure.persistence.sql_repository import SqlStoryRepository
+from app.infrastructure.persistence.sql_users import SqlUserRepository
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    init_db()
+    settings = get_settings()
+    if settings.run_migrations:
+        upgrade_to_head(settings.database_url)
+    else:
+        init_db()
+    with Session(get_engine()) as session:
+        ensure_owner(SqlUserRepository(session), settings.owner_email, settings.owner_password)
+        if settings.seed_demo:
+            seed_demo(SqlProjectRepository(session), SqlStoryRepository(session))
     yield
 
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title="StoryLens QA API", version="0.4.0", lifespan=lifespan)
+    app = FastAPI(
+        title="StoryLens QA API",
+        version="0.4.0",
+        lifespan=lifespan,
+        dependencies=[Depends(enforce_access)],
+    )
+    app.state.login_throttle = LoginThrottle()
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
@@ -52,6 +84,18 @@ def create_app() -> FastAPI:
     @app.exception_handler(InvalidDecisionError)
     async def invalid_decision(_: Request, exc: InvalidDecisionError) -> JSONResponse:
         return problem(422, "Decisión no válida", str(exc))
+
+    @app.exception_handler(NotAuthenticatedError)
+    async def not_authenticated(_: Request, exc: NotAuthenticatedError) -> JSONResponse:
+        return problem(401, "Sesión requerida", str(exc))
+
+    @app.exception_handler(ForbiddenError)
+    async def forbidden(_: Request, exc: ForbiddenError) -> JSONResponse:
+        return problem(403, "Acción no permitida", str(exc))
+
+    @app.exception_handler(InvalidProjectError)
+    async def invalid_project(_: Request, exc: InvalidProjectError) -> JSONResponse:
+        return problem(422, "Proyecto no válido", str(exc))
 
     @app.exception_handler(InvalidCaseError)
     async def invalid_case(_: Request, exc: InvalidCaseError) -> JSONResponse:
@@ -92,9 +136,23 @@ def create_app() -> FastAPI:
         return await call_next(request)
 
     @app.get("/api/v1/health")
-    def health() -> dict[str, object]:
-        return {"status": "ok", "ai_configured": settings.ai_configured}
+    def health(session: Annotated[Session, Depends(get_session)]) -> dict[str, object]:
+        current = get_settings()  # al momento de la petición, no al importar el módulo
+        remaining: int | None = None
+        if current.ai_configured and current.gemini_model:
+            engine = session.get_bind()
+            assert isinstance(engine, Engine)
+            quota = SqlQuota(engine, current.ai_requests_per_minute, current.ai_daily_limit)
+            remaining = quota.remaining_today(current.gemini_model)
+        return {
+            "status": "ok",
+            "ai_configured": current.ai_configured,
+            "ai_quota_remaining_today": remaining,
+        }
 
+    app.include_router(auth.router, prefix="/api/v1")
+    app.include_router(projects.router, prefix="/api/v1")
+    app.include_router(audit.router, prefix="/api/v1")
     app.include_router(analysis.router, prefix="/api/v1")
     app.include_router(story_import.router, prefix="/api/v1")
     app.include_router(stories.router, prefix="/api/v1")

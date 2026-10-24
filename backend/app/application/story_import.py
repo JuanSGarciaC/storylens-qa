@@ -38,6 +38,7 @@ def _signature(title: str, description: str) -> tuple[str, str]:
 
 def preview_import(
     repo: StoryRepository,
+    project_id: str,
     filename: str,
     data: bytes,
     mapping: dict[str, str | None] | None = None,
@@ -50,7 +51,7 @@ def preview_import(
             "No se encontró la columna de descripción: elige cuál usar en el mapeo"
         )
     rows = build_rows(table, chosen, get_settings().max_story_chars)
-    known = {_signature(s.story.title, s.story.description) for s in repo.list_stories()}
+    known = {_signature(s.story.title, s.story.description) for s in repo.list_stories(project_id)}
     preview = []
     for row in rows:
         signature = _signature(row.title, row.description)
@@ -67,13 +68,14 @@ def preview_import(
 
 def confirm_import(
     repo: StoryRepository,
+    project_id: str,
     filename: str,
     data: bytes,
     mapping: dict[str, str | None] | None,
     selected: list[int] | None,
 ) -> list[StoredStory]:
     """Crea las historias elegidas. Relee el archivo: no confía en lo que mostró el cliente."""
-    preview = preview_import(repo, filename, data, mapping)
+    preview = preview_import(repo, project_id, filename, data, mapping)
     wanted = set(selected) if selected is not None else None
     created = []
     for item in preview.rows:
@@ -87,7 +89,7 @@ def confirm_import(
             acceptance_criteria=row.acceptance_criteria,
             notes=notes,
         )
-        created.append(repo.add_story(story))
+        created.append(repo.add_story(project_id, story))
     if not created:
         raise ImportFormatError("No hay historias válidas para importar con esa selección")
     return created

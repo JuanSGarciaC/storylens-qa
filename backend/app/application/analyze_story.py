@@ -1,7 +1,7 @@
 import logging
 from dataclasses import dataclass
 
-from app.domain.entities import AIStatus, Finding, Story
+from app.domain.entities import AIStatus, Finding, ProjectSettings, Story
 from app.domain.ports import LLMError, LLMInvalidResponseError, LLMPort
 from app.domain.rules.ai_findings import build_ai_findings
 from app.domain.rules.catalog import load_catalog
@@ -25,10 +25,16 @@ class AnalysisResult:
         return self.ai_status == AIStatus.OK
 
 
-def analyze_story(story: Story, llm: LLMPort | None = None, use_ai: bool = False) -> AnalysisResult:
+def analyze_story(
+    story: Story,
+    llm: LLMPort | None = None,
+    use_ai: bool = False,
+    settings: ProjectSettings | None = None,
+) -> AnalysisResult:
     """Reglas siempre; la IA solo complementa y, si falla, el análisis sigue con las reglas."""
+    settings = settings or ProjectSettings()
     catalog = load_catalog()
-    findings = evaluate_story(story, catalog)
+    findings = evaluate_story(story, catalog, settings.disabled_rules)
     status = AIStatus.NOT_REQUESTED
     model_name = prompt_version = None
 
@@ -45,13 +51,14 @@ def analyze_story(story: Story, llm: LLMPort | None = None, use_ai: bool = False
                 built = build_ai_findings(story, analysis.findings, catalog)
                 if built.discarded:
                     logger.info("Hallazgos de IA descartados: %s", dict(built.discarded))
-                findings = [*findings, *built.findings]
+                kept = [f for f in built.findings if f.rule_id not in settings.disabled_rules]
+                findings = [*findings, *kept]
                 status = AIStatus.OK
                 model_name, prompt_version = analysis.model_name, analysis.prompt_version
 
     return AnalysisResult(
         findings=findings,
-        score=calculate_score(findings),
+        score=calculate_score(findings, settings),
         catalog_version=catalog.version,
         ai_status=status,
         model_name=model_name,

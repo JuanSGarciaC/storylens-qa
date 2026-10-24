@@ -41,7 +41,9 @@ def use_llm(llm):
 
 
 def new_story(client, **overrides):
-    return client.post("/api/v1/stories", json={**STORY, **overrides}).json()["id"]
+    return client.post(
+        f"/api/v1/projects/{client.project_id}/stories", json={**STORY, **overrides}
+    ).json()["id"]
 
 
 def generate(client, story_id, **body):

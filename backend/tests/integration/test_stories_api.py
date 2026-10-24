@@ -6,7 +6,9 @@ STORY = {
 
 
 def create_story(client, **overrides):
-    response = client.post("/api/v1/stories", json={**STORY, **overrides})
+    response = client.post(
+        f"/api/v1/projects/{client.project_id}/stories", json={**STORY, **overrides}
+    )
     assert response.status_code == 201
     return response.json()
 
@@ -37,7 +39,7 @@ def test_analysis_is_persisted_and_listed_with_story(client):
     again = client.get(f"/api/v1/analyses/{analysis['id']}").json()
     assert again == analysis  # mismo orden y mismo contenido tras el viaje por la BD
 
-    listed = client.get("/api/v1/stories").json()
+    listed = client.get(f"/api/v1/projects/{client.project_id}/stories").json()
     assert listed[0]["latest_analysis"]["id"] == analysis["id"]
     assert listed[0]["latest_analysis"]["score"] == analysis["score"]
 
@@ -126,5 +128,5 @@ def test_not_found_returns_problem_details(client):
 def test_stories_are_listed_newest_first(client):
     first = create_story(client, title="Primera")
     second = create_story(client, title="Segunda")
-    ids = [s["id"] for s in client.get("/api/v1/stories").json()]
+    ids = [s["id"] for s in client.get(f"/api/v1/projects/{client.project_id}/stories").json()]
     assert ids == [second["id"], first["id"]]

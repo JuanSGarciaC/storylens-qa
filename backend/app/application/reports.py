@@ -107,7 +107,7 @@ def _finding_lines(finding: Finding) -> list[str]:
 
 
 def analysis_markdown(story: Story, analysis: StoredAnalysis) -> str:
-    score = calculate_score(analysis.findings)
+    score = calculate_score(analysis.findings, analysis.settings)
     lines = [
         "# Reporte de análisis de historia",
         "",
