@@ -7,6 +7,7 @@ from app.infrastructure.persistence.models import (
     CaseRow,
     ChecklistRow,
     DefectRow,
+    EvaluationRunRow,
     EvidenceRow,
     ExecutionRow,
     FindingRow,
@@ -34,6 +35,7 @@ class SqlProjectResolver:
         return (
             ("story_id", self._story),
             ("job_id", self._job),
+            ("run_id", self._evaluation),
             ("analysis_id", self._analysis),
             ("finding_id", self._finding),
             ("case_id", self._case),
@@ -46,6 +48,10 @@ class SqlProjectResolver:
 
     def _story(self, story_id: str | None) -> str | None:
         row = self._session.get(StoryRow, story_id) if story_id else None
+        return row.project_id if row else None
+
+    def _evaluation(self, run_id: str) -> str | None:
+        row = self._session.get(EvaluationRunRow, run_id)
         return row.project_id if row else None
 
     def _job(self, job_id: str) -> str | None:

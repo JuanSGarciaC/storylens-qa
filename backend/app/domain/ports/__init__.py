@@ -1,3 +1,4 @@
+from app.domain.ports.evaluations import EvaluationRepository
 from app.domain.ports.import_jobs import ImportJobRepository
 from app.domain.ports.llm import (
     AIDefectDraft,
@@ -24,6 +25,7 @@ __all__ = [
     "AIGherkinDraft",
     "AITestCaseDraft",
     "DefectContext",
+    "EvaluationRepository",
     "ImportJobRepository",
     "LLMAnalysis",
     "LLMDefect",

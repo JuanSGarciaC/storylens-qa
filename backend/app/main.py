@@ -16,6 +16,7 @@ from app.api.routers import (
     audit,
     auth,
     cross_analysis,
+    evaluations,
     findings,
     import_jobs,
     metrics,
@@ -28,6 +29,7 @@ from app.api.routers import (
 from app.application.auth import LoginThrottle, ensure_owner
 from app.application.demo import seed_demo
 from app.application.errors import ForbiddenError, NotAuthenticatedError
+from app.application.evaluations import ensure_demo_run
 from app.application.projects import InvalidProjectError
 from app.application.qa_sessions import ConflictError, InvalidSessionDataError
 from app.application.stories import InvalidDecisionError, NotFoundError
@@ -38,8 +40,10 @@ from app.application.test_design import (
 )
 from app.config import get_settings
 from app.domain.story_import import ImportFormatError
+from app.infrastructure.evaluation.golden import load_golden
 from app.infrastructure.persistence.database import get_engine, get_session, init_db
 from app.infrastructure.persistence.migrations import upgrade_to_head
+from app.infrastructure.persistence.sql_evaluation_repository import SqlEvaluationRepository
 from app.infrastructure.persistence.sql_import_job_repository import SqlImportJobRepository
 from app.infrastructure.persistence.sql_project_repository import SqlProjectRepository
 from app.infrastructure.persistence.sql_quota import SqlQuota
@@ -56,9 +60,11 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         init_db()
     with Session(get_engine()) as session:
         SqlImportJobRepository(session).mark_interrupted()
+        SqlEvaluationRepository(session).mark_interrupted()
         ensure_owner(SqlUserRepository(session), settings.owner_email, settings.owner_password)
         if settings.seed_demo:
-            seed_demo(SqlProjectRepository(session), SqlStoryRepository(session))
+            demo = seed_demo(SqlProjectRepository(session), SqlStoryRepository(session))
+            ensure_demo_run(SqlEvaluationRepository(session), load_golden(), demo.id)
     yield
 
 
@@ -163,6 +169,7 @@ def create_app() -> FastAPI:
     app.include_router(import_jobs.router, prefix="/api/v1")
     app.include_router(cross_analysis.router, prefix="/api/v1")
     app.include_router(metrics.router, prefix="/api/v1")
+    app.include_router(evaluations.router, prefix="/api/v1")
     app.include_router(stories.router, prefix="/api/v1")
     app.include_router(findings.router, prefix="/api/v1")
     app.include_router(test_design.router, prefix="/api/v1")

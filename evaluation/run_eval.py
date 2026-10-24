@@ -22,12 +22,13 @@ from app.domain.rules.catalog import load_catalog
 from app.infrastructure.llm.factory import build_llm
 
 ROOT = Path(__file__).resolve().parent
+BACKEND = ROOT.parent / "backend"
 DEFAULT_PAUSE = 10.0  # segundos entre historias: ~6 peticiones/min (límite gratuito: 15)
 MAX_CONSECUTIVE_AI_FAILURES = 2  # si la IA falla así de seguido, se detiene sin insistir
 
 
 def load_stories() -> list[dict]:
-    data = yaml.safe_load((ROOT / "golden-set" / "stories.yaml").read_text(encoding="utf-8"))
+    data = yaml.safe_load((BACKEND / "app" / "infrastructure" / "evaluation" / "golden_set.yaml").read_text(encoding="utf-8"))
     return data["stories"]
 
 

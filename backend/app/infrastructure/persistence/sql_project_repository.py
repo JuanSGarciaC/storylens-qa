@@ -6,6 +6,7 @@ from sqlmodel import Session, col, delete, or_, select
 from app.domain.entities.project import Epic, ProjectSettings, StoredProject, Version
 from app.infrastructure.persistence.models import (
     EpicRow,
+    EvaluationRunRow,
     ImportItemRow,
     ImportJobRow,
     ProjectRow,
@@ -98,6 +99,9 @@ class SqlProjectRepository:
         row = self._session.get(ProjectRow, project_id)
         if row is None:
             return False
+        self._session.exec(
+            delete(EvaluationRunRow).where(EvaluationRunRow.project_id == project_id)
+        )
         job_ids = select(ImportJobRow.id).where(ImportJobRow.project_id == project_id)
         self._session.exec(delete(ImportItemRow).where(col(ImportItemRow.job_id).in_(job_ids)))
         self._session.exec(delete(ImportJobRow).where(ImportJobRow.project_id == project_id))

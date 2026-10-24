@@ -37,7 +37,7 @@ build-backend = "setuptools.build_meta"
 include = ["app*"]
 
 [tool.setuptools.package-data]
-app = ["domain/rules/catalog/*.yaml", "prompts/*/*.md"]
+app = ["domain/rules/catalog/*.yaml", "prompts/*/*.md", "infrastructure/evaluation/*.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

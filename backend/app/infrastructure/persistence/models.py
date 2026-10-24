@@ -229,3 +229,23 @@ class ImportItemRow(SQLModel, table=True):
     story_id: str | None = None
     error: str = ""
     ai_status: str | None = None
+
+
+class EvaluationRunRow(SQLModel, table=True):
+    __tablename__ = "evaluation_run"
+
+    id: str = Field(primary_key=True)
+    project_id: str = Field(foreign_key="project.id", index=True)
+    mode: str
+    status: str = Field(index=True)
+    actor: str
+    catalog_version: str = ""
+    model_name: str | None = None
+    prompt_version: str | None = None
+    total: int = 0
+    processed: int = 0
+    metrics: dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON, nullable=False))
+    details: dict[str, Any] = Field(default_factory=dict, sa_column=Column(JSON, nullable=False))
+    note: str = ""
+    created_at: datetime
+    finished_at: datetime | None = None
