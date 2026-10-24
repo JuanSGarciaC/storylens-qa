@@ -194,6 +194,7 @@ function TestsView({ story, project }: { story: StoryItem; project: Project }) {
     message: string;
   } | null>(null);
   const [gherkin, setGherkin] = useState<GherkinSuggestion | null>(null);
+  const [traceStale, setTraceStale] = useState(false);
 
   if (data.loading) return <Spinner label="Cargando casos de prueba…" />;
   if (data.error || !data.data) {
@@ -203,6 +204,29 @@ function TestsView({ story, project }: { story: StoryItem; project: Project }) {
   const message = (e: unknown) =>
     e instanceof Error ? e.message : "No se pudo completar.";
 
+  /** Aplica los casos ya guardados y refresca la trazabilidad sin que su fallo cuente como error de la acción. */
+  async function applyCases(next: TestCase[]) {
+    data.set({ cases: next, trace });
+    try {
+      data.set({ cases: next, trace: await api.getTraceability(story.id) });
+      setTraceStale(false);
+    } catch {
+      setTraceStale(true);
+    }
+  }
+
+  async function retryTrace() {
+    setBusy("status");
+    try {
+      data.set({ cases, trace: await api.getTraceability(story.id) });
+      setTraceStale(false);
+    } catch {
+      setTraceStale(true);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function generate() {
     setBusy("generate");
     setAiError("");
@@ -210,7 +234,7 @@ function TestsView({ story, project }: { story: StoryItem; project: Project }) {
     let failed = false;
     try {
       const next = await api.generateCases(story.id);
-      data.set({ cases: next, trace: await api.getTraceability(story.id) });
+      await applyCases(next);
     } catch (e) {
       failed = true;
       setAiError(message(e));
@@ -243,8 +267,7 @@ function TestsView({ story, project }: { story: StoryItem; project: Project }) {
     setCaseError(null);
     try {
       const updated = await api.updateCaseStatus(testCase.id, status);
-      const next = cases.map((c) => (c.id === updated.id ? updated : c));
-      data.set({ cases: next, trace: await api.getTraceability(story.id) });
+      await applyCases(cases.map((c) => (c.id === updated.id ? updated : c)));
     } catch (e) {
       setCaseError({ id: testCase.id, message: message(e) });
     } finally {
@@ -346,6 +369,19 @@ function TestsView({ story, project }: { story: StoryItem; project: Project }) {
             );
           })}
         </section>
+      ) : null}
+
+      {traceStale ? (
+        <div role="status" className="toolbar">
+          <span className="hint">No se pudo actualizar la trazabilidad</span>
+          <Button
+            variant="ghost"
+            disabled={busy !== null}
+            onClick={() => void retryTrace()}
+          >
+            Reintentar trazabilidad
+          </Button>
+        </div>
       ) : null}
 
       {trace.rows.length > 0 ? (

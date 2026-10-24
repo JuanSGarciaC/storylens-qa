@@ -34,6 +34,9 @@ export type Rule = Schemas["RuleOut"];
 export type AuditEvent = Schemas["AuditEventOut"];
 export type Recommendation = NonNullable<SessionDetail["recommendation"]>;
 
+/** Codifica un id para usarlo como segmento de ruta. */
+const enc = encodeURIComponent;
+
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api/v1";
 
 /** URL del API para enlaces de descarga; única fuente de la base. */
@@ -121,60 +124,60 @@ export const createProject = (input: ProjectInput) =>
   });
 
 export const getProject = (projectId: string) =>
-  request<Project>(`/projects/${projectId}`);
+  request<Project>(`/projects/${enc(projectId)}`);
 
 export const updateProject = (projectId: string, patch: ProjectPatch) =>
-  request<Project>(`/projects/${projectId}`, {
+  request<Project>(`/projects/${enc(projectId)}`, {
     method: "PATCH",
     body: JSON.stringify(patch),
   });
 
 export const deleteProject = (projectId: string) =>
-  request<void>(`/projects/${projectId}`, { method: "DELETE" });
+  request<void>(`/projects/${enc(projectId)}`, { method: "DELETE" });
 
 export const listEpics = (projectId: string) =>
-  request<Named[]>(`/projects/${projectId}/epics`);
+  request<Named[]>(`/projects/${enc(projectId)}/epics`);
 
 export const createEpic = (projectId: string, name: string) =>
-  request<Named>(`/projects/${projectId}/epics`, {
+  request<Named>(`/projects/${enc(projectId)}/epics`, {
     method: "POST",
     body: JSON.stringify({ name }),
   });
 
 export const listVersions = (projectId: string) =>
-  request<Named[]>(`/projects/${projectId}/versions`);
+  request<Named[]>(`/projects/${enc(projectId)}/versions`);
 
 export const createVersion = (projectId: string, name: string) =>
-  request<Named>(`/projects/${projectId}/versions`, {
+  request<Named>(`/projects/${enc(projectId)}/versions`, {
     method: "POST",
     body: JSON.stringify({ name }),
   });
 
 export const listAudit = (projectId: string, limit = 50, offset = 0) =>
   request<AuditEvent[]>(
-    `/projects/${projectId}/audit?limit=${limit}&offset=${offset}`,
+    `/projects/${enc(projectId)}/audit?limit=${limit}&offset=${offset}`,
   );
 
 export const listRules = () => request<Rule[]>("/rules");
 
 // --- historias ---
 export const listStories = (projectId: string) =>
-  request<StoryItem[]>(`/projects/${projectId}/stories`);
+  request<StoryItem[]>(`/projects/${enc(projectId)}/stories`);
 
 export const getStory = (storyId: string) =>
-  request<StoryItem>(`/stories/${storyId}`);
+  request<StoryItem>(`/stories/${enc(storyId)}`);
 
 export const createStory = (projectId: string, story: StoryInput) =>
-  request<StoryItem>(`/projects/${projectId}/stories`, {
+  request<StoryItem>(`/projects/${enc(projectId)}/stories`, {
     method: "POST",
     body: JSON.stringify(story),
   });
 
 export const deleteStory = (storyId: string) =>
-  request<void>(`/stories/${storyId}`, { method: "DELETE" });
+  request<void>(`/stories/${enc(storyId)}`, { method: "DELETE" });
 
 export const createAnalysis = (storyId: string, useAi: boolean) =>
-  request<Analysis>(`/stories/${storyId}/analyses`, {
+  request<Analysis>(`/stories/${enc(storyId)}/analyses`, {
     method: "POST",
     body: JSON.stringify({ use_ai: useAi }),
   });
@@ -190,66 +193,66 @@ export const getHealth = (signal?: AbortSignal) =>
   request<Health>("/health", { signal });
 
 export const getAnalysis = (analysisId: string) =>
-  request<Analysis>(`/analyses/${analysisId}`);
+  request<Analysis>(`/analyses/${enc(analysisId)}`);
 
 export const decideFinding = (
   findingId: string,
   decision: Decision,
   reason?: string,
 ) =>
-  request<Analysis>(`/findings/${findingId}`, {
+  request<Analysis>(`/findings/${enc(findingId)}`, {
     method: "PATCH",
     body: JSON.stringify({ decision, dismiss_reason: reason ?? null }),
   });
 
 export const listCases = (storyId: string) =>
-  request<TestCase[]>(`/stories/${storyId}/test-cases`);
+  request<TestCase[]>(`/stories/${enc(storyId)}/test-cases`);
 
 export const generateCases = (storyId: string) =>
-  request<TestCase[]>(`/stories/${storyId}/test-cases:generate`, {
+  request<TestCase[]>(`/stories/${enc(storyId)}/test-cases:generate`, {
     method: "POST",
     body: JSON.stringify({ techniques: [] }),
   });
 
 export const updateCaseStatus = (caseId: string, status: CaseStatus) =>
-  request<TestCase>(`/test-cases/${caseId}`, {
+  request<TestCase>(`/test-cases/${enc(caseId)}`, {
     method: "PATCH",
     body: JSON.stringify({ status }),
   });
 
 export const getTraceability = (storyId: string) =>
-  request<Traceability>(`/stories/${storyId}/traceability`);
+  request<Traceability>(`/stories/${enc(storyId)}/traceability`);
 
 export const suggestGherkin = (storyId: string) =>
-  request<GherkinSuggestion>(`/stories/${storyId}/gherkin:suggest`, {
+  request<GherkinSuggestion>(`/stories/${enc(storyId)}/gherkin:suggest`, {
     method: "POST",
   });
 
 // --- sesiones de revisión en el ambiente QA ---
 export const listSessions = (storyId: string) =>
-  request<SessionSummary[]>(`/stories/${storyId}/qa-sessions`);
+  request<SessionSummary[]>(`/stories/${enc(storyId)}/qa-sessions`);
 
 export const createSession = (storyId: string, input: SessionInput) =>
-  request<SessionDetail>(`/stories/${storyId}/qa-sessions`, {
+  request<SessionDetail>(`/stories/${enc(storyId)}/qa-sessions`, {
     method: "POST",
     body: JSON.stringify(input),
   });
 
 export const getSession = (sessionId: string) =>
-  request<SessionDetail>(`/qa-sessions/${sessionId}`);
+  request<SessionDetail>(`/qa-sessions/${enc(sessionId)}`);
 
 export const closeSession = (
   sessionId: string,
   recommendation: Recommendation,
   summary: string,
 ) =>
-  request<SessionDetail>(`/qa-sessions/${sessionId}:close`, {
+  request<SessionDetail>(`/qa-sessions/${enc(sessionId)}:close`, {
     method: "POST",
     body: JSON.stringify({ recommendation, summary }),
   });
 
 export const updateChecklistItem = (itemId: string, checked: boolean) =>
-  request<ChecklistItem>(`/checklist-items/${itemId}`, {
+  request<ChecklistItem>(`/checklist-items/${enc(itemId)}`, {
     method: "PATCH",
     body: JSON.stringify({ checked }),
   });
@@ -264,13 +267,13 @@ export const updateExecution = (
   executionId: string,
   changes: ExecutionChanges,
 ) =>
-  request<Execution>(`/executions/${executionId}`, {
+  request<Execution>(`/executions/${enc(executionId)}`, {
     method: "PATCH",
     body: JSON.stringify(changes),
   });
 
 export const addNoteEvidence = (executionId: string, text: string) =>
-  request<Evidence>(`/executions/${executionId}/evidences`, {
+  request<Evidence>(`/executions/${enc(executionId)}/evidences`, {
     method: "POST",
     body: JSON.stringify({ type: "note", text }),
   });
@@ -280,7 +283,7 @@ export const addLinkEvidence = (
   url: string,
   description: string,
 ) =>
-  request<Evidence>(`/executions/${executionId}/evidences`, {
+  request<Evidence>(`/executions/${enc(executionId)}/evidences`, {
     method: "POST",
     body: JSON.stringify({ type: "link", url, description }),
   });
@@ -293,20 +296,20 @@ export const uploadImageEvidence = (
   const form = new FormData();
   form.append("file", file);
   form.append("description", description);
-  return request<Evidence>(`/executions/${executionId}/evidences/image`, {
+  return request<Evidence>(`/executions/${enc(executionId)}/evidences/image`, {
     method: "POST",
     body: form,
   });
 };
 
 export const draftDefect = (executionId: string, useAi: boolean) =>
-  request<DefectDraftResult>(`/executions/${executionId}/defect-draft`, {
+  request<DefectDraftResult>(`/executions/${enc(executionId)}/defect-draft`, {
     method: "POST",
     body: JSON.stringify({ use_ai: useAi }),
   });
 
 export const updateDefect = (defectId: string, changes: DefectUpdate) =>
-  request<Defect>(`/defect-drafts/${defectId}`, {
+  request<Defect>(`/defect-drafts/${enc(defectId)}`, {
     method: "PATCH",
     body: JSON.stringify(changes),
   });
@@ -328,7 +331,7 @@ export const previewImport = (
   file: File,
   mapping: ImportMapping | null,
 ) =>
-  request<ImportPreview>(`/projects/${projectId}/stories/import`, {
+  request<ImportPreview>(`/projects/${enc(projectId)}/stories/import`, {
     method: "POST",
     body: importForm(file, mapping),
   });
@@ -340,7 +343,7 @@ export const confirmImport = (
   selected: number[],
 ) =>
   request<{ created: StoryItem[] }>(
-    `/projects/${projectId}/stories/import:confirm`,
+    `/projects/${enc(projectId)}/stories/import:confirm`,
     {
       method: "POST",
       body: importForm(file, mapping, selected),

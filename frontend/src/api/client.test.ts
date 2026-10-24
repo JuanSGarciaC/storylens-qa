@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiError, listStories, login, setUnauthorizedHandler } from "./client";
+import {
+  ApiError,
+  getSession,
+  getStory,
+  listStories,
+  login,
+  setUnauthorizedHandler,
+} from "./client";
 
 function respond(status: number, body?: unknown) {
   return new Response(body === undefined ? null : JSON.stringify(body), {
@@ -75,5 +82,21 @@ describe("cliente de API", () => {
       message: "No se pudo conectar con el servidor.",
       status: 0,
     });
+  });
+
+  it("codifica los ids en la ruta para que no alteren el destino", async () => {
+    const fetchMock = vi.fn(async () => respond(200, []));
+    vi.stubGlobal("fetch", fetchMock);
+    await listStories("../auth/me");
+    await getStory("a/b?x=1");
+    await getSession("s#1");
+    const urls = fetchMock.mock.calls.map(
+      (call) => (call as unknown as [string])[0],
+    );
+    expect(urls).toEqual([
+      "/api/v1/projects/..%2Fauth%2Fme/stories",
+      "/api/v1/stories/a%2Fb%3Fx%3D1",
+      "/api/v1/qa-sessions/s%231",
+    ]);
   });
 });

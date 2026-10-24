@@ -12,14 +12,18 @@ const json = (body: unknown, status = 200) =>
     headers: { "Content-Type": "application/json" },
   });
 
-function stubApi(loginResponse: () => Response) {
+function stubApi(loginResponse: () => Response, authenticated = false) {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => {
       if (url.endsWith("/health")) {
         return json({ status: "ok", ai_configured: false });
       }
-      if (url.endsWith("/auth/me")) return json({ authenticated: false });
+      if (url.endsWith("/auth/me")) {
+        return authenticated
+          ? json({ authenticated: true, email: "a@b.co" })
+          : json({ authenticated: false });
+      }
       if (url.endsWith("/auth/login")) return loginResponse();
       return json({}, 404);
     }),
@@ -75,6 +79,36 @@ describe("LoginPage", () => {
     stubApi(() => json({ authenticated: true, email: "a@b.co" }));
     await setup("/login?next=https%3A%2F%2Fevil.test");
     await submit();
+    await waitFor(() =>
+      expect(screen.getByTestId("where")).toHaveTextContent(/^\/$/),
+    );
+  });
+
+  it("un usuario ya autenticado en /login va a next", async () => {
+    stubApi(() => json({}), true);
+    render(
+      <MemoryRouter initialEntries={["/login?next=%2Fp%2Fp1%2Fstories"]}>
+        <SessionProvider>
+          <LoginPage />
+          <Where />
+        </SessionProvider>
+      </MemoryRouter>,
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId("where")).toHaveTextContent("/p/p1/stories"),
+    );
+  });
+
+  it("un usuario ya autenticado en /login sin next va a /", async () => {
+    stubApi(() => json({}), true);
+    render(
+      <MemoryRouter initialEntries={["/login"]}>
+        <SessionProvider>
+          <LoginPage />
+          <Where />
+        </SessionProvider>
+      </MemoryRouter>,
+    );
     await waitFor(() =>
       expect(screen.getByTestId("where")).toHaveTextContent(/^\/$/),
     );

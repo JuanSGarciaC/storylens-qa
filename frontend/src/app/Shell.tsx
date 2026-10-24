@@ -181,6 +181,7 @@ function ModuleNav({
 function StatusBadges() {
   const { me, aiConfigured, aiQuotaRemaining, logout } = useSession();
   const location = useLocation();
+  const navigate = useNavigate();
   const [logoutError, setLogoutError] = useState(false);
   let ai: ReactNode;
   if (!aiConfigured) {
@@ -206,7 +207,10 @@ function StatusBadges() {
             variant="ghost"
             onClick={() => {
               setLogoutError(false);
-              logout().catch(() => setLogoutError(true));
+              logout().then(
+                () => navigate("/", { replace: true }),
+                () => setLogoutError(true),
+              );
             }}
           >
             Cerrar sesión
@@ -444,8 +448,11 @@ function ShellFrame() {
 
 export function Shell() {
   const { projectId } = useParams();
+  const authenticated = useSession().me?.authenticated ?? false;
+  // Al cambiar la sesión se descarta todo el estado de proyectos y pantallas,
+  // para que no queden datos privados en pantalla tras cerrar sesión.
   return (
-    <ProjectProvider projectId={projectId}>
+    <ProjectProvider key={String(authenticated)} projectId={projectId}>
       <ShellFrame />
     </ProjectProvider>
   );

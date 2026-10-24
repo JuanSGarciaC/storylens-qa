@@ -53,6 +53,8 @@ type Options = {
   aiConfigured?: boolean;
   generateFails?: boolean;
   statusFails?: boolean;
+  /** La trazabilidad falla después de la primera carga. */
+  traceFailsAfterLoad?: boolean;
   quota?: number;
   foreign?: boolean;
 };
@@ -71,7 +73,11 @@ class Boundary extends Component<{ children: ReactNode }, { error?: Error }> {
   }
 }
 
+const traceRetry = { ok: false };
+
 function setup(options: Options = {}) {
+  let traceCalls = 0;
+  traceRetry.ok = false;
   const story = makeStory();
   if (options.foreign) story.project_id = "otro";
   const project = makeProject({ is_demo: options.demo ?? false });
@@ -108,6 +114,10 @@ function setup(options: Options = {}) {
         return json(found);
       }
       if (path === "/stories/s1/traceability") {
+        traceCalls += 1;
+        if (options.traceFailsAfterLoad && traceCalls > 1 && !traceRetry.ok) {
+          return json({ detail: "Trazabilidad caída" }, 500);
+        }
         const rows = story.acceptance_criteria.map((text, i) => {
           const linked = cases.filter((c) => c.criterion_index === i + 1);
           const accepted = linked.filter((c) => c.status === "accepted");
@@ -202,6 +212,42 @@ describe("TestsPage", () => {
       "No se pudo guardar el estado",
     );
     expect(screen.getByText("Propuesto")).toBeInTheDocument();
+  });
+
+  it("si falla la trazabilidad tras cambiar el estado, el caso queda actualizado y se ofrece reintentar", async () => {
+    setup({ cases: [makeCase(1)], traceFailsAfterLoad: true });
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Aceptar caso Caso 1" }),
+    );
+    expect(await screen.findByText("Aceptado")).toBeInTheDocument();
+    expect(
+      await screen.findByText("No se pudo actualizar la trazabilidad"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("No se pudo guardar el estado")).toBeNull();
+    expect(screen.queryByText("Propuesto")).toBeNull();
+    traceRetry.ok = true;
+    await userEvent.click(
+      screen.getByRole("button", { name: "Reintentar trazabilidad" }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.queryByText("No se pudo actualizar la trazabilidad"),
+      ).toBeNull(),
+    );
+    expect(await screen.findByText("50%")).toBeInTheDocument();
+  });
+
+  it("si falla la trazabilidad tras generar, los casos se muestran igualmente", async () => {
+    setup({ traceFailsAfterLoad: true });
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Generar casos" }),
+    );
+    expect((await screen.findAllByText("Caso 2")).length).toBeGreaterThan(0);
+    expect(
+      await screen.findByText("No se pudo actualizar la trazabilidad"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("La IA no está disponible ahora")).toBeNull();
+    expect(screen.queryByText(/No se pudo completar/)).toBeNull();
   });
 
   it("anónimo ve los casos pero no los controles, y ve el motivo", async () => {

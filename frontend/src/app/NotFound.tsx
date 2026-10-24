@@ -10,6 +10,7 @@ export function NotFound({
 }) {
   return (
     <EmptyState
+      headingLevel={1}
       title={title}
       body="La dirección no existe o ya no está disponible. Revisa que sea correcta o vuelve al listado."
       action={<Link to="/">Volver a proyectos</Link>}

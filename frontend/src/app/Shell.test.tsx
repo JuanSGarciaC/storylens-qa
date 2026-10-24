@@ -106,11 +106,59 @@ describe("Shell", () => {
     stubWidth(false);
     renderAt("/p/zzz");
     expect(
-      await screen.findByRole("heading", { name: /no encontrado/i }),
+      await screen.findByRole("heading", {
+        level: 1,
+        name: /no encontrado/i,
+      }),
     ).toBeVisible();
     expect(
       screen.getByRole("link", { name: "Volver a proyectos" }),
     ).toHaveAttribute("href", "/");
+  });
+
+  it("al cerrar sesión vuelve a / y ya no muestra el proyecto privado", async () => {
+    let authed = true;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string, init: RequestInit = {}) => {
+        if (url.endsWith("/health")) {
+          return json({ status: "ok", ai_configured: false });
+        }
+        if (url.endsWith("/auth/me")) {
+          return json(
+            authed
+              ? { authenticated: true, email: "qa@ejemplo.com" }
+              : { authenticated: false },
+          );
+        }
+        if (url.endsWith("/auth/logout") && init.method === "POST") {
+          authed = false;
+          return new Response(null, { status: 204 });
+        }
+        if (url.endsWith("/projects/x")) {
+          return authed
+            ? json(makeProject({ id: "x", name: "Proyecto privado" }))
+            : json({ detail: "No encontrado" }, 404);
+        }
+        if (url.endsWith("/projects")) {
+          return json(
+            authed ? [makeProject({ id: "x", name: "Proyecto privado" })] : [],
+          );
+        }
+        if (url.endsWith("/projects/x/stories")) return json([]);
+        return json({ detail: "No encontrado" }, 404);
+      }),
+    );
+    stubWidth(false);
+    const { router } = renderAt("/p/x/stories");
+    await screen.findAllByText("Proyecto privado");
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Cerrar sesión" }),
+    );
+    await waitFor(() => expect(router.state.location.pathname).toBe("/"));
+    await waitFor(() =>
+      expect(screen.queryAllByText("Proyecto privado")).toHaveLength(0),
+    );
   });
 
   it("historia que no pertenece al proyecto (404) muestra NotFound", async () => {

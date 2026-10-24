@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useSession } from "../../app/session";
 import { Button } from "../../shared/ui/Button";
 import { ErrorNotice } from "../../shared/ui/ErrorNotice";
@@ -15,7 +15,7 @@ export function safeNext(next: string | null): string {
 }
 
 export function LoginPage() {
-  const { login } = useSession();
+  const { login, me } = useSession();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const [email, setEmail] = useState("");
@@ -38,6 +38,11 @@ export function LoginPage() {
       setError(e instanceof Error ? e.message : "No se pudo iniciar sesión.");
       setBusy(false);
     }
+  }
+
+  // Quien ya inició sesión no necesita el formulario.
+  if (me?.authenticated) {
+    return <Navigate to={safeNext(params.get("next"))} replace />;
   }
 
   return (
