@@ -8,6 +8,7 @@ import {
 import type { ReactNode } from "react";
 import * as api from "../api/client";
 import type { Project } from "../api/client";
+import { useSession } from "./session";
 
 export type ProjectStatus = "none" | "loading" | "ready" | "notfound" | "error";
 
@@ -17,6 +18,10 @@ export type ProjectValue = {
   status: ProjectStatus;
   error: string;
   reload(): void;
+  /** Proyectos visibles para el selector y la paleta. */
+  projects: Project[];
+  /** Vuelve a pedir la lista (p. ej. tras crear o borrar un proyecto). */
+  refreshProjects(): void;
 };
 
 const ProjectContext = createContext<ProjectValue | null>(null);
@@ -44,6 +49,22 @@ export function ProjectProvider({
 }) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [listAttempt, setListAttempt] = useState(0);
+  const authenticated = useSession().me?.authenticated ?? false;
+
+  useEffect(() => {
+    let current = true;
+    api.listProjects().then(
+      (list) => current && setProjects(list),
+      () => current && setProjects([]),
+    );
+    return () => {
+      current = false;
+    };
+  }, [authenticated, listAttempt]);
+
+  const refreshProjects = useCallback(() => setListAttempt((n) => n + 1), []);
 
   useEffect(() => {
     if (!projectId) return;
@@ -83,6 +104,8 @@ export function ProjectProvider({
     status: !projectId ? "none" : (fresh?.status ?? "loading"),
     error: fresh?.error ?? "",
     reload,
+    projects,
+    refreshProjects,
   };
   return (
     <ProjectContext.Provider value={value}>{children}</ProjectContext.Provider>

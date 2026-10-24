@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import type { ReactNode } from "react";
 import {
   Link,
@@ -7,7 +13,6 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import * as api from "../api/client";
 import type { Project } from "../api/client";
 import { Badge } from "../shared/ui/Badge";
 import { Button } from "../shared/ui/Button";
@@ -176,6 +181,7 @@ function ModuleNav({
 function StatusBadges() {
   const { me, aiConfigured, aiQuotaRemaining, logout } = useSession();
   const location = useLocation();
+  const [logoutError, setLogoutError] = useState(false);
   let ai: ReactNode;
   if (!aiConfigured) {
     ai = <Badge tone="neutral">IA no configurada: solo reglas</Badge>;
@@ -196,9 +202,20 @@ function StatusBadges() {
       {me?.authenticated ? (
         <>
           <Badge tone="info">Sesión: {me.email ?? "iniciada"}</Badge>
-          <Button variant="ghost" onClick={() => void logout()}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setLogoutError(false);
+              logout().catch(() => setLogoutError(true));
+            }}
+          >
             Cerrar sesión
           </Button>
+          {logoutError ? (
+            <span role="alert" className="nav__note">
+              No se pudo cerrar la sesión. Inténtalo de nuevo.
+            </span>
+          ) : null}
         </>
       ) : (
         <>
@@ -248,14 +265,32 @@ function ProjectSelect({
   );
 }
 
+const TITLES: [RegExp, string][] = [
+  [/\/login$/, "Iniciar sesión"],
+  [/\/stories\/[^/]+\/analysis$/, "Análisis"],
+  [/\/stories\/[^/]+\/tests$/, "Casos de prueba"],
+  [/\/stories\/[^/]+\/sessions$/, "Sesiones QA"],
+  [/\/stories$/, "Historias"],
+  [/\/reports$/, "Informes"],
+  [/\/settings$/, "Configuración"],
+  [/^\/p\/[^/]+$/, "Resumen"],
+  [/^\/$/, "Proyectos"],
+];
+
+function pageTitle(pathname: string) {
+  return TITLES.find(([pattern]) => pattern.test(pathname))?.[1];
+}
+
 function ShellFrame() {
-  const { projectId, status, error, reload } = useProject();
-  const { me } = useSession();
+  const { projectId, project, status, error, reload, projects } = useProject();
   const narrow = useIsNarrow();
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  // Sin proyecto válido no se ofrecen enlaces específicos de proyecto.
+  const scopedId = status === "notfound" ? undefined : projectId;
   const [lastPath, setLastPath] = useState(pathname);
 
   // Cerrar el menú móvil al navegar (ajuste durante el render, sin efecto).
@@ -263,18 +298,6 @@ function ShellFrame() {
     setLastPath(pathname);
     setMenuOpen(false);
   }
-
-  const authenticated = me?.authenticated ?? false;
-  useEffect(() => {
-    let current = true;
-    api.listProjects().then(
-      (list) => current && setProjects(list),
-      () => current && setProjects([]),
-    );
-    return () => {
-      current = false;
-    };
-  }, [authenticated]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -289,8 +312,8 @@ function ShellFrame() {
 
   const items = useMemo<PaletteItem[]>(() => {
     const list: PaletteItem[] = [];
-    if (projectId) {
-      const base = `/p/${projectId}`;
+    if (scopedId) {
+      const base = `/p/${scopedId}`;
       list.push(
         {
           id: "overview",
@@ -333,7 +356,15 @@ function ShellFrame() {
       });
     }
     return list;
-  }, [projectId, projects]);
+  }, [scopedId, projects]);
+
+  const section = pageTitle(pathname);
+  const projectName = status === "ready" ? project?.name : undefined;
+  useEffect(() => {
+    document.title = [section, projectName, "StoryLens"]
+      .filter(Boolean)
+      .join(" · ");
+  }, [section, projectName]);
 
   let main: ReactNode;
   if (status === "loading") main = <Spinner label="Cargando proyecto…" />;
@@ -350,14 +381,16 @@ function ShellFrame() {
       </a>
       <header className="topbar">
         {narrow ? (
-          <Button
-            variant="ghost"
+          <button
+            ref={menuButtonRef}
+            type="button"
+            className="btn btn--ghost"
             aria-expanded={menuOpen}
             aria-controls="barra-lateral"
             onClick={() => setMenuOpen((open) => !open)}
           >
             Menú
-          </Button>
+          </button>
         ) : null}
         <Link to="/" className="brand">
           StoryLens
@@ -371,19 +404,35 @@ function ShellFrame() {
           Buscar <kbd className="mono">Ctrl K</kbd>
         </Button>
       </header>
-      <div id="barra-lateral" className="shell__side">
+      <div
+        id="barra-lateral"
+        className="shell__side"
+        onKeyDown={(event) => {
+          if (event.key === "Escape" && narrow && menuOpen) {
+            event.preventDefault();
+            setMenuOpen(false);
+            menuButtonRef.current?.focus();
+          }
+        }}
+      >
         {narrow && !menuOpen ? null : (
           <aside className="sidebar">
-            <ProjectSelect projects={projects} projectId={projectId} />
+            <ProjectSelect projects={projects} projectId={scopedId} />
             <ModuleNav
-              projectId={projectId}
-              onNavigate={() => setMenuOpen(false)}
+              projectId={scopedId}
+              onNavigate={() => {
+                // Desde el menú móvil, el foco pasa al contenido de la nueva pantalla.
+                if (narrow) {
+                  setMenuOpen(false);
+                  mainRef.current?.focus();
+                }
+              }}
             />
             <StatusBadges />
           </aside>
         )}
       </div>
-      <main id="contenido" className="content" tabIndex={-1}>
+      <main id="contenido" ref={mainRef} className="content" tabIndex={-1}>
         {main}
       </main>
       {paletteOpen ? (

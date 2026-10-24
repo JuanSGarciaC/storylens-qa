@@ -55,6 +55,12 @@ export function CommandPalette({
     return () => previous?.focus();
   }, []);
 
+  useEffect(() => {
+    document
+      .getElementById(`${listId}-opt-${activeIndex}`)
+      ?.scrollIntoView?.({ block: "nearest" });
+  }, [activeIndex, listId]);
+
   function choose(item: PaletteItem | undefined) {
     if (!item) return;
     onClose();
@@ -70,6 +76,10 @@ export function CommandPalette({
       if (results.length === 0) return;
       const step = event.key === "ArrowDown" ? 1 : -1;
       setActive((activeIndex + step + results.length) % results.length);
+    } else if (event.key === "Home" || event.key === "End") {
+      if (event.target !== inputRef.current || results.length === 0) return;
+      event.preventDefault();
+      setActive(event.key === "Home" ? 0 : results.length - 1);
     } else if (event.key === "Enter" && event.target === inputRef.current) {
       event.preventDefault();
       choose(results[activeIndex]);
@@ -108,7 +118,7 @@ export function CommandPalette({
             className="palette__input"
             role="combobox"
             aria-label="Buscar pantalla o proyecto"
-            aria-expanded="true"
+            aria-expanded={results.length > 0}
             aria-controls={results.length ? listId : undefined}
             aria-autocomplete="list"
             aria-activedescendant={

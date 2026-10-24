@@ -155,6 +155,9 @@ export const listAudit = (projectId: string, limit = 50, offset = 0) =>
 export const listStories = (projectId: string) =>
   request<StoryItem[]>(`/projects/${projectId}/stories`);
 
+export const getStory = (storyId: string) =>
+  request<StoryItem>(`/stories/${storyId}`);
+
 export const createStory = (projectId: string, story: StoryInput) =>
   request<StoryItem>(`/projects/${projectId}/stories`, {
     method: "POST",

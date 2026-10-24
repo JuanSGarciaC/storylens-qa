@@ -33,6 +33,14 @@ function stubApi(opts: { me?: unknown; health?: unknown } = {}) {
           opts.me ?? { authenticated: true, email: "qa@ejemplo.com" },
         );
       }
+      if (url.endsWith("/stories/s1") || url.endsWith("/stories/s2")) {
+        const own = url.endsWith("/s1");
+        return json({
+          id: own ? "s1" : "s2",
+          project_id: own ? "x" : "y",
+          title: own ? "Historia propia" : "Historia ajena",
+        });
+      }
       if (url.endsWith("/projects/x")) {
         return json(makeProject({ id: "x", name: "Proyecto X" }));
       }
@@ -202,5 +210,90 @@ describe("Shell", () => {
     await screen.findByRole("navigation", { name: "Módulos" });
     await screen.findByText(/7 consultas de IA hoy/);
     expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("una historia propia se carga; una ajena o inexistente da el mismo NotFound", async () => {
+    stubApi();
+    stubWidth(false);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const own = renderAt("/p/x/stories/s1/analysis");
+    expect(await screen.findByText(/Historia propia/)).toBeVisible();
+    own.unmount();
+
+    for (const id of ["s2", "nope"]) {
+      const view = renderAt(`/p/x/stories/${id}/tests`);
+      expect(
+        await screen.findByRole("heading", { name: "Recurso no encontrado" }),
+      ).toBeVisible();
+      expect(
+        screen.getByRole("link", { name: "Volver a proyectos" }),
+      ).toBeVisible();
+      view.unmount();
+    }
+  });
+
+  it("Esc cierra el menú móvil y devuelve el foco a Menú", async () => {
+    stubApi();
+    stubWidth(true);
+    const user = userEvent.setup();
+    renderAt("/p/x");
+    const menu = await screen.findByRole("button", { name: "Menú" });
+    await user.click(menu);
+    const link = await screen.findByRole("link", { name: /Historias/ });
+    link.focus();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("navigation", { name: "Módulos" })).toBeNull();
+    expect(menu).toHaveFocus();
+  });
+
+  it("al navegar desde el menú móvil el foco pasa al contenido", async () => {
+    stubApi();
+    stubWidth(true);
+    const user = userEvent.setup();
+    const { router } = renderAt("/p/x");
+    await user.click(await screen.findByRole("button", { name: "Menú" }));
+    await user.click(await screen.findByRole("link", { name: /Informes/ }));
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/p/x/reports"),
+    );
+    expect(document.getElementById("contenido")).toHaveFocus();
+    expect(screen.queryByRole("navigation", { name: "Módulos" })).toBeNull();
+  });
+
+  it("con proyecto inexistente no hay enlaces de proyecto y el título se actualiza", async () => {
+    stubApi();
+    stubWidth(false);
+    renderAt("/p/zzz");
+    await screen.findByRole("heading", { name: "Proyecto no encontrado" });
+    const nav = screen.getByRole("navigation", { name: "Módulos" });
+    expect(within(nav).queryByRole("link", { name: /Informes/ })).toBeNull();
+    expect(within(nav).queryByText("Configuración")).toBeNull();
+  });
+
+  it("el título del documento incluye pantalla y proyecto", async () => {
+    stubApi();
+    stubWidth(false);
+    renderAt("/p/x/reports");
+    await waitFor(() =>
+      expect(document.title).toBe("Informes · Proyecto X · StoryLens"),
+    );
+  });
+
+  it("Home/End mueven la selección de la paleta", async () => {
+    stubApi();
+    stubWidth(false);
+    const user = userEvent.setup();
+    const { router } = renderAt("/p/x");
+    await screen.findByRole("navigation", { name: "Módulos" });
+    await user.keyboard("{Control>}k{/Control}");
+    await screen.findByRole("dialog");
+    await user.keyboard("{End}");
+    const options = screen.getAllByRole("option");
+    expect(options[options.length - 1]).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    await user.keyboard("{Home}{Enter}");
+    await waitFor(() => expect(router.state.location.pathname).toBe("/p/x"));
   });
 });
