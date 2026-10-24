@@ -93,9 +93,12 @@ describe("Shell", () => {
       "/p/x/reports",
     );
     const soon = within(nav).getAllByText("Próximamente");
-    expect(soon).toHaveLength(3);
+    expect(soon).toHaveLength(2);
     expect(
-      within(nav).queryByRole("link", { name: /Análisis transversal/ }),
+      within(nav).getByRole("link", { name: /Análisis transversal/ }),
+    ).toHaveAttribute("href", "/p/x/transversal");
+    expect(
+      within(nav).queryByRole("link", { name: /Métricas y mejora/ }),
     ).toBeNull();
     expect(await screen.findByText(/7 consultas de IA hoy/)).toBeVisible();
     expect(screen.getByText(/qa@ejemplo.com/)).toBeVisible();

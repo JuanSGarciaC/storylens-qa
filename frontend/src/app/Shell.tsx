@@ -68,7 +68,12 @@ const MODULES: Module[] = [
     path: "/stories",
     hint: FROM_STORY,
   },
-  { n: "5", label: "Análisis transversal", icon: "alert" },
+  {
+    n: "5",
+    label: "Análisis transversal",
+    icon: "alert",
+    path: "/transversal",
+  },
   {
     n: "6",
     label: "Casos de prueba",
@@ -276,6 +281,7 @@ const TITLES: [RegExp, string][] = [
   [/\/stories\/[^/]+\/sessions(\/[^/]+)?$/, "Sesiones QA"],
   [/\/stories$/, "Historias"],
   [/\/reports$/, "Informes"],
+  [/\/transversal$/, "Análisis transversal"],
   [/\/settings$/, "Configuración"],
   [/^\/p\/[^/]+$/, "Resumen"],
   [/^\/$/, "Proyectos"],

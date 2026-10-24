@@ -26,6 +26,7 @@ export type ImportRow = Schemas["ImportRowOut"];
 export type ImportJob = Schemas["ImportJobOut"];
 export type ImportJobDetail = Schemas["ImportJobDetailOut"];
 export type ImportJobItem = Schemas["ImportItemOut"];
+export type CrossAnalysis = Schemas["CrossAnalysisOut"];
 export type ImportMapping = Record<string, string | null>;
 export type DefectDraftResult = Schemas["DefectDraftOut"];
 export type Project = Schemas["ProjectOut"];
@@ -353,6 +354,9 @@ export const startImportJob = (
     method: "POST",
     body: importForm(file, mapping, selected, useAi),
   });
+
+export const getCrossAnalysis = (projectId: string) =>
+  request<CrossAnalysis>(`/projects/${enc(projectId)}/cross-analysis`);
 
 export const listImportJobs = (projectId: string) =>
   request<ImportJob[]>(`/projects/${enc(projectId)}/import-jobs`);

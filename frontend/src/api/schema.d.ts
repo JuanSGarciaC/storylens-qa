@@ -308,6 +308,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{project_id}/cross-analysis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cross Analysis
+         * @description Duplicados, dependencias, posibles contradicciones y riesgo por épica del proyecto.
+         */
+        get: operations["cross_analysis_api_v1_projects__project_id__cross_analysis_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{project_id}/stories": {
         parameters: {
             query?: never;
@@ -926,6 +946,37 @@ export interface components {
              */
             summary?: string;
         };
+        /** ContradictionOut */
+        ContradictionOut: {
+            /** A Id */
+            a_id: string;
+            /** B Id */
+            b_id: string;
+            /** Reason */
+            reason: string;
+            /**
+             * Is Hypothesis
+             * @default true
+             */
+            is_hypothesis?: boolean;
+        };
+        /** CrossAnalysisOut */
+        CrossAnalysisOut: {
+            /** Total Stories */
+            total_stories: number;
+            /** Stories */
+            stories: components["schemas"]["StoryRefOut"][];
+            /** Duplicates */
+            duplicates: components["schemas"]["DuplicateOut"][];
+            /** Dependencies */
+            dependencies: components["schemas"]["DependencyOut"][];
+            /** Contradictions */
+            contradictions: components["schemas"]["ContradictionOut"][];
+            /** Epic Risks */
+            epic_risks: components["schemas"]["EpicRiskOut"][];
+            /** Without Cases */
+            without_cases: string[];
+        };
         /**
          * Decision
          * @enum {string}
@@ -995,6 +1046,45 @@ export interface components {
             severity?: components["schemas"]["DefectSeverity"] | null;
             priority?: components["schemas"]["Priority"] | null;
             frequency?: components["schemas"]["Frequency"] | null;
+        };
+        /** DependencyOut */
+        DependencyOut: {
+            /** From Id */
+            from_id: string;
+            /** To Id */
+            to_id: string;
+            /** Evidence */
+            evidence: string;
+        };
+        /** DuplicateOut */
+        DuplicateOut: {
+            /** A Id */
+            a_id: string;
+            /** B Id */
+            b_id: string;
+            /** Similarity */
+            similarity: number;
+        };
+        /** EpicRiskOut */
+        EpicRiskOut: {
+            /** Epic Id */
+            epic_id: string | null;
+            /** Epic Name */
+            epic_name: string;
+            /** Stories */
+            stories: number;
+            /** Analyzed */
+            analyzed: number;
+            /** Not Ready */
+            not_ready: number;
+            /** Without Cases */
+            without_cases: number;
+            /** Average Score */
+            average_score: number | null;
+            /** Level */
+            level: string;
+            /** Reason */
+            reason: string;
         };
         /**
          * EvidenceIn
@@ -1550,6 +1640,13 @@ export interface components {
              */
             created_at: string;
             latest_analysis: components["schemas"]["AnalysisSummary"] | null;
+        };
+        /** StoryRefOut */
+        StoryRefOut: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string;
         };
         /**
          * Technique
@@ -2281,6 +2378,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ImportJobOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cross_analysis_api_v1_projects__project_id__cross_analysis_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CrossAnalysisOut"];
                 };
             };
             /** @description Validation Error */
