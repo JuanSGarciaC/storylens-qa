@@ -24,10 +24,12 @@ export function ReportLinks({ path, what }: Props) {
           key={format}
           className="btn btn--ghost btn--sm"
           href={apiUrl(`${path}?format=${format}`)}
-          aria-label={`Descargar ${what} (${label})`}
           download
         >
+          {/* El nombre accesible contiene el texto visible (WCAG 2.5.3). */}
+          <span className="visually-hidden">{`Descargar ${what} (`}</span>
           {label}
+          <span className="visually-hidden">)</span>
         </a>
       ))}
     </span>
