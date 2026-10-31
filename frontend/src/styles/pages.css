@@ -284,6 +284,18 @@
 .wrap {
   overflow-wrap: anywhere;
 }
+.intro__text {
+  max-width: 70ch;
+  font-size: 1.125rem;
+  line-height: 1.7;
+  color: var(--fg);
+}
+.intro .btn {
+  text-decoration: none;
+}
+.session-row > .wrap {
+  flex: 1;
+}
 .toolbar {
   display: flex;
   flex-wrap: wrap;

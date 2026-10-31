@@ -176,6 +176,9 @@ function StatusBadges() {
   let ai: ReactNode;
   if (!aiConfigured) {
     ai = <Badge tone="neutral">IA no configurada: solo reglas</Badge>;
+  } else if (!me?.authenticated) {
+    // La cuota es del dueño: a un visitante no le sirve y le haría creer que puede usarla.
+    ai = <Badge tone="neutral">IA solo para el dueño</Badge>;
   } else if (aiQuotaRemaining === 0) {
     ai = <Badge tone="warn">Cuota de IA agotada hoy</Badge>;
   } else if (aiQuotaRemaining !== null) {
