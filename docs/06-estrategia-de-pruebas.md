@@ -44,7 +44,7 @@
 
 ## 5. Evaluación de la IA (*golden set*)
 
-- `evaluation/golden-set/`: 20–30 historias en español (buenas, malas y límite), cada una con la lista de `rule_id` esperados, revisada a mano.
+- `backend/app/infrastructure/evaluation/golden_set.yaml`: 20–30 historias en español (buenas, malas y límite), cada una con la lista de `rule_id` esperados, revisada a mano.
 - Métricas por `prompt_version` y modelo: **precisión** (hallazgos IA correctos / reportados), **recall** (esperados encontrados / esperados), tasa de JSON inválido, latencia media y tokens.
 - Los resultados se guardan en `evaluation/reports/` y se muestran en el README (excelente material de portafolio: "prompt v2 subió el recall de 0,71 a 0,84").
 

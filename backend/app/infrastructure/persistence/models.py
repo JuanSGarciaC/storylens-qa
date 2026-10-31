@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import JSON, Column
+from sqlalchemy import JSON, Column, LargeBinary
 from sqlmodel import Field, SQLModel
 
 
@@ -180,6 +180,15 @@ class EvidenceRow(SQLModel, table=True):
     uri: str = ""
     description: str = ""
     uploaded_at: datetime
+
+
+class EvidenceFileRow(SQLModel, table=True):
+    """Contenido de una imagen de evidencia; `name` es el `uri` de su EvidenceRow."""
+
+    __tablename__ = "evidence_file"
+
+    name: str = Field(primary_key=True)
+    content: bytes = Field(sa_column=Column(LargeBinary, nullable=False))
 
 
 class DefectRow(SQLModel, table=True):

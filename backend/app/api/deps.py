@@ -9,7 +9,6 @@ from app.api.job_runner import (
     launch_in_thread,
 )
 from app.api.principal import Principal, get_principal
-from app.config import get_settings
 from app.domain.audit import SYSTEM_ACTOR, AuditLog
 from app.domain.ports import (
     EvaluationRepository,
@@ -23,12 +22,12 @@ from app.infrastructure.llm.factory import build_llm
 from app.infrastructure.persistence.database import get_session
 from app.infrastructure.persistence.sql_audit import SqlAuditLog
 from app.infrastructure.persistence.sql_evaluation_repository import SqlEvaluationRepository
+from app.infrastructure.persistence.sql_evidence_storage import SqlEvidenceStorage
 from app.infrastructure.persistence.sql_import_job_repository import SqlImportJobRepository
 from app.infrastructure.persistence.sql_project_repository import SqlProjectRepository
 from app.infrastructure.persistence.sql_repository import SqlStoryRepository
 from app.infrastructure.persistence.sql_resolver import SqlProjectResolver
 from app.infrastructure.persistence.sql_session_repository import SqlSessionRepository
-from app.infrastructure.storage.local import LocalEvidenceStorage
 
 
 def get_repository(session: Annotated[Session, Depends(get_session)]) -> StoryRepository:
@@ -67,8 +66,8 @@ def get_job_launcher() -> JobLauncher:
     return launch_in_thread
 
 
-def get_storage() -> EvidenceStorage:
-    return LocalEvidenceStorage(get_settings().evidence_dir)
+def get_storage(session: Annotated[Session, Depends(get_session)]) -> EvidenceStorage:
+    return SqlEvidenceStorage(session)
 
 
 def get_resolver(session: Annotated[Session, Depends(get_session)]) -> SqlProjectResolver:
