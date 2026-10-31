@@ -156,7 +156,6 @@ La API se documenta sola: con el backend en marcha, `/docs` (Swagger) y `/openap
 Las siete fases del plan están construidas: fundaciones, frontend, importación masiva, análisis transversal, métricas, evaluación de la IA, y pruebas de extremo a extremo con Docker. Lo que falta y se sabe:
 
 - El despliegue público gratuito está preparado y documentado, pero no ejecutado.
-- Las imágenes de evidencia se guardan en disco: en hosts gratuitos sin disco persistente se pierden (las notas y los enlaces no).
 - El listado de historias se filtra y pagina en el navegador, pensado para hasta unos 500 por proyecto.
 
 ## Licencia

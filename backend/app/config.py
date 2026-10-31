@@ -11,8 +11,10 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173"
     max_story_chars: int = 10_000
     database_url: str = "sqlite:///./storylens.db"
-    evidence_dir: str = "./storage/evidence"
     max_evidence_mb: int = 1
+    # Carpeta con la interfaz compilada (frontend/dist). Si se define, la API también la sirve,
+    # en el mismo origen: así funciona la cookie de sesión sin proxy (imagen de Docker).
+    static_dir: str | None = None
 
     # Cuenta del dueño y sesión. Sin estos valores no hay dueño: solo se ve la demo.
     owner_email: str | None = None

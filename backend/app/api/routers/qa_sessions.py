@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile, status
-from fastapi.responses import FileResponse
 
 from app.api.deps import LLM, Actor, Audit, Repository, Sessions, Storage
 from app.api.downloads import ReportFormat, report_download
@@ -152,10 +151,10 @@ def add_image_evidence(
 
 
 @router.get("/evidences/{evidence_id}/file")
-def get_evidence_file(evidence_id: str, sessions: Sessions, storage: Storage) -> FileResponse:
-    path, media_type = qa_sessions.get_evidence_file(sessions, storage, evidence_id)
-    return FileResponse(
-        path,
+def get_evidence_file(evidence_id: str, sessions: Sessions, storage: Storage) -> Response:
+    content, media_type = qa_sessions.get_evidence_file(sessions, storage, evidence_id)
+    return Response(
+        content,
         media_type=media_type,
         headers={"X-Content-Type-Options": "nosniff", "Content-Disposition": "inline"},
     )

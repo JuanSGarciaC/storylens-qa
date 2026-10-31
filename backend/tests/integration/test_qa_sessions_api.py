@@ -276,7 +276,7 @@ def upload(client, execution_id, content, filename="captura.png", description="P
     )
 
 
-def test_image_upload_is_stored_and_served_with_safe_headers(client, storage_dir):
+def test_image_upload_is_stored_and_served_with_safe_headers(client, stored_files):
     execution = make_session(client)["executions"][0]
 
     response = upload(client, execution["id"], PNG)
@@ -285,7 +285,7 @@ def test_image_upload_is_stored_and_served_with_safe_headers(client, storage_dir
     evidence = response.json()
     assert evidence["type"] == "image" and evidence["description"] == "Pantalla"
     assert evidence["url"] == f"/api/v1/evidences/{evidence['id']}/file"
-    assert len(list(storage_dir.iterdir())) == 1
+    assert len(stored_files()) == 1
 
     served = client.get(evidence["url"])
     assert served.status_code == 200 and served.content == PNG
@@ -293,7 +293,7 @@ def test_image_upload_is_stored_and_served_with_safe_headers(client, storage_dir
     assert served.headers["x-content-type-options"] == "nosniff"
 
 
-def test_image_type_comes_from_content_not_from_the_filename_or_header(client, storage_dir):
+def test_image_type_comes_from_content_not_from_the_filename_or_header(client, stored_files):
     execution = make_session(client)["executions"][0]
 
     fake = upload(client, execution["id"], b"<script>alert(1)</script>", filename="x.png")
@@ -302,16 +302,16 @@ def test_image_type_comes_from_content_not_from_the_filename_or_header(client, s
 
     assert fake.status_code == 422 and gif.status_code == 422
     assert real.status_code == 201  # lo que cuenta es el contenido
-    assert len(list(storage_dir.iterdir())) == 1  # lo rechazado no quedó en disco
+    assert len(stored_files()) == 1  # lo rechazado no quedó guardado
 
 
-def test_empty_and_oversized_images_are_rejected(client, storage_dir):
+def test_empty_and_oversized_images_are_rejected(client, stored_files):
     execution = make_session(client)["executions"][0]
 
     assert upload(client, execution["id"], b"").status_code == 422
     too_big = PNG + b"\x00" * 5_000_000
     assert upload(client, execution["id"], too_big).status_code == 413  # tope: 1 MB
-    assert not storage_dir.exists() or not list(storage_dir.iterdir())
+    assert stored_files() == []
 
 
 def test_gigantic_uploads_are_refused_by_size_before_processing(client):
@@ -330,16 +330,16 @@ def test_only_images_have_a_downloadable_file(client):
     assert client.get("/api/v1/evidences/no-existe/file").status_code == 404
 
 
-def test_deleting_a_story_removes_sessions_and_evidence_files(client, storage_dir):
+def test_deleting_a_story_removes_sessions_and_evidence_files(client, stored_files):
     story_id = make_story(client)
     session = make_session(client, story_id)
     upload(client, session["executions"][0]["id"], PNG)
-    assert len(list(storage_dir.iterdir())) == 1
+    assert len(stored_files()) == 1
 
     assert client.delete(f"/api/v1/stories/{story_id}").status_code == 204
 
     assert client.get(f"/api/v1/qa-sessions/{session['id']}").status_code == 404
-    assert list(storage_dir.iterdir()) == []  # sin archivos huérfanos
+    assert stored_files() == []  # sin archivos huérfanos
 
 
 # --- defectos ---
