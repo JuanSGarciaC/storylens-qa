@@ -8,6 +8,7 @@ import { Button } from "../../shared/ui/Button";
 import { EmptyState } from "../../shared/ui/EmptyState";
 import { ErrorNotice } from "../../shared/ui/ErrorNotice";
 import { Spinner } from "../../shared/ui/Spinner";
+import { ReportLinks } from "./ReportLinks";
 
 const CHUNK = 50;
 
@@ -19,21 +20,6 @@ const formatDate = (iso: string) =>
     hour: "2-digit",
     minute: "2-digit",
   });
-
-/** Enlaces de descarga; `label` identifica el informe para lectores de pantalla. */
-function Downloads({ path, label }: { path: string; label: string }) {
-  return (
-    <span className="report-links">
-      <a href={api.apiUrl(`${path}?format=md`)} download>
-        {`${label} (Markdown)`}
-      </a>
-      {" · "}
-      <a href={api.apiUrl(`${path}?format=pdf`)} download>
-        {`${label} (PDF)`}
-      </a>
-    </span>
-  );
-}
 
 function AnalysisReports({ stories }: { stories: StoryItem[] }) {
   const [text, setText] = useState("");
@@ -86,9 +72,9 @@ function AnalysisReports({ stories }: { stories: StoryItem[] }) {
             {matches.slice(0, shown).map((s) => (
               <li key={s.id} className="session-row">
                 <span className="wrap">{s.title || "Historia sin título"}</span>
-                <Downloads
+                <ReportLinks
                   path={`/analyses/${s.latest_analysis!.id}/report`}
-                  label={`Informe de ${s.title || "historia sin título"}`}
+                  what={`informe de ${s.title || "historia sin título"}`}
                 />
               </li>
             ))}
@@ -133,9 +119,9 @@ function StorySessions({ story }: { story: StoryItem }) {
           <span className="wrap">
             {session.environment_name} · {formatDate(session.started_at)}
           </span>
-          <Downloads
+          <ReportLinks
             path={`/qa-sessions/${session.id}/report`}
-            label={`Informe de la sesión ${session.environment_name}`}
+            what={`informe de la sesión ${session.environment_name}`}
           />
         </li>
       ))}

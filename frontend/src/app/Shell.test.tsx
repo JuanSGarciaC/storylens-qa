@@ -267,6 +267,14 @@ describe("Shell", () => {
     expect(screen.getByRole("navigation", { name: "Módulos" })).toBeVisible();
   });
 
+  it("a un visitante sin sesión no le ofrece la cuota de IA del dueño", async () => {
+    stubApi({ me: { authenticated: false } });
+    stubWidth(false);
+    renderAt("/p/x");
+    expect(await screen.findByText("IA solo para el dueño")).toBeVisible();
+    expect(screen.queryByText(/consultas de IA hoy/)).toBeNull();
+  });
+
   it("no tiene violaciones de axe", async () => {
     stubApi();
     stubWidth(false);
