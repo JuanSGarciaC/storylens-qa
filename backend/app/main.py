@@ -1,10 +1,11 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from sqlalchemy import Engine
 from sqlmodel import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -134,7 +135,8 @@ def create_app() -> FastAPI:
 
     @app.middleware("http")
     async def limit_upload_size(request: Request, call_next):  # type: ignore[no-untyped-def]
-        """Rechaza subidas de imagen enormes antes de procesarlas (según Content-Length)."""
+        """Rechaza subidas enormes antes de procesarlas (según Content-Length) y añade
+        cabeceras de seguridad básicas a todas las respuestas."""
         if request.url.path.endswith(("/stories/import", "/stories/import:confirm")):
             declared = request.headers.get("content-length", "")
             if declared.isdigit() and int(declared) > 1_200_000:
@@ -144,7 +146,10 @@ def create_app() -> FastAPI:
             declared = request.headers.get("content-length", "")
             if declared.isdigit() and int(declared) > limit:
                 return problem(413, "Archivo demasiado grande", "La imagen supera el tamaño máximo")
-        return await call_next(request)
+        response: Response = await call_next(request)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("Referrer-Policy", "same-origin")
+        return response
 
     @app.get("/api/v1/health")
     def health(session: Annotated[Session, Depends(get_session)]) -> dict[str, object]:
@@ -174,7 +179,25 @@ def create_app() -> FastAPI:
     app.include_router(findings.router, prefix="/api/v1")
     app.include_router(test_design.router, prefix="/api/v1")
     app.include_router(qa_sessions.router, prefix="/api/v1")
+    if settings.static_dir:
+        _serve_frontend(app, Path(settings.static_dir).resolve())
     return app
+
+
+def _serve_frontend(app: FastAPI, root: Path) -> None:
+    """Sirve la interfaz compilada; una ruta que no es un archivo es del router del navegador.
+
+    Se registra la última para no tapar ninguna ruta de la API.
+    """
+
+    @app.get("/{path:path}", include_in_schema=False)
+    def frontend(path: str) -> FileResponse:
+        if path == "api" or path.startswith("api/"):
+            raise StarletteHTTPException(404, "No encontrado")
+        file = (root / path).resolve()
+        if not (file.is_file() and file.is_relative_to(root)):
+            file = root / "index.html"
+        return FileResponse(file)
 
 
 app = create_app()

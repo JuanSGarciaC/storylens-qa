@@ -15,8 +15,7 @@ flowchart LR
     QA[Analista QA] -->|navegador| FE[Frontend React]
     FE -->|REST/JSON| BE[Backend FastAPI]
     BE -->|SDK google-genai| GEM[Gemini API<br/>Google AI Studio]
-    BE --> DB[(SQLite)]
-    BE --> FS[(Almacenamiento de evidencias<br/>disco local / bucket)]
+    BE --> DB[(SQLite local / PostgreSQL en la nube<br/>incluye las imágenes de evidencia)]
     JIRA[Export CSV/JSON de Jira] -.->|importación manual| FE
 ```
 
@@ -169,7 +168,7 @@ qa-story-reviewer/
 │   └── tests/
 │       └── e2e/                  # Playwright + axe
 └── evaluation/
-    ├── golden-set/               # historias de referencia con hallazgos esperados
+    ├── run_eval.py               # evaluación por línea de comandos (golden set en backend/app/infrastructure/evaluation/)
     └── reports/                  # resultados de evaluación de la IA por versión de prompt
 ```
 
@@ -191,6 +190,6 @@ qa-story-reviewer/
 | Backend | Google Cloud Run (contenedor; key en Secret Manager) | Render, Fly.io |
 | Frontend | Vercel o Netlify | Firebase Hosting |
 | Base de datos | SQLite en volumen (demo) | Cloud SQL / Neon PostgreSQL |
-| Evidencias | Disco local (dev) / Cloud Storage (prod) | |
+| Evidencias | En la propia base de datos (máx. 1 MB por imagen): sobreviven al disco efímero de los hosts gratuitos | |
 
 > Para la demo pública del portafolio: activa un límite diario de análisis por IP y un modo demo con historias de ejemplo precargadas, para no agotar la cuota gratuita.

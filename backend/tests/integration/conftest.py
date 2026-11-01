@@ -1,23 +1,28 @@
-from collections.abc import Iterator
-from pathlib import Path
+from collections.abc import Callable, Iterator
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine
 from sqlalchemy.pool import StaticPool
-from sqlmodel import Session, create_engine
+from sqlmodel import Session, create_engine, select
 
-from app.api.deps import get_llm, get_storage
+from app.api.deps import get_llm
 from app.application.auth import LoginThrottle, ensure_owner
 from app.infrastructure.persistence.database import get_session, init_db
+from app.infrastructure.persistence.models import EvidenceFileRow
 from app.infrastructure.persistence.sql_users import SqlUserRepository
-from app.infrastructure.storage.local import LocalEvidenceStorage
 from app.main import app
 
 
 @pytest.fixture
-def storage_dir(tmp_path: Path) -> Path:
-    return tmp_path / "evidence"
+def stored_files(engine: Engine) -> Callable[[], list[str]]:
+    """Nombres de las imágenes de evidencia guardadas en la base."""
+
+    def names() -> list[str]:
+        with Session(engine) as db:
+            return list(db.exec(select(EvidenceFileRow.name)))
+
+    return names
 
 
 @pytest.fixture
@@ -37,8 +42,8 @@ def anon_client(client: TestClient) -> TestClient:
 
 
 @pytest.fixture
-def client(storage_dir: Path, engine: Engine) -> Iterator[TestClient]:
-    """Cliente con base SQLite en memoria, evidencias en una carpeta temporal y sin IA.
+def client(engine: Engine) -> Iterator[TestClient]:
+    """Cliente con base SQLite en memoria (evidencias incluidas) y sin IA.
 
     Trae un proyecto de prueba creado (`client.project_id`) donde viven las historias de las
     pruebas. Cada prueba sustituye la IA si la necesita (`app.dependency_overrides[get_llm]`).
@@ -50,7 +55,6 @@ def client(storage_dir: Path, engine: Engine) -> Iterator[TestClient]:
 
     app.dependency_overrides[get_session] = override_session
     app.dependency_overrides[get_llm] = lambda: None
-    app.dependency_overrides[get_storage] = lambda: LocalEvidenceStorage(storage_dir)
     app.state.login_throttle = LoginThrottle()
     with Session(engine) as db:
         ensure_owner(SqlUserRepository(db), "owner@test.local", "test-pass-123")

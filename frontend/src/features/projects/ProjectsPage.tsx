@@ -123,14 +123,43 @@ export function ProjectsPage() {
     );
   }
 
+  const demo = list.data?.find((project) => project.is_demo);
+  const lead = (
+    <p className="page__lead">
+      Cada proyecto agrupa sus historias, análisis, pruebas e informes.
+    </p>
+  );
+
   return (
     <div className="page">
-      <header className="page__head">
-        <h1 className="page__title">Proyectos</h1>
-        <p className="page__lead">
-          Cada proyecto agrupa sus historias, análisis, pruebas e informes.
-        </p>
-      </header>
+      {authenticated ? (
+        <header className="page__head">
+          <h1 className="page__title">Proyectos</h1>
+          {lead}
+        </header>
+      ) : (
+        <>
+          <header className="page__head intro">
+            <h1 className="page__title">StoryLens QA</h1>
+            <p className="intro__text">
+              Revisa historias de usuario con reglas QA citadas a normas
+              (ISO/IEC/IEEE 29148, INVEST, ISTQB), genera casos de prueba
+              trazables y mide la calidad con métricas que muestran su
+              denominador. La IA solo complementa: sin ella, todo sigue
+              funcionando.
+            </p>
+            {demo ? (
+              <p>
+                <Link className="btn btn--primary" to={`/p/${demo.id}`}>
+                  Explorar la demo
+                </Link>
+              </p>
+            ) : null}
+          </header>
+          <h2>Proyectos</h2>
+          {lead}
+        </>
+      )}
       {body}
       {authenticated ? (
         <CreateProject />

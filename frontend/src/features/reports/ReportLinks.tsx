@@ -3,7 +3,7 @@ import { apiUrl } from "../../api/client";
 interface Props {
   /** Ruta del reporte sin formato, p. ej. `/analyses/ID/report`. */
   path: string;
-  /** Qué se descarga, p. ej. «reporte del análisis». */
+  /** Qué se descarga, p. ej. «reporte del análisis»; da el nombre accesible del enlace. */
   what: string;
 }
 
@@ -12,18 +12,25 @@ const FORMATS = [
   { format: "pdf", label: "PDF" },
 ] as const;
 
-/** Descargas directas del reporte (lo genera el servidor). */
+/** Descargas directas del reporte (lo genera el servidor). Visibles como botones cortos. */
 export function ReportLinks({ path, what }: Props) {
   return (
-    <p className="report-links">
-      {FORMATS.map(({ format, label }, index) => (
-        <span key={format}>
-          {index > 0 && " · "}
-          <a href={apiUrl(`${path}?format=${format}`)} download>
-            {`Descargar ${what} (${label})`}
-          </a>
-        </span>
+    <span className="report-links">
+      <span className="hint" aria-hidden="true">
+        Descargar
+      </span>
+      {FORMATS.map(({ format, label }) => (
+        <a
+          key={format}
+          className="btn btn--ghost btn--sm"
+          href={apiUrl(`${path}?format=${format}`)}
+          download
+        >
+          {/* El nombre accesible contiene el texto visible (WCAG 2.5.3). */}
+          <span className="visually-hidden">{`Descargar ${what} en`}</span>{" "}
+          {label}
+        </a>
       ))}
-    </p>
+    </span>
   );
 }

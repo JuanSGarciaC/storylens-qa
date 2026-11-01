@@ -94,17 +94,17 @@ def test_story_in_unknown_project_returns_404(client: TestClient) -> None:
 
 
 def test_delete_project_removes_stories_sessions_and_evidence_files(
-    client: TestClient, storage_dir, engine
+    client: TestClient, stored_files, engine
 ) -> None:
-    """Review Focus 4: borrar un proyecto no deja huérfanos en base de datos ni en disco."""
+    """Review Focus 4: borrar un proyecto no deja huérfanos en base de datos ni en evidencias."""
     execution = make_session(client)["executions"][0]
     assert upload(client, execution["id"], PNG).status_code == 201
-    assert any(storage_dir.iterdir())
+    assert stored_files()
 
     assert client.delete(f"/api/v1/projects/{client.project_id}").status_code == 204
 
     assert client.get(f"/api/v1/projects/{client.project_id}").status_code == 404
-    assert not any(storage_dir.iterdir())
+    assert stored_files() == []
     with Session(engine) as db:
         for table in (StoryRow, AnalysisRow, CaseRow, SessionRow, EvidenceRow):
             assert db.exec(select(table)).first() is None, table.__name__

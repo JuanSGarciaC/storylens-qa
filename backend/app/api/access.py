@@ -13,6 +13,7 @@ PUBLIC_PATHS = frozenset(
         "/auth/login",
         "/auth/logout",
         "/auth/me",
+        "/{path:path}",  # archivos de la interfaz compilada (ver main._serve_frontend)
     }
 )
 LIST_PROJECTS_PATH = "/projects"

@@ -51,6 +51,15 @@ describe("ProjectsPage", () => {
     expect(screen.getByText(/Inicia sesión para crear/)).toBeInTheDocument();
   });
 
+  it("anónimo: presenta la app y lleva directo a la demo", async () => {
+    setup({ authenticated: false });
+    const cta = await screen.findByRole("link", { name: "Explorar la demo" });
+    expect(cta).toHaveAttribute("href", "/p/demo");
+    expect(
+      screen.getByRole("heading", { level: 1, name: "StoryLens QA" }),
+    ).toBeInTheDocument();
+  });
+
   it("crea un proyecto con nombre, descripción y objetivo", async () => {
     const { calls } = setup({
       authenticated: true,

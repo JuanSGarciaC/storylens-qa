@@ -32,6 +32,18 @@
 .btn--ghost:hover:not(:disabled) {
   background: rgb(255 255 255 / 8%);
 }
+.btn--sm {
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+.report-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
 .btn--danger {
   background: var(--danger);
   color: #000;

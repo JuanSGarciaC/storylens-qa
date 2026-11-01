@@ -1,6 +1,5 @@
 import logging
 from dataclasses import dataclass, replace
-from pathlib import Path
 from typing import Any
 
 from app.application.stories import NotFoundError
@@ -274,20 +273,18 @@ def add_image_evidence(
 
 def get_evidence_file(
     sessions: SessionRepository, storage: EvidenceStorage, evidence_id: str
-) -> tuple[Path, str]:
+) -> tuple[bytes, str]:
     evidence = sessions.get_evidence(evidence_id)
-    if evidence is None or evidence.type != EvidenceType.IMAGE:
+    content = (
+        storage.load(evidence.uri)
+        if evidence is not None and evidence.type == EvidenceType.IMAGE
+        else None
+    )
+    if evidence is None or content is None:
         raise NotFoundError(f"Evidencia {evidence_id} no encontrada")
-    try:
-        path = storage.path(evidence.uri)
-    except ValueError as error:
-        raise NotFoundError(f"Evidencia {evidence_id} no encontrada") from error
-    if not path.is_file():
-        raise NotFoundError(f"Evidencia {evidence_id} no encontrada")
-    media_type = {"png": "image/png", "jpg": "image/jpeg", "webp": "image/webp"}[
-        path.suffix.lstrip(".")
-    ]
-    return path, media_type
+    extension = evidence.uri.rpartition(".")[2]
+    media_type = {"png": "image/png", "jpg": "image/jpeg", "webp": "image/webp"}[extension]
+    return content, media_type
 
 
 # --- defectos ---

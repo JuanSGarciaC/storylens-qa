@@ -16,7 +16,9 @@ router = APIRouter(tags=["auth"])
 def login(payload: LoginIn, request: Request, response: Response, users: Users) -> MeOut | Response:
     settings = get_settings()
     throttle: LoginThrottle = request.app.state.login_throttle
-    if throttle.is_locked(payload.email):
+    # Por IP y correo: si fuera solo por correo, cualquiera que lo conozca bloquearía al dueño.
+    key = f"{request.client.host if request.client else ''}|{payload.email}"
+    if throttle.is_locked(key):
         return problem(429, "Demasiados intentos", "Espera unos minutos antes de volver a intentar")
     user = authenticate(users, payload.email, payload.password)
     if (
@@ -24,9 +26,9 @@ def login(payload: LoginIn, request: Request, response: Response, users: Users) 
         or not settings.session_secret
         or not is_configured_owner(user.email, settings.owner_email)
     ):
-        throttle.record_failure(payload.email)
+        throttle.record_failure(key)
         return problem(401, "Credenciales no válidas", "Correo o contraseña incorrectos")
-    throttle.reset(payload.email)
+    throttle.reset(key)
     ttl = settings.session_ttl_hours * 3600
     response.set_cookie(
         SESSION_COOKIE,
