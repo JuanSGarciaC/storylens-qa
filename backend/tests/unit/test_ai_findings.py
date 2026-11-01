@@ -54,6 +54,19 @@ def test_evidence_not_in_story_is_discarded_as_hallucination():
     assert result.discarded["evidence_not_in_story"] == 1
 
 
+def test_evidence_with_the_criterion_number_from_the_prompt_is_kept_without_it():
+    # Bug real con Gemini: citaba «1. Dado…» y todo se descartaba como alucinación.
+    for prefix in ("1. ", "2) ", " 3.  "):
+        result = build(draft(evidence_text=prefix + VALID_EVIDENCE))
+        assert not result.discarded, prefix
+        assert result.findings[0].evidence_text == VALID_EVIDENCE
+
+
+def test_a_number_alone_does_not_make_invented_evidence_valid():
+    result = build(draft(evidence_text="1. El sistema responde en 2 segundos"))
+    assert result.discarded["evidence_not_in_story"] == 1
+
+
 def test_empty_evidence_is_discarded():
     result = build(draft(evidence_text="   "))
     assert result.discarded["no_evidence"] == 1

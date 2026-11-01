@@ -17,6 +17,8 @@ MAX_TEXT_CHARS = 500
 
 _QUOTES = re.compile(r"[«»\"'“”‘’]")
 _SPACES = re.compile(r"\s+")
+# El prompt numera los criterios («1. …»); la IA suele copiar ese número al citar la evidencia.
+_ENUMERATION = re.compile(r"^\s*\d+\s*[.)]\s+")
 
 
 def _normalize(text: str) -> str:
@@ -48,7 +50,8 @@ def build_ai_findings(
         if rule is None:
             discarded["unknown_rule"] += 1
             continue
-        evidence = _normalize(draft.evidence_text)
+        quoted = _ENUMERATION.sub("", draft.evidence_text)
+        evidence = _normalize(quoted)
         if not evidence:
             discarded["no_evidence"] += 1
             continue
@@ -70,7 +73,7 @@ def build_ai_findings(
                 message=draft.message.strip()[:MAX_TEXT_CHARS] or rule.message,
                 suggestion=draft.suggestion.strip()[:MAX_TEXT_CHARS] or rule.suggestion,
                 reference=rule.reference,
-                evidence_text=draft.evidence_text.strip()[:MAX_TEXT_CHARS],
+                evidence_text=quoted.strip()[:MAX_TEXT_CHARS],
                 confidence=min(1.0, max(0.0, draft.confidence)),
             )
         )
