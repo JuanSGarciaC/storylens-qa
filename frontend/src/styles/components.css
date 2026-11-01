@@ -220,10 +220,8 @@
 @media (max-width: 48rem), (pointer: coarse) {
   .btn,
   .field input:not([type="checkbox"], [type="radio"]),
-  .field select,
   .filters .field input,
-  .filters .field select,
-  .project-select select {
+  select {
     min-height: 2.75rem;
   }
   input[type="checkbox"],
