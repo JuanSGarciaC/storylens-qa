@@ -1,0 +1,143 @@
+# Conjunto «no visto» (holdout). Escrito el 2026-11-01 DESPUÉS de las reglas, en dominios que el
+# conjunto de referencia no cubre, y etiquetado leyendo solo la descripción de cada regla del
+# catálogo (no el código de los evaluadores). Las etiquetas se fijaron ANTES de la primera
+# corrida y no se ajustan para cuadrar con el resultado.
+# No lo usa la app (la pantalla «Evaluación de la IA» usa golden_set.yaml): solo
+#   python ../evaluation/run_eval.py --set holdout
+# Varias historias prueban a propósito si las reglas generalizan: sinónimos de términos vagos,
+# límites sin la palabra «máximo», formatos válidos poco comunes y texto en inglés.
+version: "1"
+stories:
+  - id: h-control-cita-medica
+    note: Control limpio con seguridad, accesibilidad y error cubiertos.
+    title: Reprogramar cita médica
+    description: Como paciente quiero reprogramar mi cita para no perderla cuando tengo un imprevisto
+    criteria:
+      - Dado una cita a más de 24 horas, cuando elijo otro horario libre, entonces la cita se mueve y recibo un correo de confirmación
+      - Dado una cita a menos de 24 horas, cuando intento reprogramarla, entonces veo el mensaje "Solo puedes reprogramar con 24 horas de anticipación"
+      - Dado una cita de otro paciente, cuando intento reprogramarla por URL directa, entonces recibo un error 403
+      - Dado solo el teclado, cuando recorro los horarios con Tab, entonces cada horario se anuncia con fecha y hora en el lector de pantalla
+    expected: []
+
+  - id: h-control-english
+    note: Control limpio en inglés, con fallo del tercero cubierto.
+    title: See delivery route
+    description: As a driver I want to see my delivery route so that I can plan my day
+    criteria:
+      - Given 12 deliveries assigned today, when I open the route, then I see them ordered by distance with the estimated arrival time
+      - Given the maps service is unavailable, when I open the route, then I see the list of addresses without the map and a warning
+      - Given a delivery of another driver, when I request it by ID, then I receive a 403 error
+      - Given a screen reader, when I focus a delivery, then its address and time window are announced
+    expected: []
+
+  - id: h-control-plazo-como-estado
+    note: «Plazo» nombra un estado de la factura, no un límite a cuantificar.
+    title: Ver facturas vencidas
+    description: Como cliente quiero ver qué facturas tengo vencidas para pagarlas antes de que me suspendan el servicio
+    criteria:
+      - Dado una factura cuyo plazo de pago ya pasó, cuando abro mis facturas, entonces aparece con el estado "Vencida"
+      - Dado una factura pagada, cuando abro mis facturas, entonces aparece con el estado "Pagada"
+      - Dado que no tengo facturas, cuando abro mis facturas, entonces veo el mensaje "No tienes facturas pendientes"
+      - Dado una factura de otro cliente, cuando intento abrirla por URL, entonces recibo un error 403
+      - Dado solo el teclado, cuando navego la lista, entonces cada estado se anuncia como texto y no solo por color
+    expected: []
+
+  - id: h-formato-en-mi-rol
+    note: Formato válido poco común («En mi rol de… necesito… con el fin de…»); falta accesibilidad.
+    title: Ver despachos pendientes
+    description: En mi rol de coordinador de bodega necesito ver los despachos pendientes con el fin de priorizar la carga del día
+    criteria:
+      - Dado 30 despachos pendientes, cuando abro el tablero, entonces los veo ordenados por hora de salida
+      - Dado un despacho sin transportador asignado, cuando abro el tablero, entonces aparece marcado como "Sin transportador"
+      - Dado que no hay despachos pendientes, cuando abro el tablero, entonces veo el mensaje "Todo despachado"
+    expected: [US-NFR-001]
+
+  - id: h-vagos-sinonimos
+    note: Vaguedad con sinónimos que no están en el diccionario (ágil, sencilla, en breve).
+    title: Entregar tarea
+    description: Como estudiante quiero que la plataforma sea ágil y sencilla para entregar mis tareas sin estrés
+    criteria:
+      - Dado una tarea abierta, cuando subo mi archivo, entonces se guarda en breve
+      - La pantalla de entrega debe ser sencilla
+    expected: [US-AMB-001, US-AC-002, US-AC-004, US-NFR-003]
+
+  - id: h-limite-sin-palabra
+    note: Habla de un tope sin decir cuál («carrito lleno», «tope alcanzado»).
+    title: Agregar al carrito
+    description: Como cliente quiero agregar productos al carrito para comprarlos juntos
+    criteria:
+      - Dado un carrito lleno, cuando agrego otro producto, entonces veo un aviso de tope alcanzado
+      - Dado un producto agotado, cuando lo agrego, entonces veo el mensaje "Producto agotado"
+      - Dado un producto disponible, cuando lo agrego, entonces el contador del carrito sube en 1
+    expected: [US-AC-006, US-NFR-001]
+
+  - id: h-sin-criterios
+    note: Sin criterios; integra con otro sistema sin decir qué pasa si falla.
+    title: Exportar notas al sistema académico
+    description: Como profesor quiero exportar las notas del curso para subirlas al sistema académico de la universidad
+    criteria: []
+    expected: [US-AC-001, US-NFR-004, US-EST-001]
+
+  - id: h-prosa-con-datos-personales
+    note: Criterios en prosa, «y/o» y «etc.», datos personales sin criterio de seguridad.
+    title: Registrar paciente
+    description: Como recepcionista quiero registrar pacientes nuevos para agendarles citas
+    criteria:
+      - Se guardan nombre, documento, dirección, teléfono, etc.
+      - El sistema avisa por correo y/o SMS que el registro quedó listo
+    expected: [US-AC-003, US-AMB-001, US-AC-005, US-NFR-002, US-AC-004]
+
+  - id: h-referencias-sin-antecedente
+    note: «Eso» y «lo anterior» sin antecedente claro.
+    title: Guardar filtro de transacciones
+    description: Como analista de fraude quiero guardar filtros de transacciones sospechosas para revisarlas antes del cierre
+    criteria:
+      - Dado un filtro aplicado, cuando pulso Guardar, entonces eso queda disponible
+      - Dado lo anterior, cuando vuelvo a entrar, entonces se aplica automáticamente
+    expected: [US-AMB-002, US-AC-002, US-AC-004]
+
+  - id: h-sin-beneficio
+    note: Sin «para qué»; desactivar usuarios sin criterio de quién puede hacerlo.
+    title: Desactivar usuarios
+    description: Como administrador quiero desactivar usuarios
+    criteria:
+      - Dado un usuario activo, cuando lo desactivo, entonces no puede iniciar sesión
+      - Dado un usuario ya desactivado, cuando intento desactivarlo, entonces veo el mensaje "El usuario ya está inactivo"
+    expected: [US-FMT-001, US-NFR-002]
+
+  - id: h-titulo-largo
+    note: Título de más de 100 caracteres; el resto está bien.
+    title: Permitir que los empleados del área de recursos humanos consulten y descarguen los certificados laborales emitidos en el último año
+    description: Como analista de recursos humanos quiero descargar certificados laborales para responder solicitudes de empleados sin pedirlos a nómina
+    criteria:
+      - Dado un certificado emitido hace 3 meses, cuando lo busco por documento, entonces puedo descargarlo en PDF
+      - Dado un documento sin certificados, cuando lo busco, entonces veo el mensaje "No hay certificados para este documento"
+      - Dado un usuario sin rol de recursos humanos, cuando intenta buscar certificados, entonces recibe un error 403
+      - Dado solo el teclado, cuando recorro los resultados, entonces puedo descargar cada certificado con Enter
+    expected: [US-FMT-003]
+
+  - id: h-pago-tercero-solo-feliz
+    note: Pago con un tercero (PSE) solo en camino feliz, sin fallo ni seguridad.
+    title: Pagar con PSE
+    description: Como comprador quiero pagar con PSE para usar directamente mi cuenta bancaria
+    criteria:
+      - Dado un banco disponible, cuando confirmo el pago en PSE, entonces veo el comprobante de pago
+    expected: [US-AC-004, US-NFR-004, US-NFR-002, US-NFR-001]
+
+  - id: h-demasiado-grande
+    note: Once criterios; debería dividirse.
+    title: Alta de empleado nuevo
+    description: Como analista de nómina quiero dar de alta a un empleado nuevo para que reciba su primer pago a tiempo
+    criteria:
+      - Dado un contrato firmado, cuando creo el empleado, entonces queda en estado "Pendiente de datos"
+      - Dado un empleado pendiente, cuando registro su cuenta bancaria, entonces se valida el formato
+      - Dado un empleado pendiente, cuando registro su EPS, entonces queda asociada
+      - Dado un empleado pendiente, cuando registro su fondo de pensiones, entonces queda asociado
+      - Dado un empleado pendiente, cuando registro su ARL, entonces queda asociada
+      - Dado un empleado con todos los datos, cuando lo activo, entonces entra a la próxima nómina
+      - Dado un documento duplicado, cuando creo el empleado, entonces veo el mensaje "Ya existe un empleado con ese documento"
+      - Dado un salario menor al mínimo legal, cuando lo registro, entonces veo un error de validación
+      - Dado un usuario sin rol de nómina, cuando intenta crear empleados, entonces recibe un error 403
+      - Dado un empleado activado, cuando consulto su ficha, entonces veo la fecha de ingreso
+      - Dado solo el teclado, cuando lleno el formulario, entonces cada campo tiene su etiqueta y el error se anuncia
+    expected: [US-SIZE-001]
