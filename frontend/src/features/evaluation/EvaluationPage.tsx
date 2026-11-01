@@ -30,7 +30,7 @@ function RunSummary({ run }: { run: EvaluationRun }) {
   const injection = injectionSummary(run);
   return (
     <section aria-labelledby="run-detail">
-      <h3 id="run-detail">
+      <h3 id="run-detail" tabIndex={-1}>
         {MODE_LABEL[run.mode] ?? run.mode} ·{" "}
         {new Date(run.created_at).toLocaleString("es-ES")}
       </h3>
@@ -171,8 +171,9 @@ function RunSummary({ run }: { run: EvaluationRun }) {
 
 function Comparison({ runs }: { runs: EvaluationRun[] }) {
   const finished = runs.filter((r) => r.status !== "running");
-  const [aId, setAId] = useState("");
-  const [bId, setBId] = useState("");
+  // Por defecto: la más antigua (base) contra la más reciente; la lista llega de nueva a vieja.
+  const [aId, setAId] = useState(finished.at(-1)?.id ?? "");
+  const [bId, setBId] = useState(finished.length > 1 ? finished[0].id : "");
   const a = finished.find((r) => r.id === aId);
   const b = finished.find((r) => r.id === bId);
   const rows = a && b ? compareRuns(a, b) : [];
@@ -181,6 +182,7 @@ function Comparison({ runs }: { runs: EvaluationRun[] }) {
       {MODE_LABEL[r.mode] ?? r.mode} —{" "}
       {new Date(r.created_at).toLocaleString("es-ES")}
       {r.model_name ? ` — ${r.model_name}` : ""}
+      {r.note ? ` — ${r.note.split(":")[0]}` : ""}
     </option>
   );
   if (finished.length < 2) {
@@ -188,7 +190,7 @@ function Comparison({ runs }: { runs: EvaluationRun[] }) {
   }
   return (
     <>
-      <p>
+      <p className="toolbar">
         <label>
           Corrida base{" "}
           <select value={aId} onChange={(e) => setAId(e.target.value)}>
@@ -396,7 +398,10 @@ export function EvaluationPage() {
                   return (
                     <tr key={r.id}>
                       <td>{new Date(r.created_at).toLocaleString("es-ES")}</td>
-                      <td>{MODE_LABEL[r.mode] ?? r.mode}</td>
+                      <td>
+                        {MODE_LABEL[r.mode] ?? r.mode}
+                        {r.note && <p className="hint">{r.note}</p>}
+                      </td>
                       <td>
                         <Badge tone={STATUS_TONE[r.status] ?? "neutral"}>
                           {STATUS_LABEL[r.status] ?? r.status}
@@ -409,7 +414,16 @@ export function EvaluationPage() {
                         <Button
                           variant="ghost"
                           aria-pressed={shown?.id === r.id}
-                          onClick={() => setSelected(r.id)}
+                          onClick={() => {
+                            setSelected(r.id);
+                            // El detalle está debajo de la tabla: llevar la vista y el foco ahí.
+                            requestAnimationFrame(() => {
+                              const heading =
+                                document.getElementById("run-detail");
+                              heading?.scrollIntoView?.({ block: "start" });
+                              heading?.focus({ preventScroll: true });
+                            });
+                          }}
                         >
                           Ver detalle
                         </Button>
