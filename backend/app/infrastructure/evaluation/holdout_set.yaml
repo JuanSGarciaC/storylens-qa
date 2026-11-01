@@ -2,8 +2,8 @@
 # conjunto de referencia no cubre, y etiquetado leyendo solo la descripción de cada regla del
 # catálogo (no el código de los evaluadores). Las etiquetas se fijaron ANTES de la primera
 # corrida y no se ajustan para cuadrar con el resultado.
-# No lo usa la app (la pantalla «Evaluación de la IA» usa golden_set.yaml): solo
-#   python ../evaluation/run_eval.py --set holdout
+# Lo usan `python ../evaluation/run_eval.py --set holdout` y la corrida de ejemplo de solo reglas
+# de la demo (para comparar con el conjunto de referencia). Las corridas de la app usan golden_set.yaml.
 # Varias historias prueban a propósito si las reglas generalizan: sinónimos de términos vagos,
 # límites sin la palabra «máximo», formatos válidos poco comunes y texto en inglés.
 version: "1"

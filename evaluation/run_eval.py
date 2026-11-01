@@ -32,7 +32,7 @@ MAX_CONSECUTIVE_AI_FAILURES = 2  # si la IA falla así de seguido, se detiene si
 
 SETS = {
     "golden": BACKEND / "app" / "infrastructure" / "evaluation" / "golden_set.yaml",
-    "holdout": ROOT / "holdout_set.yaml",
+    "holdout": BACKEND / "app" / "infrastructure" / "evaluation" / "holdout_set.yaml",
 }
 
 
