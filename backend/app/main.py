@@ -41,7 +41,7 @@ from app.application.test_design import (
 )
 from app.config import get_settings
 from app.domain.story_import import ImportFormatError
-from app.infrastructure.evaluation.golden import load_golden
+from app.infrastructure.evaluation.golden import HOLDOUT_PATH, load_golden
 from app.infrastructure.persistence.database import get_engine, get_session, init_db
 from app.infrastructure.persistence.migrations import upgrade_to_head
 from app.infrastructure.persistence.sql_evaluation_repository import SqlEvaluationRepository
@@ -65,7 +65,12 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         ensure_owner(SqlUserRepository(session), settings.owner_email, settings.owner_password)
         if settings.seed_demo:
             demo = seed_demo(SqlProjectRepository(session), SqlStoryRepository(session))
-            ensure_demo_run(SqlEvaluationRepository(session), load_golden(), demo.id)
+            ensure_demo_run(
+                SqlEvaluationRepository(session),
+                load_golden(),
+                demo.id,
+                holdout=load_golden(HOLDOUT_PATH),
+            )
     yield
 
 
