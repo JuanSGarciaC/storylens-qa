@@ -26,6 +26,7 @@ def test_assets_and_spa_routes_are_served_from_the_same_origin(site: TestClient)
     page = site.get("/p/123/stories")  # ruta del router del navegador
     assert page.status_code == 200 and "StoryLens" in page.text
     assert page.headers["x-content-type-options"] == "nosniff"
+    assert site.head("/").status_code == 200  # monitores de disponibilidad usan HEAD
 
 
 def test_unknown_api_paths_stay_404_and_files_outside_dist_are_not_served(
