@@ -190,7 +190,7 @@ def _serve_frontend(app: FastAPI, root: Path) -> None:
     Se registra la última para no tapar ninguna ruta de la API.
     """
 
-    @app.get("/{path:path}", include_in_schema=False)
+    @app.api_route("/{path:path}", methods=["GET", "HEAD"], include_in_schema=False)
     def frontend(path: str) -> FileResponse:
         if path == "api" or path.startswith("api/"):
             raise StarletteHTTPException(404, "No encontrado")

@@ -25,6 +25,9 @@
 
 .page__title {
   margin: 0;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 650;
+  line-height: 1.15;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -40,8 +43,10 @@
   display: grid;
   gap: var(--space-4);
   padding: var(--space-6);
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
 }
 
 .panel > h2,
@@ -64,9 +69,18 @@
 .project-list li {
   display: grid;
   gap: var(--space-1);
-  padding: var(--space-4);
+  padding: var(--space-5);
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  transition:
+    border-color var(--ease),
+    transform var(--ease);
+}
+.project-list li:hover {
+  border-color: rgb(139 156 255 / 40%);
+  transform: translateY(-1px);
 }
 
 .project-list__name {
@@ -99,9 +113,11 @@
   margin: 0;
   display: grid;
   gap: var(--space-1);
-  padding: var(--space-4);
+  padding: var(--space-5);
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
 }
 
 .stat dt {
@@ -206,6 +222,19 @@
 }
 .table-wrap {
   overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.table tbody tr {
+  transition: background-color var(--ease);
+}
+.table tbody tr:hover {
+  background: rgb(255 255 255 / 2.5%);
+}
+.table tbody tr:last-child > * {
+  border-bottom: 0;
 }
 .table {
   width: 100%;
@@ -220,8 +249,11 @@
 }
 .table th {
   color: var(--muted);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
+}
+.table thead th {
+  background: rgb(255 255 255 / 2%);
 }
 .table .table__num {
   text-align: right;
@@ -284,11 +316,28 @@
 .wrap {
   overflow-wrap: anywhere;
 }
+.intro {
+  padding: var(--space-4) 0 var(--space-2);
+}
+.intro .page__title {
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
+  background: linear-gradient(90deg, var(--fg) 30%, var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@media (forced-colors: active) {
+  .intro .page__title {
+    color: CanvasText;
+    background: none;
+  }
+}
 .intro__text {
-  max-width: 70ch;
+  max-width: 62ch;
+  margin: 0;
   font-size: 1.125rem;
   line-height: 1.7;
-  color: var(--fg);
+  color: var(--muted);
 }
 .intro .btn {
   text-decoration: none;
@@ -333,8 +382,10 @@
 }
 .ai-note {
   margin: 0;
-  padding-left: var(--space-3);
+  padding: var(--space-2) var(--space-3);
   border-left: 2px solid var(--accent);
+  background: rgb(139 156 255 / 6%);
+  border-radius: 0 var(--radius) var(--radius) 0;
   max-width: 70ch;
 }
 .finding-group__title {
@@ -342,6 +393,7 @@
 }
 .findings {
   display: grid;
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -349,8 +401,10 @@
 .finding {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-4) 0;
-  border-top: 1px solid var(--line);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
 }
 .finding__head {
   display: flex;
@@ -396,6 +450,7 @@
 }
 .cases {
   display: grid;
+  gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -403,8 +458,10 @@
 .case {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-4) 0;
-  border-top: 1px solid var(--line);
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
 }
 .case__head {
   display: flex;
@@ -420,6 +477,7 @@
   margin: 0;
   padding: var(--space-4);
   overflow-x: auto;
+  background: #0e0e14;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   font-family: var(--font-mono, ui-monospace, monospace);
@@ -543,6 +601,13 @@
   margin: var(--space-lg, 1.5rem) 0;
 }
 
+.metric {
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
 .metric dt {
   color: var(--muted);
 }

@@ -13,28 +13,38 @@ body {
   background-color: var(--bg);
   background-image:
     radial-gradient(
-      60rem 30rem at 12% -10%,
-      rgb(110 168 255 / 14%),
+      70rem 28rem at 30% -12rem,
+      rgb(99 102 241 / 16%),
       transparent 70%
     ),
     radial-gradient(
-      50rem 30rem at 95% 0%,
-      rgb(183 156 255 / 12%),
+      40rem 24rem at 100% 0%,
+      rgb(196 167 255 / 8%),
       transparent 70%
-    ),
-    linear-gradient(var(--line), transparent 1px),
-    linear-gradient(90deg, var(--line), transparent 1px);
-  background-size:
-    auto,
-    auto,
-    48px 48px,
-    48px 48px;
+    );
   background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+::selection {
+  background: rgb(99 102 241 / 45%);
 }
 
 a {
   color: var(--accent);
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
   transition: color var(--ease);
+}
+a:hover {
+  color: var(--accent-2);
 }
 
 button,

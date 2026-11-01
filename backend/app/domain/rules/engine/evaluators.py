@@ -11,8 +11,9 @@ _ACTION = re.compile(r"\b(quiero|necesito|deseo|i want|i need)\b", re.IGNORECASE
 _BENEFIT = re.compile(r"\b(para|so that|in order to)\b", re.IGNORECASE)
 _GHERKIN = re.compile(r"\b(dado|cuando|entonces|given|when|then)\b", re.IGNORECASE)
 _LIMIT_WORDS = re.compile(
-    r"\b(longitud|caracteres|monto|m[áa]xim[oa]|m[íi]nim[oa]|l[íi]mite|plazo|"
-    r"tiempo|cantidad|length|maximum|minimum|limit)\b",
+    # Solo palabras que anuncian un límite: «monto» o «cantidad» a secas no lo hacen.
+    r"\b(longitud|caracteres|m[áa]xim[oa]|m[íi]nim[oa]|l[íi]mite|plazo|"
+    r"tiempo|length|maximum|minimum|limit)\b",
     re.IGNORECASE,
 )
 MAX_TITLE_CHARS = 100
