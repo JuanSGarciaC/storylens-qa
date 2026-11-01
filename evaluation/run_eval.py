@@ -3,6 +3,7 @@
 Uso (desde backend/, con el entorno virtual activo):
     python ../evaluation/run_eval.py            # solo reglas: sin red, sin cuota
     python ../evaluation/run_eval.py --ai       # reglas + IA: consume cuota de Gemini
+    python ../evaluation/run_eval.py --set holdout   # historias «no vistas» (holdout_set.yaml)
 
 Mide precisión, exhaustividad (recall) y F1 por separado para las reglas automáticas y
 para las reglas de IA, y escribe un informe en evaluation/reports/.
@@ -27,8 +28,14 @@ DEFAULT_PAUSE = 10.0  # segundos entre historias: ~6 peticiones/min (límite gra
 MAX_CONSECUTIVE_AI_FAILURES = 2  # si la IA falla así de seguido, se detiene sin insistir
 
 
-def load_stories() -> list[dict]:
-    data = yaml.safe_load((BACKEND / "app" / "infrastructure" / "evaluation" / "golden_set.yaml").read_text(encoding="utf-8"))
+SETS = {
+    "golden": BACKEND / "app" / "infrastructure" / "evaluation" / "golden_set.yaml",
+    "holdout": ROOT / "holdout_set.yaml",
+}
+
+
+def load_stories(name: str = "golden") -> list[dict]:
+    data = yaml.safe_load(SETS[name].read_text(encoding="utf-8"))
     return data["stories"]
 
 
@@ -54,6 +61,7 @@ def main() -> None:
     parser.add_argument(
         "--pause", type=float, default=DEFAULT_PAUSE, help="segundos entre llamadas a la IA"
     )
+    parser.add_argument("--set", choices=sorted(SETS), default="golden", help="conjunto a medir")
     args = parser.parse_args()
 
     catalog = load_catalog()
@@ -69,7 +77,7 @@ def main() -> None:
     totals = {"det": Counter(), "ai": Counter()}
     ai_status = Counter()
     rows = []
-    stories = load_stories()
+    stories = load_stories(args.set)
     consecutive_failures = 0
     aborted = False
     for index, raw in enumerate(stories):
@@ -105,7 +113,9 @@ def main() -> None:
                 print("La IA falló varias veces seguidas: se detiene para no insistir.")
                 break
 
-    mode = "reglas+ia" if args.ai else "solo-reglas"
+    mode = ("reglas+ia" if args.ai else "solo-reglas") + (
+        "" if args.set == "golden" else f"-{args.set}"
+    )
     lines = [
         f"# Informe de evaluación — {mode} — {date.today().isoformat()}",
         "",
