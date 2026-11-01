@@ -185,11 +185,12 @@ qa-story-reviewer/
 
 ## 9. Despliegue
 
-| Componente | Opción recomendada | Alternativa |
-|-----------|-------------------|-------------|
-| Backend | Google Cloud Run (contenedor; key en Secret Manager) | Render, Fly.io |
-| Frontend | Vercel o Netlify | Firebase Hosting |
-| Base de datos | SQLite en volumen (demo) | Cloud SQL / Neon PostgreSQL |
+| Componente | En producción | Alternativa |
+|-----------|---------------|-------------|
+| App (API + interfaz, un solo contenedor) | Render, plan gratuito (`render.yaml`) | Cualquier host de contenedores |
+| Base de datos | Neon PostgreSQL, plan gratuito | SQLite en volumen (local con `docker compose`) |
 | Evidencias | En la propia base de datos (máx. 1 MB por imagen): sobreviven al disco efímero de los hosts gratuitos | |
+
+Detalle y pasos: [09 — Despliegue](09-despliegue.md).
 
 > Para la demo pública del portafolio: activa un límite diario de análisis por IP y un modo demo con historias de ejemplo precargadas, para no agotar la cuota gratuita.

@@ -11,7 +11,11 @@
 ![Costo](https://img.shields.io/badge/costo-0-2ea44f)
 [![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
 
-<img src="docs/screenshots/05-analisis-con-ia.png" alt="Análisis de una historia con reglas e IA: puntaje, hallazgos con su norma y la confianza de la IA" width="900">
+### [▶ Abrir la demo en vivo](https://storylens-qa.onrender.com)
+
+<sub>Proyecto de ejemplo de solo lectura, sin registro. Hosting gratuito: si nadie la visitó en los últimos 15 minutos, la primera carga tarda cerca de un minuto en despertar.</sub>
+
+<img src="docs/screenshots/00-analisis-por-reglas.png" alt="Análisis de una historia en la demo: puntaje 40 de 100, «No lista» por un hallazgo bloqueante citado a su norma" width="900">
 
 </div>
 
@@ -33,9 +37,22 @@ StoryLens QA toma historias de usuario (escritas a mano o importadas de Jira), d
 | 9 | **Métricas** | Cada cifra con su definición y su denominador; «Sin datos» en vez de un cero inventado |
 | 10 | **Evaluación de la IA** | Precisión, exhaustividad y F1 contra un conjunto de referencia, solo reglas frente a reglas e IA, y pruebas de inyección de instrucciones |
 
+## Pruébalo en 1 minuto
+
+| Qué ver | Enlace directo |
+|---|---|
+| Historias con su puntaje y estado | [/demo/stories](https://storylens-qa.onrender.com/demo/stories) |
+| Resumen del proyecto | [/demo](https://storylens-qa.onrender.com/demo) |
+| Métricas con su denominador | [/demo/metricas](https://storylens-qa.onrender.com/demo/metricas) |
+| Riesgo por épica, duplicados y contradicciones | [/demo/transversal](https://storylens-qa.onrender.com/demo/transversal) |
+| Evaluación contra el conjunto de referencia | [/demo/evaluacion](https://storylens-qa.onrender.com/demo/evaluacion) |
+| Informes en PDF y Markdown | [/demo/reports](https://storylens-qa.onrender.com/demo/reports) |
+
+La demo pública funciona solo con reglas: la IA queda reservada a la cuenta del dueño para no gastar la cuota gratuita.
+
 ## Capturas
 
-Tomadas con Gemini real (capa gratuita) sobre una historia de ejemplo de banca móvil.
+Las capturas con IA se tomaron con Gemini real (capa gratuita) sobre una historia de ejemplo de banca móvil, antes del rediseño visual; las de la demo son del sitio actual.
 
 ### Análisis de una historia con IA
 
@@ -126,6 +143,29 @@ Más detalle: [guía de desarrollo](docs/08-guia-de-desarrollo.md) · [despliegu
 
 Ninguna prueba llama a Gemini. La integración continua ejecuta todo lo anterior en cada cambio y busca secretos en el historial.
 
+## Evaluación de la IA
+
+Medida contra un conjunto de referencia de 16 historias etiquetadas a mano ([informe completo](evaluation/reports/2026-10-23-reglas+ia.md)), con `gemini-3.5-flash-lite` y el prompt `analysis-v1`:
+
+| Detector | Precisión | Exhaustividad | F1 |
+|---|---|---|---|
+| Reglas automáticas | 1,00 | 1,00 | 1,00 |
+| Reglas de IA | 0,56 | 0,71 | 0,63 |
+
+Cómo leerlo: el conjunto lo escribió el mismo autor que las reglas, así que el 1,00 de las reglas mide que hacen lo que dicen, no que generalicen a historias nuevas. Con solo 7 hallazgos de IA esperados, un acierto mueve la exhaustividad más de 10 puntos. El fallo real que se vio: la IA no detectó el «solo camino feliz» en dos historias. La IA nunca bloquea nada: sus hallazgos son sugerencias que la persona acepta o descarta. Una prueba aparte comprobó que no obedece instrucciones inyectadas en el texto de una historia ([detalle](evaluation/reports/2026-10-23-fase3-4-gemini-real.md)).
+
+## Decisiones técnicas
+
+| Decisión | Por qué |
+|---|---|
+| [Motor híbrido: reglas primero, IA después](docs/adr/001-motor-hibrido-reglas-ia.md) | Resultados reproducibles y trazables a una norma; la IA solo suma, y si falla la app sigue |
+| [Solo el backend habla con Gemini](docs/adr/002-backend-como-proxy-de-gemini.md) | La clave nunca llega al navegador; la CI lo comprueba sobre el bundle |
+| [SQLite en local, PostgreSQL en la nube](docs/adr/003-sqlite-para-persistencia.md) | Repositorios detrás de puertos: cambiar de base no toca el dominio |
+| [Una cuenta de dueño con cookie firmada](docs/adr/004-sesion-por-cookie-firmada.md) | Sin registro ni contraseñas de terceros que custodiar; la demo pública es de solo lectura |
+| [Cuota de IA persistente](docs/adr/005-cuota-de-ia-persistente.md) | Topes propios más estrictos que la capa gratuita: imposible pasarse y pagar |
+| [Importación en segundo plano](docs/adr/006-importacion-en-segundo-plano.md) | 500 filas sin bloquear la petición, con progreso y reintento seguro |
+| [Un solo servicio en Render + Neon](docs/09-despliegue.md) | Mismo origen para la cookie de sesión, evidencias en la base porque el disco gratuito se borra |
+
 ## Seguridad y costo cero
 
 - La clave de Gemini vive **solo en el backend**, en una variable de entorno; nunca llega al navegador (la CI lo comprueba sobre el bundle).
@@ -155,7 +195,8 @@ La API se documenta sola: con el backend en marcha, `/docs` (Swagger) y `/openap
 
 Las siete fases del plan están construidas: fundaciones, frontend, importación masiva, análisis transversal, métricas, evaluación de la IA, y pruebas de extremo a extremo con Docker. Lo que falta y se sabe:
 
-- El despliegue público gratuito está preparado y documentado, pero no ejecutado.
+- Desplegado gratis en Render + Neon: [storylens-qa.onrender.com](https://storylens-qa.onrender.com). La IA no está activa en producción.
+- El conjunto de referencia es pequeño (16 historias) y del mismo autor que las reglas; falta medir contra historias no vistas.
 - El listado de historias se filtra y pagina en el navegador, pensado para hasta unos 500 por proyecto.
 
 ## Licencia
