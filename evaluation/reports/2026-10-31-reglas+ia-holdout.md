@@ -7,7 +7,7 @@
 | Tipo | Precisión | Recall | F1 | TP | FP | FN |
 |---|---|---|---|---|---|---|
 | Reglas automáticas | 0.67 | 0.75 | 0.71 | 6 | 3 | 2 |
-| Reglas de IA | 0.75 | 0.33 | 0.46 | 6 | 2 | 12 |
+| Reglas de IA | 0.60 | 0.33 | 0.43 | 6 | 4 | 12 |
 
 ## Detalle
 
@@ -15,29 +15,25 @@
 |---|---|---|
 | h-control-plazo-como-estado | — | US-AC-006 |
 | h-formato-en-mi-rol | US-NFR-001 | US-FMT-001 |
-| h-vagos-sinonimos | US-AC-004, US-AMB-001, US-NFR-003 | US-FMT-002 |
+| h-vagos-sinonimos | US-AMB-001, US-NFR-003 | US-FMT-002 |
 | h-limite-sin-palabra | US-AC-006, US-NFR-001 | — |
-| h-sin-criterios | US-EST-001 | — |
-| h-prosa-con-datos-personales | US-AC-004, US-AC-005, US-NFR-002 | — |
-| h-referencias-sin-antecedente | US-AC-004 | — |
+| h-sin-criterios | US-EST-001, US-NFR-004 | US-DEP-001 |
+| h-prosa-con-datos-personales | US-AC-004, US-AC-005 | US-AC-002 |
+| h-referencias-sin-antecedente | US-AC-002, US-AC-004 | — |
 | h-sin-beneficio | US-NFR-002 | US-FMT-002 |
 | h-pago-tercero-solo-feliz | US-NFR-001, US-NFR-002 | — |
 | h-demasiado-grande | — | US-AC-006 |
 
 ## Lectura (añadida a mano)
 
-- Modelo `gemini-3.5-flash-lite`, prompt `analysis-v1`, capa gratuita, `--pause 13` (una primera
-  corrida con 10 s chocó con el tope propio de 5 peticiones/min en 2 historias: se repitió completa).
-- **La IA es prudente:** precisión 0,75 (6 de 8 hallazgos correctos) pero exhaustividad 0,33
-  (encontró 6 de 18). En el conjunto de referencia fue 0,56 / 0,71: en historias nuevas reporta menos
-  y se le escapa más.
-- **Fallo que se repite:** `US-AC-004` (solo camino feliz) faltó en 4 historias, igual que en el
-  conjunto de referencia. Es el candidato más claro para `analysis-v2`.
-- **También faltaron** accesibilidad (`US-NFR-001`, 3 veces) y seguridad con datos personales o pagos
-  (`US-NFR-002`, 3 veces): la IA no infiere requisitos no funcionales que la historia no menciona.
-- **Sobrantes (2):** `US-FMT-002` («el para qué no aporta valor») en «sin estrés» y en una historia
-  sin beneficio. Ambos son defendibles; las etiquetas no se ajustaron.
-- **Aciertos útiles:** encontró la referencia sin antecedente (`US-AMB-002`), el criterio no
-  observable (`US-AC-002`), la integración sin plan de fallo (`US-NFR-004`) y la seguridad en el
-  registro de pacientes; ninguna regla automática cubre eso.
-- Las reglas automáticas dan lo mismo que en la corrida solo reglas (F1 0,71): son deterministas.
+- Corrida con el validador corregido (ver `2026-10-31-reglas+ia.md`) y con el registro de descartes
+  activado: no hubo hallazgos descartados por la cita. La primera corrida (F1 0,46) fue con el bug y
+  sin ese registro, así que no se sabe si descartó alguno.
+- **Variación entre corridas:** tres corridas dieron F1 0,46, 0,37 y 0,43 (esta). Con 13 historias
+  y 18 hallazgos esperados, un acierto mueve la exhaustividad más de 5 puntos: la cifra útil es
+  «alrededor de 0,4».
+- **La IA es mucho peor en historias nuevas** que en el conjunto de referencia (F1 0,88): sigue
+  sin inferir accesibilidad (`US-NFR-001`) ni seguridad (`US-NFR-002`) cuando la historia no las
+  menciona, y en varias historias no marca el «solo camino feliz» (`US-AC-004`).
+- Candidato para `analysis-v2`: pedir explícitamente revisar camino de error, accesibilidad y
+  seguridad en cada historia. Ajustarlo con el conjunto de referencia y medirlo una vez aquí.

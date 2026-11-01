@@ -47,6 +47,17 @@ a:hover {
   color: var(--accent-2);
 }
 
+/* Base de todo selector; los de .field y .project-select lo afinan. */
+select {
+  padding: 0.375rem 0.5rem;
+  color: var(--fg);
+  background: var(--surface-2);
+  border: 1px solid var(--line-control);
+  border-radius: var(--radius);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
 button,
 [role="button"],
 a,
