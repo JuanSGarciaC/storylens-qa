@@ -26,8 +26,9 @@
 
 ## Lectura (añadida a mano)
 
-- Corrida con el validador corregido (ver `2026-10-31-reglas+ia.md`). En este conjunto el arreglo
-  no cambia nada: la IA no tuvo hallazgos descartados por la cita.
+- Corrida con el validador corregido (ver `2026-10-31-reglas+ia.md`) y con el registro de descartes
+  activado: no hubo hallazgos descartados por la cita. La primera corrida (F1 0,46) fue con el bug y
+  sin ese registro, así que no se sabe si descartó alguno.
 - **Variación entre corridas:** tres corridas dieron F1 0,46, 0,37 y 0,43 (esta). Con 13 historias
   y 18 hallazgos esperados, un acierto mueve la exhaustividad más de 5 puntos: la cifra útil es
   «alrededor de 0,4».
