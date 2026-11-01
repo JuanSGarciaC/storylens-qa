@@ -1,0 +1,23 @@
+# Blueprint de Render: un solo servicio web gratuito con el Dockerfile de la raíz.
+# La base es PostgreSQL gratuito en Neon (el disco de Render Free se borra al reiniciar).
+# Render genera SESSION_SECRET y OWNER_PASSWORD; la contraseña se lee en Environment del panel.
+services:
+  - type: web
+    name: storylens-qa
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: OWNER_EMAIL
+        sync: false
+      - key: OWNER_PASSWORD
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: APP_ENV
+        value: production
