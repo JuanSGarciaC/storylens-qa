@@ -27,9 +27,8 @@ export function ReportLinks({ path, what }: Props) {
           download
         >
           {/* El nombre accesible contiene el texto visible (WCAG 2.5.3). */}
-          <span className="visually-hidden">{`Descargar ${what} (`}</span>
+          <span className="visually-hidden">{`Descargar ${what} en`}</span>{" "}
           {label}
-          <span className="visually-hidden">)</span>
         </a>
       ))}
     </span>

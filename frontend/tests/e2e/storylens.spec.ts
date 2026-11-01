@@ -124,7 +124,7 @@ test.describe("flujo del dueño", () => {
 
     await page.getByRole("link", { name: "Informes" }).click();
     await expect(
-      page.getByRole("link", { name: /informe de .* \(Markdown\)/i }).first(),
+      page.getByRole("link", { name: /informe de .* en Markdown/i }).first(),
     ).toBeVisible();
   });
 
