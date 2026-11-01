@@ -101,9 +101,10 @@ rules:
     severity: major
     description: Los criterios que hablan de límites, longitudes o plazos incluyen el valor.
     message: "El criterio habla de «{term}» pero no indica un valor concreto."
-    suggestion: Indique el valor numérico y su unidad (p. ej. «mínimo 8 caracteres»).
+    suggestion: Indique el valor numérico y su unidad (p. ej. «mínimo 8 caracteres», «máximo 2 000 000 COP», «en menos de 2 s»).
     examples:
-      ok: {}
+      ok:
+        criteria: ["Dado un reembolso mayor que el pago, entonces veo 'El monto excede el pago'"]
       fail:
         criteria: ["La contraseña debe cumplir la longitud mínima"]
 
