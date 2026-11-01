@@ -52,7 +52,7 @@ La demo pública funciona solo con reglas: la IA queda reservada a la cuenta del
 
 ## Capturas
 
-Las capturas con IA se tomaron con Gemini real (capa gratuita) sobre una historia de ejemplo de banca móvil, antes del rediseño visual; las de la demo son del sitio actual.
+Todas son del diseño actual. Las de IA se tomaron con Gemini real (capa gratuita) sobre un proyecto de ejemplo de banca móvil; las de la demo, del sitio publicado.
 
 ### Análisis de una historia con IA
 
@@ -151,10 +151,12 @@ Dos conjuntos etiquetados a mano: el de referencia (16 historias, escrito junto 
 |---|---|---|---|---|
 | Reglas automáticas | Referencia | 1,00 | 1,00 | 1,00 |
 | Reglas automáticas | **No visto** | **0,67** | **0,75** | **0,71** |
-| Reglas de IA (`gemini-3.5-flash-lite`, `analysis-v1`) | Referencia | 0,78 | 1,00 | 0,88 |
-| Reglas de IA (`gemini-3.5-flash-lite`, `analysis-v1`) | **No visto** | **0,60** | **0,33** | **0,43** |
+| Reglas de IA (`gemini-3.5-flash-lite`, `analysis-v1`) | Referencia | 0,56–0,78 | 0,71–1,00 | 0,63–0,88 |
+| Reglas de IA (`gemini-3.5-flash-lite`, `analysis-v1`) | **No visto** | **0,56–0,75** | **0,28–0,33** | **0,37–0,46** |
 
-Cómo leerlo: el 1,00 en el conjunto de referencia mide que las reglas hacen lo que dicen; el 0,71 en historias no vistas mide cuánto generalizan. Las fallas son concretas: sinónimos vagos fuera del diccionario («ágil», «en breve»), límites sin la palabra «máximo» («tope alcanzado») y un formato de historia válido que el patrón no reconoce ([informe](evaluation/reports/2026-10-31-solo-reglas-holdout.md), [conjunto](backend/app/infrastructure/evaluation/holdout_set.yaml)). Para la IA ([referencia](evaluation/reports/2026-10-31-reglas+ia.md), [no visto](evaluation/reports/2026-10-31-reglas+ia-holdout.md)): en el conjunto de referencia encuentra todo lo esperado, pero en historias nuevas se le escapa mucho (F1 entre 0,37 y 0,46 en tres corridas), sobre todo accesibilidad y seguridad cuando la historia no las menciona. Medirla destapó un bug: el validador descartaba como alucinación los hallazgos que citaban el número del criterio («1. Dado…»); corregido y con prueba, la exhaustividad en el conjunto de referencia pasó de 0,71 a 1,00. Por eso sus hallazgos complementan a las reglas y no las reemplazan. La IA nunca bloquea nada: sus hallazgos son sugerencias que la persona acepta o descarta. Una prueba aparte comprobó que no obedece instrucciones inyectadas en el texto de una historia ([detalle](evaluation/reports/2026-10-23-fase3-4-gemini-real.md)).
+<sub>La IA no responde igual dos veces: los rangos son de tres corridas por conjunto. Las reglas son deterministas.</sub>
+
+Cómo leerlo: el 1,00 en el conjunto de referencia mide que las reglas hacen lo que dicen; el 0,71 en historias no vistas mide cuánto generalizan. Las fallas son concretas: sinónimos vagos fuera del diccionario («ágil», «en breve»), límites sin la palabra «máximo» («tope alcanzado») y un formato de historia válido que el patrón no reconoce ([informe](evaluation/reports/2026-10-31-solo-reglas-holdout.md), [conjunto](backend/app/infrastructure/evaluation/holdout_set.yaml)). Para la IA ([referencia](evaluation/reports/2026-10-31-reglas+ia.md), [no visto](evaluation/reports/2026-10-31-reglas+ia-holdout.md)): en historias nuevas se le escapa mucho más que en el conjunto de referencia, sobre todo accesibilidad y seguridad cuando la historia no las menciona. Medirla destapó un bug: el validador descartaba como alucinación los hallazgos que citaban el número del criterio («1. Dado…»), aunque fueran correctos; quedó corregido y con prueba. Por eso sus hallazgos complementan a las reglas y no las reemplazan. La IA nunca bloquea nada: sus hallazgos son sugerencias que la persona acepta o descarta. Una prueba aparte comprobó que no obedece instrucciones inyectadas en el texto de una historia ([detalle](evaluation/reports/2026-10-23-fase3-4-gemini-real.md)).
 
 ## Decisiones técnicas
 
