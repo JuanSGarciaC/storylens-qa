@@ -64,7 +64,7 @@ describe("SessionDetailPage", () => {
       ["PDF", "pdf"],
     ]) {
       const link = await screen.findByRole("link", {
-        name: `Descargar reporte de la sesión (${label})`,
+        name: `Descargar reporte de la sesión en ${label}`,
       });
       expect(link.getAttribute("href")).toBe(
         `/api/v1/qa-sessions/qs1/report?format=${format}`,
