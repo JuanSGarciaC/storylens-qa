@@ -25,40 +25,42 @@ cp .env.example .env        # completa OWNER_EMAIL, OWNER_PASSWORD, SESSION_SECR
 docker compose up --build   # http://localhost:8080
 ```
 
-`nginx` sirve la interfaz y reenvía `/api/` al backend en **el mismo origen**. Eso importa:
-la sesión del dueño es una cookie `SameSite=Lax`, que el navegador solo envía si interfaz y API
-comparten origen.
+Un solo contenedor: FastAPI sirve la API y la interfaz compilada desde **el mismo origen**. Eso
+importa: la sesión del dueño es una cookie `SameSite=Lax`, que el navegador solo envía si
+interfaz y API comparten origen.
 
-## Despliegue gratuito (sin ejecutar todavía)
+## Despliegue gratuito (en producción)
 
-Los planes gratuitos cambian: **verifica estas condiciones antes de elegir** (consultadas el
-2026-10-24).
+Demo pública: **https://storylens-qa.onrender.com**. Condiciones verificadas el 2026-10-31; los
+planes gratuitos cambian, revísalas antes de replicarlo.
 
-| Pieza | Opción | Lo que hay que saber |
+| Pieza | Servicio | Lo que hay que saber |
 |---|---|---|
-| Interfaz estática | [Cloudflare Pages](https://developers.cloudflare.com/pages/platform/limits) | 500 compilaciones al mes, 20 000 archivos, sin tarjeta |
-| Backend | [Render, plan gratuito](https://render.com/docs/free) | Se duerme tras 15 min sin tráfico (despertar ≈ 1 min); 750 horas al mes; **sin disco persistente** |
-| Base de datos | [Neon](https://neon.com/pricing) | Plan gratuito permanente, 0,5 GB por proyecto, se duerme a los 5 min, sin tarjeta |
+| App (API + interfaz) | [Render, plan gratuito](https://render.com/docs/free), imagen Docker | Se duerme tras 15 min sin tráfico (despertar ≈ 1 min); 750 horas al mes; disco efímero; sin tarjeta, al pasarse del límite suspende en vez de cobrar |
+| Base de datos | [Neon](https://neon.com/pricing), PostgreSQL | Plan gratuito permanente, 1 GB por proyecto, sin tarjeta |
 
-Consecuencias de diseño:
+**Cómo se desplegó** (repetible):
 
-- **Mismo origen.** Con la interfaz en Cloudflare Pages y el backend en Render hay dos orígenes:
-  la demo anónima funciona, pero el inicio de sesión del dueño **no** (la cookie no viaja).
-  Solución sin costo: una regla de reescritura de `/api/*` hacia el backend en el propio
-  hosting estático (en Cloudflare Pages, un Worker o una regla `_redirects` con estado 200), o
-  servir interfaz y API desde un único servicio con la imagen de Docker.
-- **Base de datos.** SQLite en el disco de Render se pierde al dormirse el servicio. En la nube
-  usa PostgreSQL gratuito (`pip install -e ".[postgres]"` y `DATABASE_URL=postgres://...`; se
-  normaliza solo).
-- **Evidencias de imagen.** Se guardan en disco (`EVIDENCE_DIR`), que en el plan gratuito de
-  Render no persiste: las notas y los enlaces sí (están en la base), las imágenes **no**. Mientras
-  no haya almacenamiento gratuito persistente, en la nube conviene usar solo notas y enlaces.
-- **Arranque en frío.** La interfaz ya muestra «El servidor está despertando…» con reintentos.
-- **Gemini.** Solo clave de capa gratuita, sin facturación, en una variable de entorno del
-  backend; la demo pública nunca usa IA y la UI avisa que los datos enviados a la capa gratuita
-  pueden usarse para mejorar modelos.
-- **Variables obligatorias en producción:** `OWNER_EMAIL`, `OWNER_PASSWORD`,
-  `SESSION_SECRET` (larga y aleatoria) y `COOKIE_SECURE=true` bajo HTTPS.
+1. Neon: `npx neonctl auth`, luego `neonctl projects create --name storylens-qa` y
+   `neonctl connection-string --pooled`. La URL se guarda fuera del repositorio.
+2. Render: *New → Blueprint* sobre este repositorio. [`render.yaml`](../render.yaml) define el
+   servicio; Render genera `SESSION_SECRET` y `OWNER_PASSWORD`, y pide `DATABASE_URL` y
+   `OWNER_EMAIL`. Cada cambio en `main` se despliega solo.
+3. Al arrancar, la app aplica las migraciones y siembra el proyecto demo si no existe.
+
+Decisiones que lo hacen funcionar gratis:
+
+- **Mismo origen.** Un único servicio evita el problema de la cookie entre dominios (con la
+  interfaz en otro hosting, la demo funciona pero el inicio de sesión del dueño no).
+- **Todo en la base.** Las imágenes de evidencia se guardan en PostgreSQL (máx. 1 MB cada una),
+  porque el disco de Render se borra al reiniciar.
+- **Arranque en frío.** La interfaz muestra «El servidor está despertando…» con reintentos.
+- **Enlaces estables a la demo.** `/demo/<pantalla>` (p. ej. `/demo/metricas`) lleva al proyecto
+  demo vigente aunque se vuelva a sembrar con otro id.
+- **Gemini.** No está activo en producción. Para activarlo: clave de capa gratuita, sin
+  facturación, en `GEMINI_API_KEY` y `GEMINI_MODEL` del servicio. La demo pública nunca usa IA.
+- **Variables en producción:** `DATABASE_URL`, `OWNER_EMAIL`, `OWNER_PASSWORD`,
+  `SESSION_SECRET` y `COOKIE_SECURE=true` (ya en `render.yaml`).
 
 ## Documentación de la API
 
