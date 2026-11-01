@@ -4,6 +4,7 @@ import { Outlet, createBrowserRouter } from "react-router-dom";
 import type { RouteObject } from "react-router-dom";
 import { LoginPage } from "../features/auth/LoginPage";
 import { Spinner } from "../shared/ui/Spinner";
+import { DemoRedirect } from "./DemoRedirect";
 import { NotFound, RouteError } from "./NotFound";
 import { Shell } from "./Shell";
 import { SessionProvider } from "./session";
@@ -61,6 +62,7 @@ export const routes: RouteObject[] = [
                   "ProjectsPage",
                 ),
               },
+              { path: "demo/*", element: <DemoRedirect /> },
               {
                 path: "p/:projectId",
                 element: screen(
