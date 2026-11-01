@@ -15,7 +15,7 @@ LOCK_WINDOW_SECONDS = 15 * 60
 
 
 class LoginThrottle:
-    """Bloquea temporalmente un email tras demasiados intentos fallidos (en memoria)."""
+    """Bloquea una clave (IP y email) tras demasiados intentos fallidos (en memoria)."""
 
     def __init__(
         self,

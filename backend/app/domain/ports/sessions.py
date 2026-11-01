@@ -1,5 +1,4 @@
 from collections.abc import Sequence
-from pathlib import Path
 from typing import Protocol
 
 from app.domain.entities import (
@@ -84,8 +83,8 @@ class EvidenceStorage(Protocol):
         """Guarda el archivo y devuelve su nombre interno."""
         ...
 
-    def path(self, name: str) -> Path:
-        """Ruta del archivo guardado. Lanza ValueError si el nombre no es uno generado aquí."""
+    def load(self, name: str) -> bytes | None:
+        """Contenido guardado con ese nombre, o None si no existe."""
         ...
 
     def delete(self, name: str) -> None: ...

@@ -28,6 +28,45 @@ jobs:
       # Sin GEMINI_API_KEY: las pruebas usan el adaptador falso, nunca la API real.
       - run: pytest --cov=app --cov-report=term-missing
 
+  postgres:
+    # En la nube la base es PostgreSQL (Neon): las migraciones y la demo deben funcionar ahí también.
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      SEED_DEMO: "true"
+      OWNER_EMAIL: owner@ci.local
+      OWNER_PASSWORD: ci-password-123 # base desechable de CI, no es una credencial real
+      SESSION_SECRET: ci-secret-ci-secret-ci-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - run: pip install -e ".[dev,postgres]"
+      - name: Arranque contra PostgreSQL (dos veces, para comprobar que es idempotente)
+        run: |
+          python ../.github/scripts/postgres_smoke.py
+          python ../.github/scripts/postgres_smoke.py
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t storylens .
+
   frontend:
     runs-on: ubuntu-latest
     defaults:

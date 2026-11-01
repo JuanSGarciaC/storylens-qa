@@ -41,6 +41,15 @@ def test_five_failures_lock_email_temporarily(anon_client: TestClient) -> None:
     assert login(anon_client, email="otro@test.local", password="x").status_code == 401
 
 
+def test_failures_from_one_ip_do_not_lock_the_owner_out_elsewhere(anon_client: TestClient) -> None:
+    attacker = TestClient(anon_client.app, client=("203.0.113.9", 50000))
+    for _ in range(6):
+        login(attacker, password="mala")
+
+    assert login(attacker).status_code == 429
+    assert login(anon_client).status_code == 200  # el dueño, desde su IP, sigue entrando
+
+
 def test_tampered_cookie_is_anonymous(anon_client: TestClient) -> None:
     login(anon_client)
     anon_client.cookies.set("storylens_session", "esto-no-es-un-token")
