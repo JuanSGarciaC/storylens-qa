@@ -202,17 +202,34 @@ def _run_injection(
     )
 
 
-def ensure_demo_run(runs: EvaluationRepository, golden: list[GoldenStory], project_id: str) -> None:
-    """La demo trae una evaluación de ejemplo de solo reglas: no gasta cuota de IA."""
-    if runs.list_runs(project_id):
-        return
+HOLDOUT_NOTE = "Conjunto «no visto»: historias escritas después de las reglas, en otros dominios."
+
+
+def ensure_demo_run(
+    runs: EvaluationRepository,
+    golden: list[GoldenStory],
+    project_id: str,
+    holdout: list[GoldenStory] | None = None,
+) -> None:
+    """La demo trae evaluaciones de ejemplo de solo reglas (no gastan cuota de IA): una con el
+    conjunto de referencia y, si se da, otra con el «no visto», para poder compararlas."""
+    existing = runs.list_runs(project_id)
+    if not existing:
+        _demo_rules_run(runs, golden, project_id)
+    if holdout and not any(r.note == HOLDOUT_NOTE for r in existing):
+        run_id = _demo_rules_run(runs, holdout, project_id)
+        runs.update_run(run_id, note=HOLDOUT_NOTE)
+
+
+def _demo_rules_run(runs: EvaluationRepository, stories: list[GoldenStory], project_id: str) -> str:
     run = start_run(
         runs,
-        golden,
+        stories,
         project_id,
         EvaluationMode.RULES,
         "sistema",
         ai_available=False,
         quota_remaining=None,
     )
-    execute_run(runs, golden, None, run.id)
+    execute_run(runs, stories, None, run.id)
+    return run.id

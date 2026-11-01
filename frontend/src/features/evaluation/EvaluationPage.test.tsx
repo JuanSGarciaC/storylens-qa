@@ -193,6 +193,26 @@ describe("EvaluationPage", () => {
     expect(within(table).queryByText(/reglas de IA/)).not.toBeInTheDocument();
   });
 
+  it("con dos corridas, la comparación aparece ya elegida: la más antigua contra la más reciente", async () => {
+    setup([AI_RUN, run()]);
+    expect(await screen.findByLabelText("Corrida base")).toHaveValue("r1");
+    expect(screen.getByLabelText("Comparar con")).toHaveValue("r2");
+    expect(
+      screen.getByRole("table", { name: "Cambio entre las dos corridas" }),
+    ).toBeInTheDocument();
+  });
+
+  it("«Ver detalle» lleva el foco al detalle de esa corrida", async () => {
+    setup([AI_RUN, run()]);
+    const buttons = await screen.findAllByRole("button", {
+      name: "Ver detalle",
+    });
+    await userEvent.click(buttons[1]);
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { level: 3 })).toHaveFocus(),
+    );
+  });
+
   it("sin corridas muestra un estado vacío", async () => {
     setup([]);
     expect(

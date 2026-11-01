@@ -5,10 +5,10 @@ from sqlalchemy import Engine
 from sqlmodel import Session
 
 from app.api.deps import get_evaluation_launcher, get_llm
-from app.application.evaluations import ensure_demo_run, execute_run
+from app.application.evaluations import HOLDOUT_NOTE, ensure_demo_run, execute_run
 from app.domain.entities import AIStatus
 from app.domain.ports import LLMAnalysis, LLMUnavailableError
-from app.infrastructure.evaluation.golden import load_golden
+from app.infrastructure.evaluation.golden import HOLDOUT_PATH, load_golden
 from app.infrastructure.persistence.sql_evaluation_repository import SqlEvaluationRepository
 from app.main import app
 
@@ -139,6 +139,20 @@ def test_demo_gets_a_rules_only_example_run_once(engine, client):
         runs = repo.list_runs(client.project_id)
         assert len(runs) == 1 and runs[0].status == "succeeded"
         assert runs[0].metrics["ai"] is None
+
+
+def test_demo_adds_the_unseen_set_run_once_to_compare(engine, client):
+    holdout = load_golden(HOLDOUT_PATH)
+    with Session(engine) as session:
+        repo = SqlEvaluationRepository(session)
+        ensure_demo_run(repo, load_golden(), client.project_id)  # demo ya desplegada: 1 corrida
+        ensure_demo_run(repo, load_golden(), client.project_id, holdout=holdout)
+        ensure_demo_run(repo, load_golden(), client.project_id, holdout=holdout)  # no duplica
+        runs = repo.list_runs(client.project_id)
+    assert [r.note == HOLDOUT_NOTE for r in runs].count(True) == 1 and len(runs) == 2
+    unseen = next(r for r in runs if r.note == HOLDOUT_NOTE)
+    assert unseen.total == len(holdout) and unseen.status == "succeeded"
+    assert unseen.metrics["det"]["f1"] < 1  # las reglas no generalizan perfecto
 
 
 def test_deleting_the_project_removes_its_evaluations(client, sync_eval):
