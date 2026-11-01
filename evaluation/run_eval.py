@@ -18,13 +18,15 @@ from pathlib import Path
 import yaml
 
 from app.application.analyze_story import analyze_story
+from app.config import get_settings
 from app.domain.entities import AIStatus, Source, Story
 from app.domain.rules.catalog import load_catalog
 from app.infrastructure.llm.factory import build_llm
+from app.infrastructure.persistence.migrations import upgrade_to_head
 
 ROOT = Path(__file__).resolve().parent
 BACKEND = ROOT.parent / "backend"
-DEFAULT_PAUSE = 10.0  # segundos entre historias: ~6 peticiones/min (límite gratuito: 15)
+DEFAULT_PAUSE = 13.0  # segundos entre historias: < 5 por minuto (AI_REQUESTS_PER_MINUTE)
 MAX_CONSECUTIVE_AI_FAILURES = 2  # si la IA falla así de seguido, se detiene sin insistir
 
 
@@ -70,6 +72,8 @@ def main() -> None:
 
     llm = None
     if args.ai:
+        # La cuota de IA se registra en la base: una base local nueva necesita sus tablas.
+        upgrade_to_head(get_settings().database_url)
         llm = build_llm()
         if llm is None:
             raise SystemExit("La IA no está configurada (revisa GEMINI_API_KEY y GEMINI_MODEL).")
