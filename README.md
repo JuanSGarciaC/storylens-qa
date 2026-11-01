@@ -152,8 +152,9 @@ Dos conjuntos etiquetados a mano: el de referencia (16 historias, escrito junto 
 | Reglas automáticas | Referencia | 1,00 | 1,00 | 1,00 |
 | Reglas automáticas | **No visto** | **0,67** | **0,75** | **0,71** |
 | Reglas de IA (`gemini-3.5-flash-lite`, `analysis-v1`) | Referencia | 0,56 | 0,71 | 0,63 |
+| Reglas de IA (`gemini-3.5-flash-lite`, `analysis-v1`) | **No visto** | **0,75** | **0,33** | **0,46** |
 
-Cómo leerlo: el 1,00 en el conjunto de referencia mide que las reglas hacen lo que dicen; el 0,71 en historias no vistas mide cuánto generalizan. Las fallas son concretas: sinónimos vagos fuera del diccionario («ágil», «en breve»), límites sin la palabra «máximo» («tope alcanzado») y un formato de historia válido que el patrón no reconoce ([informe](evaluation/reports/2026-10-31-solo-reglas-holdout.md), [conjunto](evaluation/holdout_set.yaml)). Para la IA ([informe](evaluation/reports/2026-10-23-reglas+ia.md)): con solo 7 hallazgos de IA esperados, un acierto mueve la exhaustividad más de 10 puntos. El fallo real que se vio: la IA no detectó el «solo camino feliz» en dos historias. La IA nunca bloquea nada: sus hallazgos son sugerencias que la persona acepta o descarta. Una prueba aparte comprobó que no obedece instrucciones inyectadas en el texto de una historia ([detalle](evaluation/reports/2026-10-23-fase3-4-gemini-real.md)).
+Cómo leerlo: el 1,00 en el conjunto de referencia mide que las reglas hacen lo que dicen; el 0,71 en historias no vistas mide cuánto generalizan. Las fallas son concretas: sinónimos vagos fuera del diccionario («ágil», «en breve»), límites sin la palabra «máximo» («tope alcanzado») y un formato de historia válido que el patrón no reconoce ([informe](evaluation/reports/2026-10-31-solo-reglas-holdout.md), [conjunto](evaluation/holdout_set.yaml)). Para la IA ([referencia](evaluation/reports/2026-10-23-reglas+ia.md), [no visto](evaluation/reports/2026-10-31-reglas+ia-holdout.md)): en historias nuevas es prudente (lo que reporta suele ser correcto) pero se le escapa mucho, sobre todo el «solo camino feliz», que falló en ambos conjuntos, y los requisitos de accesibilidad y seguridad que la historia no menciona. Por eso sus hallazgos complementan a las reglas y no las reemplazan. La IA nunca bloquea nada: sus hallazgos son sugerencias que la persona acepta o descarta. Una prueba aparte comprobó que no obedece instrucciones inyectadas en el texto de una historia ([detalle](evaluation/reports/2026-10-23-fase3-4-gemini-real.md)).
 
 ## Decisiones técnicas
 
@@ -197,7 +198,7 @@ La API se documenta sola: con el backend en marcha, `/docs` (Swagger) y `/openap
 Las siete fases del plan están construidas: fundaciones, frontend, importación masiva, análisis transversal, métricas, evaluación de la IA, y pruebas de extremo a extremo con Docker. Lo que falta y se sabe:
 
 - Desplegado gratis en Render + Neon: [storylens-qa.onrender.com](https://storylens-qa.onrender.com). La IA no está activa en producción.
-- Las reglas generalizan con F1 0,71 en historias no vistas; las mejoras candidatas están en el [informe](evaluation/reports/2026-10-31-solo-reglas-holdout.md). Falta medir la IA en ese conjunto.
+- Las reglas generalizan con F1 0,71 en historias no vistas; las mejoras candidatas están en el [informe](evaluation/reports/2026-10-31-solo-reglas-holdout.md). En ese conjunto la IA da F1 0,46: el siguiente paso es un prompt `analysis-v2` centrado en el camino de error.
 - El listado de historias se filtra y pagina en el navegador, pensado para hasta unos 500 por proyecto.
 
 ## Licencia
