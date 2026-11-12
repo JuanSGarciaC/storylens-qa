@@ -15,7 +15,9 @@
 
 <sub>Proyecto de ejemplo de solo lectura, sin registro. Hosting gratuito: si nadie la visitó en los últimos 15 minutos, la primera carga tarda cerca de un minuto en despertar.</sub>
 
-<img src="docs/screenshots/00-analisis-por-reglas.png" alt="Análisis de una historia en la demo: puntaje 40 de 100, «No lista» por un hallazgo bloqueante citado a su norma" width="900">
+<img src="docs/screenshots/flujo-en-vivo.gif" alt="El dueño escribe una historia con términos vagos, la analiza con reglas, obtiene 46 de 100 «No lista» con cada hallazgo citado a su norma y acepta uno" width="800">
+
+<sub>Grabado en local con la cuenta del dueño y solo reglas, sin IA (la demo pública es de solo lectura). Se regenera con <a href="scripts/demo_gif.py"><code>scripts/demo_gif.py</code></a>.</sub>
 
 </div>
 
