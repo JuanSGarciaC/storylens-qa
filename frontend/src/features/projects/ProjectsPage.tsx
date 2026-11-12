@@ -148,13 +148,16 @@ export function ProjectsPage() {
               denominador. La IA solo complementa: sin ella, todo sigue
               funcionando.
             </p>
-            {demo ? (
-              <p>
+            <p className="toolbar">
+              {demo ? (
                 <Link className="btn btn--primary" to={`/p/${demo.id}`}>
                   Explorar la demo
                 </Link>
-              </p>
-            ) : null}
+              ) : null}
+              <Link className="btn btn--ghost" to="/probar">
+                Prueba tu historia
+              </Link>
+            </p>
           </header>
           <h2>Proyectos</h2>
           {lead}

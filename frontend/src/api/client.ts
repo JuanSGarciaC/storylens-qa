@@ -183,6 +183,13 @@ export const createStory = (projectId: string, story: StoryInput) =>
     body: JSON.stringify(story),
   });
 
+/** Analiza con reglas un texto suelto: no guarda nada ni usa IA. */
+export const analyzeText = (story: StoryInput) =>
+  request<Analysis>("/analyze", {
+    method: "POST",
+    body: JSON.stringify(story),
+  });
+
 export const deleteStory = (storyId: string) =>
   request<void>(`/stories/${enc(storyId)}`, { method: "DELETE" });
 
