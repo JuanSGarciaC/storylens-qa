@@ -225,18 +225,57 @@ function AiNotice({ analysis }: { analysis: Analysis }) {
   );
 }
 
-function Findings({
+/** Aviso de bloqueantes, puntaje, veredicto y nota de IA: lo que comparten el análisis guardado y la prueba suelta. */
+export function ScoreSummary({ analysis }: { analysis: Analysis }) {
+  const blocking = analysis.findings.filter(
+    (f) => f.severity === "blocking" && f.decision !== "dismissed",
+  ).length;
+  const verdict = VERDICT[analysis.verdict] ?? {
+    label: analysis.verdict,
+    tone: "neutral",
+  };
+  return (
+    <>
+      {blocking > 0 ? (
+        <div className="notice" role="alert">
+          <span>
+            {blocking === 1
+              ? "Hay 1 hallazgo bloqueante sin descartar"
+              : `Hay ${blocking} hallazgos bloqueantes sin descartar`}
+            : la historia no está lista aunque el puntaje sea alto.
+          </span>
+        </div>
+      ) : null}
+      <div className="score-row">
+        <div
+          className="score"
+          role="img"
+          aria-label={`Puntaje ${analysis.score} de 100`}
+        >
+          <span className="score__value gradient-text">{analysis.score}</span>
+          <span className="score__max">/ 100</span>
+        </div>
+        <Badge tone={verdict.tone}>{verdict.label}</Badge>
+      </div>
+      <AiNotice analysis={analysis} />
+    </>
+  );
+}
+
+const neverDecide: OnDecide = () => Promise.resolve(false);
+
+export function Findings({
   analysis,
-  canDecide,
-  busy,
-  decideError,
-  onDecide,
+  canDecide = false,
+  busy = false,
+  decideError = null,
+  onDecide = neverDecide,
 }: {
   analysis: Analysis;
-  canDecide: boolean;
-  busy: boolean;
-  decideError: { id: string; message: string } | null;
-  onDecide: OnDecide;
+  canDecide?: boolean;
+  busy?: boolean;
+  decideError?: { id: string; message: string } | null;
+  onDecide?: OnDecide;
 }) {
   const base = useId();
   if (analysis.findings.length === 0) {
@@ -436,16 +475,6 @@ function AnalysisView({
     </>
   );
 
-  const blocking = (analysis?.findings ?? []).filter(
-    (f) => f.severity === "blocking" && f.decision !== "dismissed",
-  ).length;
-  const verdict = analysis
-    ? (VERDICT[analysis.verdict] ?? {
-        label: analysis.verdict,
-        tone: "neutral",
-      })
-    : null;
-
   return (
     <div className="page">
       <header className="page__head">
@@ -462,7 +491,7 @@ function AnalysisView({
           </p>
         ) : null}
       </div>
-      {!analysis || !verdict ? (
+      {!analysis ? (
         <section aria-labelledby="result-title">
           <h2 id="result-title" className="visually-hidden">
             Resultado
@@ -477,30 +506,7 @@ function AnalysisView({
         <>
           <section aria-labelledby="result-title" className="result">
             <h2 id="result-title">Resultado</h2>
-            {blocking > 0 ? (
-              <div className="notice" role="alert">
-                <span>
-                  {blocking === 1
-                    ? "Hay 1 hallazgo bloqueante sin descartar"
-                    : `Hay ${blocking} hallazgos bloqueantes sin descartar`}
-                  : la historia no está lista aunque el puntaje sea alto.
-                </span>
-              </div>
-            ) : null}
-            <div className="score-row">
-              <div
-                className="score"
-                role="img"
-                aria-label={`Puntaje ${analysis.score} de 100`}
-              >
-                <span className="score__value gradient-text">
-                  {analysis.score}
-                </span>
-                <span className="score__max">/ 100</span>
-              </div>
-              <Badge tone={verdict.tone}>{verdict.label}</Badge>
-            </div>
-            <AiNotice analysis={analysis} />
+            <ScoreSummary analysis={analysis} />
             {analysis.id ? (
               <ReportLinks
                 path={`/analyses/${analysis.id}/report`}

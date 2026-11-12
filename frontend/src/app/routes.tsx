@@ -64,6 +64,13 @@ export const routes: RouteObject[] = [
               },
               { path: "demo/*", element: <DemoRedirect /> },
               {
+                path: "probar",
+                element: screen(
+                  () => import("../features/analysis/TryPage"),
+                  "TryPage",
+                ),
+              },
+              {
                 path: "p/:projectId",
                 element: screen(
                   () => import("../features/projects/ProjectOverviewPage"),
@@ -80,7 +87,12 @@ export const routes: RouteObject[] = [
               {
                 path: "p/:projectId/stories/:storyId/analysis",
                 element: screen(
-                  () => import("../features/analysis/AnalysisPage"),
+                  // El módulo también exporta piezas con props que comparte TryPage.
+                  async () => ({
+                    AnalysisPage: (
+                      await import("../features/analysis/AnalysisPage")
+                    ).AnalysisPage,
+                  }),
                   "AnalysisPage",
                 ),
               },
