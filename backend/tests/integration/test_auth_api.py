@@ -52,6 +52,8 @@ def test_failures_from_one_ip_do_not_lock_the_owner_out_elsewhere(anon_client: T
 
 def test_tampered_cookie_is_anonymous(anon_client: TestClient) -> None:
     login(anon_client)
+    # Sin vaciar el tarro, `set` añade una segunda cookie y la válida del login viaja primero.
+    anon_client.cookies.clear()
     anon_client.cookies.set("storylens_session", "esto-no-es-un-token")
 
     response = anon_client.get("/api/v1/auth/me")
