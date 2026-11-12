@@ -69,6 +69,36 @@ test.describe("modo demo (sin sesión)", () => {
     ).toHaveCount(0);
   });
 
+  test("cualquiera puede analizar su propia historia con reglas, sin guardarla", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page
+      .getByRole("link", { name: "Prueba tu historia" })
+      .first()
+      .click();
+    await page
+      .getByLabel("Descripción")
+      .fill("Como cliente quiero pagar de forma rápida");
+    await page.getByLabel("Criterios de aceptación").fill("");
+    await page.getByRole("button", { name: "Analizar", exact: true }).click();
+
+    await expect(
+      page.getByRole("img", { name: /Puntaje \d+ de 100/ }),
+    ).toBeVisible();
+    await expect(page.getByText("US-AC-001")).toBeVisible(); // sin criterios: bloqueante
+    await expect(page.getByText("No lista")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /Aceptar|Descartar/ }),
+    ).toHaveCount(0);
+    await noAccessibilityViolations(page);
+
+    // Nada quedó guardado: la demo sigue con sus historias y sin la nueva.
+    await page.goto("/demo/stories");
+    await expect(page.getByRole("table")).toBeVisible();
+    await expect(page.getByText("pagar de forma rápida")).toHaveCount(0);
+  });
+
   test("una ruta que no existe muestra la pantalla de no encontrado", async ({
     page,
   }) => {

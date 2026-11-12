@@ -17,7 +17,7 @@
 
 <img src="docs/screenshots/flujo-en-vivo.gif" alt="El dueño escribe una historia con términos vagos, la analiza con reglas, obtiene 46 de 100 «No lista» con cada hallazgo citado a su norma y acepta uno" width="800">
 
-<sub>Grabado en local con la cuenta del dueño y solo reglas, sin IA (la demo pública es de solo lectura). Se regenera con <a href="scripts/demo_gif.py"><code>scripts/demo_gif.py</code></a>.</sub>
+<sub>Grabado en local con la cuenta del dueño y solo reglas, sin IA. En la demo pública puedes analizar tu propia historia en <a href="https://storylens-qa.onrender.com/probar">/probar</a>; el resto es de solo lectura. Se regenera con <a href="scripts/demo_gif.py"><code>scripts/demo_gif.py</code></a>.</sub>
 
 </div>
 
@@ -43,6 +43,7 @@ StoryLens QA toma historias de usuario (escritas a mano o importadas de Jira), d
 
 | Qué ver | Enlace directo |
 |---|---|
+| **Analizar tu propia historia** (con reglas; no se guarda nada) | [/probar](https://storylens-qa.onrender.com/probar) |
 | Historias con su puntaje y estado | [/demo/stories](https://storylens-qa.onrender.com/demo/stories) |
 | Resumen del proyecto | [/demo](https://storylens-qa.onrender.com/demo) |
 | Métricas con su denominador | [/demo/metricas](https://storylens-qa.onrender.com/demo/metricas) |
@@ -50,7 +51,7 @@ StoryLens QA toma historias de usuario (escritas a mano o importadas de Jira), d
 | Evaluación contra el conjunto de referencia | [/demo/evaluacion](https://storylens-qa.onrender.com/demo/evaluacion) |
 | Informes en PDF y Markdown | [/demo/reports](https://storylens-qa.onrender.com/demo/reports) |
 
-La demo pública funciona solo con reglas: la IA queda reservada a la cuenta del dueño para no gastar la cuota gratuita.
+La demo pública funciona solo con reglas: la IA queda reservada a la cuenta del dueño para no gastar la cuota gratuita. «Prueba tu historia» analiza el texto que escribas y no lo guarda.
 
 ## Capturas
 

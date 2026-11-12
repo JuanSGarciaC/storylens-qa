@@ -128,6 +128,15 @@ function ModuleNav({
         <Icon name="home" />
         <span className="nav__label">Todos los proyectos</span>
       </Link>
+      <Link
+        to="/probar"
+        className="nav__item"
+        aria-current={pathname === "/probar" ? "page" : undefined}
+        onClick={onNavigate}
+      >
+        <Icon name="check" />
+        <span className="nav__label">Prueba tu historia</span>
+      </Link>
       {base ? (
         <>
           {group(
@@ -274,6 +283,7 @@ const TITLES: [RegExp, string][] = [
   [/\/evaluacion$/, "Evaluación de la IA"],
   [/\/settings$/, "Configuración"],
   [/^\/p\/[^/]+$/, "Resumen"],
+  [/^\/probar$/, "Prueba tu historia"],
   [/^\/$/, "Proyectos"],
 ];
 
