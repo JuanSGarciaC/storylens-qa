@@ -3,7 +3,7 @@
 Cada fase termina con algo demostrable. No avances a la siguiente sin cumplir su criterio de terminado.
 
 ## Fase 0 — Cimientos
-- Repositorio en GitHub, `.gitignore`, `.env.example`, licencia (MIT).
+- Repositorio en GitHub, `.gitignore`, `.env.example`, licencia.
 - Proyecto backend (FastAPI, `GET /health`) y frontend (Vite + React + TS) vacíos.
 - pre-commit (ruff, mypy, ESLint, Prettier, gitleaks).
 - CI en GitHub Actions: lint + pruebas + build.

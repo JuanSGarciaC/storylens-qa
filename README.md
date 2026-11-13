@@ -9,7 +9,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![Costo](https://img.shields.io/badge/costo-0-2ea44f)
-[![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
+[![Licencia: todos los derechos reservados](https://img.shields.io/badge/licencia-todos%20los%20derechos%20reservados-lightgrey)](LICENSE)
 
 ### [▶ Abrir la demo en vivo](https://storylens-qa.onrender.com)
 
@@ -214,4 +214,4 @@ Las siete fases del plan están construidas: fundaciones, frontend, importación
 
 ## Licencia
 
-[MIT](LICENSE): puedes usar, copiar, modificar y distribuir el código, incluso con fines comerciales, conservando el aviso de copyright. Se ofrece tal cual, sin garantía.
+Todos los derechos reservados. El código se publica para consulta como parte de mi portafolio: puedes leerlo, pero no usarlo, copiarlo, modificarlo ni distribuirlo sin mi autorización por escrito. Ver [LICENSE](LICENSE).
