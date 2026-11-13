@@ -100,6 +100,12 @@ Resultados, evidencias y un borrador de defecto con la plantilla de ISO/IEC/IEEE
   </tr>
 </table>
 
+### Prueba tu historia (demo pública)
+
+Sin registro: escribe una historia, pulsa «Analizar» y obtén el puntaje y los hallazgos citados a su norma. Solo reglas; el texto no se guarda. [Pruébalo](https://storylens-qa.onrender.com/probar).
+
+<img src="docs/screenshots/14-prueba-tu-historia.png" alt="Prueba tu historia: formulario con una historia de ejemplo y su resultado, 46 de 100 «No lista»" width="900">
+
 ### Modo demo público (solo lectura)
 
 Cualquiera con el enlace ve un proyecto ficticio, sin IA y sin poder modificar nada.
