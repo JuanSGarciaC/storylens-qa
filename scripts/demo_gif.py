@@ -1,4 +1,5 @@
-"""Graba el GIF del README: el dueño escribe una historia, la analiza con reglas y decide un hallazgo.
+"""Graba el GIF del README (el dueño escribe una historia, la analiza con reglas y decide un hallazgo)
+y la captura de «Prueba tu historia».
 
 Contra una instancia desechable (sin volumen, sin IA):
 
@@ -50,6 +51,17 @@ with sync_playwright() as pw:
             page.mouse.wheel(0, target / 6)
             page.wait_for_timeout(60)
             frame(70)
+
+    # Captura de «Prueba tu historia», sin sesión, antes de grabar.
+    page.set_viewport_size({"width": 1440, "height": 900})
+    page.goto(f"{args.url}/probar")
+    page.get_by_role("button", name="Analizar", exact=True).click()
+    expect(page.get_by_role("heading", name="Hallazgos")).to_be_visible()
+    # Criterios, botón y resultado en el mismo encuadre.
+    page.get_by_text("Descripción", exact=True).evaluate("e => e.scrollIntoView({block: 'start'})")
+    page.wait_for_timeout(600)
+    page.screenshot(path=Path(args.out).with_name("14-prueba-tu-historia.png"))
+    page.set_viewport_size({"width": 1100, "height": 780})
 
     # Preparación, fuera de cámara: sesión y proyecto.
     page.goto(f"{args.url}/login")
