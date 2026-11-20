@@ -4,6 +4,7 @@ import type { Analysis } from "../../api/client";
 import { Button } from "../../shared/ui/Button";
 import { Field } from "../../shared/ui/Field";
 import { Findings, ScoreSummary } from "./AnalysisPage";
+import { AnalysisPreview } from "./AnalysisPreview";
 import { parseCriteria } from "./parseCriteria";
 
 // Ejemplo con defectos a propósito: un clic en «Analizar» ya enseña hallazgos.
@@ -57,47 +58,51 @@ export function TryPage() {
         </p>
       </header>
 
-      <form
-        className="panel"
-        onSubmit={handleSubmit}
-        aria-label="Historia a analizar"
-      >
-        <Field label="Título">
-          <input
-            maxLength={300}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </Field>
-        <Field
-          label="Descripción"
-          hint="Como <rol> quiero <acción> para <beneficio>"
+      <div className={analysis ? "try-grid try-grid--done" : "try-grid"}>
+        <form
+          className="panel"
+          onSubmit={handleSubmit}
+          aria-label="Historia a analizar"
         >
-          <textarea
-            rows={3}
-            required
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </Field>
-        <Field label="Criterios de aceptación" hint="Uno por línea">
-          <textarea
-            rows={5}
-            value={criteria}
-            onChange={(e) => setCriteria(e.target.value)}
-          />
-        </Field>
-        <div className="inline-form">
-          <Button type="submit" loading={busy}>
-            Analizar
-          </Button>
-        </div>
-        {error ? (
-          <p role="alert" className="field__error wrap">
-            {error}
-          </p>
-        ) : null}
-      </form>
+          <Field label="Título">
+            <input
+              maxLength={300}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </Field>
+          <Field
+            label="Descripción"
+            hint="Como <rol> quiero <acción> para <beneficio>"
+          >
+            <textarea
+              rows={3}
+              required
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </Field>
+          <Field label="Criterios de aceptación" hint="Uno por línea">
+            <textarea
+              rows={5}
+              value={criteria}
+              onChange={(e) => setCriteria(e.target.value)}
+            />
+          </Field>
+          <div className="inline-form">
+            <Button type="submit" loading={busy}>
+              Analizar
+            </Button>
+          </div>
+          {error ? (
+            <p role="alert" className="field__error wrap">
+              {error}
+            </p>
+          ) : null}
+        </form>
+        {/* El ejemplo animado (H2) explica qué hará «Analizar»; con un resultado real, sobra. */}
+        {analysis ? null : <AnalysisPreview />}
+      </div>
 
       <div aria-live="polite">
         {analysis ? (
@@ -115,7 +120,7 @@ export function TryPage() {
             className="result"
           >
             <h2 id="result-title">Resultado</h2>
-            <ScoreSummary analysis={analysis} />
+            <ScoreSummary analysis={analysis} countUp />
           </section>
           <section aria-labelledby="findings-title">
             <h2 id="findings-title">Hallazgos</h2>

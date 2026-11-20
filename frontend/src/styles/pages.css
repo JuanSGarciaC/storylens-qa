@@ -680,3 +680,192 @@
 .metric dd > span {
   display: block;
 }
+
+/* D9 Swarm Rebuild (shared/swarm): oculta la portada antes del primer pintado
+   mientras carga el módulo; si no arranca, useSwarmRebuild quita el atributo. */
+html[data-sr-pre] [data-sr-root] {
+  opacity: 0 !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-sr-pre] [data-sr-root] {
+    opacity: 1 !important;
+  }
+}
+
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+.link-button:hover {
+  color: var(--accent-2);
+}
+
+/* «Prueba tu historia»: formulario y ejemplo animado (H2) lado a lado. */
+.try-grid {
+  display: grid;
+  gap: var(--space-6);
+  align-items: start;
+}
+@media (min-width: 1100px) {
+  .try-grid:not(.try-grid--done) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.preview {
+  display: grid;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-2) 0 0;
+}
+.preview__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.preview__story {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-4) var(--space-5);
+  border-left: 2px solid var(--line-control);
+}
+.preview__story p,
+.preview__story ul {
+  margin: 0 0 var(--space-2);
+}
+.preview__story ul {
+  padding-left: 1.25rem;
+}
+.preview__label {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.preview__mark {
+  position: relative;
+  background: none;
+  color: inherit;
+}
+.preview__mark::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--warn);
+}
+.preview__findings {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.preview__finding {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--space-3);
+  align-items: baseline;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--line);
+}
+.preview__finding code {
+  color: var(--accent);
+  font-size: 0.8125rem;
+}
+.preview__score {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: 0;
+}
+.preview__value {
+  font-size: 2.5rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.preview__replay {
+  margin-left: auto;
+  font-size: 0.875rem;
+}
+@media (max-width: 599px) {
+  .preview__finding {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "code badge" "text text";
+    row-gap: var(--space-1);
+  }
+  .preview__finding code {
+    grid-area: code;
+  }
+  .preview__finding .badge {
+    grid-area: badge;
+  }
+  .preview__finding span:not(.badge) {
+    grid-area: text;
+  }
+}
+
+/* Animación solo si el componente la activa (nunca con reduced-motion ni en móvil). */
+@media (prefers-reduced-motion: no-preference) {
+  .preview--animated .preview__scan {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 30%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(139 156 255 / 14%),
+      transparent
+    );
+    transform: translateX(-100%);
+    pointer-events: none;
+  }
+  .preview--animated .preview__story.is-on .preview__scan {
+    animation: preview-scan 900ms ease-in-out both;
+  }
+  .preview--animated .preview__mark::after {
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 260ms ease-out;
+  }
+  .preview--animated .preview__mark.is-on::after {
+    transform: scaleX(1);
+  }
+  .preview--animated .preview__finding,
+  .preview--animated .preview__score {
+    opacity: 0;
+    transform: translateY(0.5rem);
+    transition:
+      opacity 320ms ease-out,
+      transform 320ms ease-out;
+  }
+  .preview--animated .preview__finding.is-on,
+  .preview--animated .preview__score.is-on {
+    opacity: 1;
+    transform: none;
+  }
+  .preview--animated .preview__finding:nth-child(2) {
+    transition-delay: 90ms;
+  }
+  .preview--animated .preview__finding:nth-child(3) {
+    transition-delay: 180ms;
+  }
+}
+@keyframes preview-scan {
+  to {
+    transform: translateX(340%);
+  }
+}

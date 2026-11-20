@@ -34,6 +34,9 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:5173",
     locale: "es-ES",
+    // Sin animaciones decorativas (p. ej. el enjambre de la portada): las pruebas
+    // ven el contenido final de inmediato. La prueba del enjambre lo reactiva.
+    reducedMotion: "reduce",
     trace: "retain-on-failure",
     launchOptions: {
       executablePath: process.env.CHROMIUM_PATH || undefined,

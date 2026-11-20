@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { enter } from "../../shared/ui/motion";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -12,6 +12,7 @@ import { EmptyState } from "../../shared/ui/EmptyState";
 import { ErrorNotice } from "../../shared/ui/ErrorNotice";
 import { Field } from "../../shared/ui/Field";
 import { Spinner } from "../../shared/ui/Spinner";
+import { useSwarmRebuild } from "../../shared/swarm/useSwarmRebuild";
 
 function CreateProject() {
   const navigate = useNavigate();
@@ -92,6 +93,9 @@ function CreateProject() {
 export function ProjectsPage() {
   const authenticated = useSession().me?.authenticated ?? false;
   const list = useLoad(() => api.listProjects(), "projects");
+  // D9 Swarm Rebuild: solo en la portada pública, nunca en la vista de trabajo.
+  const page = useRef<HTMLDivElement>(null);
+  const swarm = useSwarmRebuild(page, !authenticated);
 
   let body;
   if (list.loading) body = <Spinner label="Cargando proyectos…" />;
@@ -111,7 +115,7 @@ export function ProjectsPage() {
     body = (
       <ul className="project-list">
         {list.data.map((project, index) => (
-          <li key={project.id} {...enter(index)}>
+          <li key={project.id} data-sr-box="" {...enter(index)}>
             <span className="project-list__name">
               <Link to={`/p/${project.id}`}>{project.name}</Link>
               {project.is_demo ? <Badge tone="info">Demostración</Badge> : null}
@@ -131,7 +135,7 @@ export function ProjectsPage() {
   );
 
   return (
-    <div className="page">
+    <div className="page" ref={page} data-sr-root="">
       {authenticated ? (
         <header className="page__head">
           <h1 className="page__title">Proyectos</h1>
@@ -158,6 +162,18 @@ export function ProjectsPage() {
                 Prueba tu historia
               </Link>
             </p>
+            {swarm.available ? (
+              <p className="hint">
+                <button
+                  type="button"
+                  className="link-button"
+                  data-sr-replay=""
+                  onClick={swarm.replay}
+                >
+                  Ver cómo se construye esta página
+                </button>
+              </p>
+            ) : null}
           </header>
           <h2>Proyectos</h2>
           {lead}

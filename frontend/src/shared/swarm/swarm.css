@@ -1,0 +1,267 @@
+/* D9 Swarm Rebuild (ver swarm.ts). Se carga solo con el módulo, de forma diferida. */
+
+[data-sr-state="hidden"] {
+  opacity: 0 !important;
+}
+[data-sr-state="in"] {
+  opacity: 1;
+  transition: opacity 220ms ease-out;
+}
+[data-sr-state="box-hidden"] {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+/* Fundido puntual del contenedor al recuperar fondo y borde (una vez por caja). */
+[data-sr-state="box-in"] {
+  transition:
+    background-color 300ms ease-out,
+    border-color 300ms ease-out,
+    box-shadow 300ms ease-out;
+}
+[data-sr-pending] {
+  opacity: 0;
+}
+
+.sr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+.sr-agent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 16px;
+  height: 22px;
+  transform-origin: 1px 1px;
+  will-change: transform;
+  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 55%));
+}
+.sr-agent svg {
+  display: block;
+  margin: -1px 0 0 -1px;
+}
+
+.sr-sweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  opacity: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent, #8b9cff) 20%,
+    #6ea8ff 50%,
+    var(--accent, #8b9cff) 80%,
+    transparent
+  );
+  box-shadow:
+    0 0 12px 2px rgb(110 168 255 / 55%),
+    0 -40px 60px -20px rgb(110 168 255 / 18%);
+  will-change: transform, opacity;
+}
+
+.sr-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform, opacity;
+}
+.sr-frame__e {
+  position: absolute;
+  background: var(--c);
+  transform: scale(0);
+}
+.sr-frame__e--t,
+.sr-frame__e--b {
+  left: 0;
+  right: 0;
+  height: 1.5px;
+}
+.sr-frame__e--l,
+.sr-frame__e--r {
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+}
+.sr-frame__e--t {
+  top: 0;
+  transform-origin: left center;
+}
+.sr-frame__e--l {
+  left: 0;
+  transform-origin: center top;
+}
+.sr-frame__e--r {
+  right: 0;
+  transform-origin: center top;
+}
+.sr-frame__e--b {
+  bottom: 0;
+  transform-origin: left center;
+}
+.sr-frame__tag {
+  position: absolute;
+  left: -1px;
+  bottom: 100%;
+  padding: 1px 6px;
+  border-radius: 4px 4px 4px 0;
+  background: var(--c);
+  color: #0b0b10;
+  font: 600 10px/1.4 var(--font-mono, ui-monospace, monospace);
+  letter-spacing: 0.02em;
+}
+
+.sr-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  z-index: 61;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 24px);
+  padding: 6px 6px 6px 14px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 999px;
+  background: rgb(19 19 26 / 88%);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 32px -12px rgb(0 0 0 / 80%);
+  color: var(--muted, #a3a3b2);
+  font: 500 13px/1 var(--font-sans, system-ui, sans-serif);
+  transform: translateX(-50%);
+  animation: sr-bar-in 320ms ease-out both;
+  transition:
+    opacity 260ms ease,
+    transform 260ms ease;
+}
+.sr-bar--out {
+  opacity: 0;
+  transform: translate(-50%, 24px);
+  pointer-events: none;
+}
+@keyframes sr-bar-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 24px);
+  }
+}
+.sr-bar b {
+  color: var(--fg, #ececf1);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-weight: 500;
+}
+.sr-bar__stat {
+  white-space: nowrap;
+}
+.sr-bar__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent, #8b9cff);
+  box-shadow: 0 0 8px var(--accent, #8b9cff);
+  animation: sr-pulse 1.2s ease-in-out infinite;
+}
+.sr-bar--done .sr-bar__dot {
+  background: var(--ok, #4ade80);
+  box-shadow: 0 0 8px var(--ok, #4ade80);
+  animation: none;
+}
+@keyframes sr-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+.sr-bar__track {
+  width: 88px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 10%);
+}
+.sr-bar__fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--accent, #8b9cff),
+    var(--accent-2, #c4a7ff)
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 200ms ease-out;
+}
+.sr-bar__msg {
+  color: var(--fg, #ececf1);
+  white-space: nowrap;
+}
+.sr-bar__msg:empty {
+  display: none;
+}
+.sr-bar--done .sr-bar__track,
+.sr-bar--done .sr-bar__stat {
+  display: none;
+}
+.sr-bar__btn {
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0 12px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg, #ececf1);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+.sr-bar__btn:hover:not(:disabled) {
+  background: rgb(255 255 255 / 8%);
+}
+.sr-bar__btn:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+.sr-bar__btn:focus-visible {
+  outline: 2px solid var(--accent, #8b9cff);
+  outline-offset: 2px;
+}
+.sr-bar__btn[aria-pressed="true"] {
+  border-color: var(--accent, #8b9cff);
+  color: var(--accent, #8b9cff);
+}
+.sr-bar__close {
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+}
+
+@media (max-width: 599px) {
+  .sr-bar {
+    gap: 8px;
+    bottom: 10px;
+    padding-left: 10px;
+    font-size: 12px;
+  }
+  .sr-bar__track {
+    width: 40px;
+  }
+  .sr-bar__stat--agents {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-overlay,
+  .sr-bar {
+    display: none;
+  }
+}

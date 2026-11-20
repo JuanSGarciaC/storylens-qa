@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { enter } from "../../shared/ui/motion";
+import { useCountUp } from "../../shared/ui/useCountUp";
 import { useNavigate, useParams } from "react-router-dom";
 import * as api from "../../api/client";
 import type {
@@ -226,7 +227,15 @@ function AiNotice({ analysis }: { analysis: Analysis }) {
 }
 
 /** Aviso de bloqueantes, puntaje, veredicto y nota de IA: lo que comparten el análisis guardado y la prueba suelta. */
-export function ScoreSummary({ analysis }: { analysis: Analysis }) {
+export function ScoreSummary({
+  analysis,
+  countUp = false,
+}: {
+  analysis: Analysis;
+  /** A7: el puntaje sube de 0 a su valor (solo en la demo pública). */
+  countUp?: boolean;
+}) {
+  const score = useCountUp(analysis.score, countUp);
   const blocking = analysis.findings.filter(
     (f) => f.severity === "blocking" && f.decision !== "dismissed",
   ).length;
@@ -252,7 +261,7 @@ export function ScoreSummary({ analysis }: { analysis: Analysis }) {
           role="img"
           aria-label={`Puntaje ${analysis.score} de 100`}
         >
-          <span className="score__value gradient-text">{analysis.score}</span>
+          <span className="score__value gradient-text">{score}</span>
           <span className="score__max">/ 100</span>
         </div>
         <Badge tone={verdict.tone}>{verdict.label}</Badge>

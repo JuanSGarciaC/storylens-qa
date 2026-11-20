@@ -246,3 +246,49 @@ test.describe("flujo del dueño", () => {
     await expect(page.getByRole("alert")).toHaveText(wrong);
   });
 });
+
+test.describe("portada animada (D9 Swarm Rebuild)", () => {
+  test.use({ reducedMotion: "no-preference" });
+
+  test("el enjambre construye la portada, Esc lo termina y no queda nada oculto", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const bar = page.getByRole("region", {
+      name: "Enjambre que construye la página",
+    });
+    await expect(bar).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(bar.getByRole("status")).toHaveText(
+      /\d+ capas reconstruidas en [\d.]+ s/,
+    );
+    await expect(
+      page.locator('[data-sr-state="hidden"], [data-sr-pending]'),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("link", { name: "Explorar la demo" }),
+    ).toBeVisible();
+
+    await bar.getByRole("button", { name: "Cerrar el enjambre" }).click();
+    await expect(bar).toHaveCount(0);
+
+    // Una vez visto, no se repite solo en la misma sesión; el botón lo repite.
+    await page.reload();
+    await expect(bar).toHaveCount(0);
+    await page.getByRole("button", { name: /Ver cómo se construye/ }).click();
+    await expect(bar).toBeVisible();
+  });
+
+  test("con sesión iniciada la vista de proyectos no se anima", async ({
+    page,
+  }) => {
+    await login(page);
+    await page.goto("/");
+    await expect(
+      page.getByRole("heading", { name: "Proyectos" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Enjambre que construye la página" }),
+    ).toHaveCount(0);
+  });
+});
