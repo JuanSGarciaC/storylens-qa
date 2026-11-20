@@ -43,6 +43,7 @@ StoryLens QA toma historias de usuario (escritas a mano o importadas de Jira), d
 
 | Qué ver | Enlace directo |
 |---|---|
+| Presentación del proyecto en una página | [/inicio](https://storylens-qa.onrender.com/inicio) |
 | **Analizar tu propia historia** (con reglas; no se guarda nada) | [/probar](https://storylens-qa.onrender.com/probar) |
 | Historias con su puntaje y estado | [/demo/stories](https://storylens-qa.onrender.com/demo/stories) |
 | Resumen del proyecto | [/demo](https://storylens-qa.onrender.com/demo) |

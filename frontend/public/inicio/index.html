@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      StoryLens QA · Revisa tus historias antes de que sean defectos
+    </title>
+    <meta
+      name="description"
+      content="StoryLens QA detecta lo que está mal redactado en una historia de usuario, cita la norma que lo dice y genera casos de prueba. Con reglas siempre; con IA solo si quieres."
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/inicio/inicio.css" />
+    <script>
+      // Antes del primer pintado: si hay movimiento, la demo del hero arranca vacía.
+      // Si inicio.js no llega en 3 s, se quita la clase y todo queda visible.
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.documentElement.classList.add("js-hero");
+        setTimeout(function () {
+          if (!document.documentElement.classList.contains("hero-ready"))
+            document.documentElement.classList.remove("js-hero");
+        }, 3000);
+      }
+    </script>
+    <script src="/inicio/inicio.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#contenido">Saltar al contenido</a>
+
+    <header class="nav">
+      <a class="brand" href="/inicio" aria-label="StoryLens QA, inicio">
+        <img src="/favicon.svg" alt="" width="24" height="24" />
+        <span>StoryLens QA</span>
+      </a>
+      <nav aria-label="Secciones">
+        <a href="#como-funciona">Cómo funciona</a>
+        <a href="#modulos">Módulos</a>
+        <a href="#evaluacion">Evaluación</a>
+        <a href="https://github.com/JuanSGarciaC/storylens-qa">GitHub</a>
+      </nav>
+      <a class="btn btn-ghost" href="/demo">Abrir la demo</a>
+    </header>
+
+    <main id="contenido">
+      <!-- HERO · H2 Live demo mock (estrella) + B2 Typewriter + A7 Count-up -->
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow mono">
+            Calidad de requisitos · ISO/IEC/IEEE 29148 · INVEST · ISTQB
+          </p>
+          <h1 id="hero-title">
+            Encuentra lo que está mal escrito
+            <span class="gradient-text">antes de que sea un defecto.</span>
+          </h1>
+          <p class="lead">
+            StoryLens QA revisa tus historias de usuario, cita la norma de cada
+            hallazgo, genera casos de prueba trazables y mide la calidad con el
+            denominador a la vista. Con reglas siempre; con IA solo si quieres.
+          </p>
+          <div class="actions">
+            <a class="btn btn-primary" href="/probar">Prueba tu historia</a>
+            <a class="btn btn-ghost" href="/demo/stories">Ver la demo</a>
+          </div>
+          <p class="note">
+            Sin registro y sin costo. «Prueba tu historia» no guarda lo que
+            escribas.
+          </p>
+        </div>
+
+        <figure class="demo" id="demo" aria-labelledby="demo-caption">
+          <div class="demo-bar" aria-hidden="true">
+            <span></span><span></span><span></span>
+            <span class="mono demo-path">/probar</span>
+          </div>
+
+          <div class="demo-body">
+            <dl class="demo-story">
+              <dt>Título</dt>
+              <dd class="type">Transferir dinero</dd>
+              <dt>Descripción</dt>
+              <dd class="type">
+                Como cliente quiero transferir dinero de forma
+                <mark data-f="2">rápida</mark> y <mark data-f="3">fácil</mark>
+              </dd>
+              <dt>Criterios de aceptación</dt>
+              <dd>
+                <ol class="type">
+                  <li>
+                    La transferencia debe ser <mark data-f="4">rápida</mark>
+                  </li>
+                  <li>El sistema debe ser <mark data-f="5">amigable</mark></li>
+                </ol>
+              </dd>
+            </dl>
+
+            <div class="demo-run" aria-hidden="true">
+              <span class="fake-btn">Analizar</span>
+              <span class="mono muted demo-status"
+                >solo reglas · catálogo 1.0.0</span
+              >
+            </div>
+
+            <div class="demo-result">
+              <div class="score">
+                <p class="score-num mono">
+                  <span class="count" data-to="46">46</span
+                  ><span class="muted">/100</span>
+                </p>
+                <p class="badge badge-danger">No lista</p>
+                <div class="meter" aria-hidden="true">
+                  <span style="--v: 0.46"></span>
+                </div>
+              </div>
+
+              <ol class="findings" aria-label="Hallazgos">
+                <li data-f="1">
+                  <span class="sev sev-major">Mayor</span>
+                  <span class="msg">A la historia le falta: beneficio.</span>
+                  <span class="ref mono">US-FMT-001 · Connextra / 3C</span>
+                </li>
+                <li data-f="2">
+                  <span class="sev sev-major">Mayor</span>
+                  <span class="msg">Término vago «rápida».</span>
+                  <span class="ref mono"
+                    >US-AMB-001 · ISO 29148 (No ambiguo)</span
+                  >
+                </li>
+                <li data-f="3">
+                  <span class="sev sev-major">Mayor</span>
+                  <span class="msg">Término vago «fácil».</span>
+                  <span class="ref mono"
+                    >US-AMB-001 · ISO 29148 (No ambiguo)</span
+                  >
+                </li>
+                <li data-f="4">
+                  <span class="sev sev-major">Mayor</span>
+                  <span class="msg"
+                    >Término vago «rápida» en el criterio 1.</span
+                  >
+                  <span class="ref mono"
+                    >US-AMB-001 · ISO 29148 (No ambiguo)</span
+                  >
+                </li>
+                <li data-f="5">
+                  <span class="sev sev-major">Mayor</span>
+                  <span class="msg"
+                    >Término vago «amigable» en el criterio 2.</span
+                  >
+                  <span class="ref mono"
+                    >US-AMB-001 · ISO 29148 (No ambiguo)</span
+                  >
+                </li>
+                <li data-f="6">
+                  <span class="sev sev-minor">Menor</span>
+                  <span class="msg"
+                    >Ningún criterio usa Dado/Cuando/Entonces.</span
+                  >
+                  <span class="ref mono">US-AC-003 · ISTQB CTFL v4.0</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+
+          <figcaption id="demo-caption" class="demo-caption">
+            Resultado real del motor de reglas para esta historia: 46 de 100,
+            «No lista», seis hallazgos con su norma.
+            <button type="button" class="replay" hidden>
+              Repetir la animación
+            </button>
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- IDEA CENTRAL -->
+      <section class="idea" data-reveal>
+        <p>
+          <span class="gradient-text">Las reglas trabajan siempre.</span> La IA
+          solo complementa: si falla o se agota la cuota gratuita, la app sigue
+          funcionando con las reglas, sin errores.
+        </p>
+      </section>
+
+      <!-- CÓMO FUNCIONA · A6 Draw SVG -->
+      <section id="como-funciona" class="section" aria-labelledby="flow-title">
+        <h2 id="flow-title" data-reveal>Cómo funciona</h2>
+        <p class="section-lead" data-reveal>
+          De la historia a la métrica, cada paso deja rastro: cada caso apunta a
+          su criterio y cada hallazgo, a su norma.
+        </p>
+
+        <svg
+          class="flow"
+          viewBox="0 0 1000 250"
+          role="img"
+          aria-labelledby="flow-svg-title"
+          data-draw
+        >
+          <title id="flow-svg-title">
+            Historia, reglas, casos de prueba, sesión de QA y métricas en línea.
+            La IA es una rama opcional que sale de las reglas y vuelve a ellas.
+          </title>
+          <defs>
+            <linearGradient
+              id="flow-grad"
+              gradientUnits="userSpaceOnUse"
+              x1="60"
+              x2="940"
+              y1="0"
+              y2="0"
+            >
+              <stop offset="0" stop-color="#8b9cff" />
+              <stop offset="1" stop-color="#c4a7ff" />
+            </linearGradient>
+          </defs>
+          <path class="flow-line" pathLength="1" d="M 60 170 H 940" />
+          <path
+            class="flow-ai"
+            d="M 290 170 C 330 78, 450 78, 490 78 C 530 78, 650 78, 690 170"
+          />
+          <g class="flow-ai-label">
+            <text x="490" y="26" text-anchor="middle" class="t-mono">
+              IA (opcional)
+            </text>
+            <text x="490" y="50" text-anchor="middle" class="t-small">
+              Gemini, capa gratuita · sugerencias con su confianza
+            </text>
+          </g>
+          <g class="flow-nodes">
+            <g style="--i: 0">
+              <circle cx="60" cy="170" r="7" />
+              <text x="60" y="205" text-anchor="middle">Historia</text>
+              <text x="60" y="228" text-anchor="middle" class="t-small">
+                manual o Jira
+              </text>
+            </g>
+            <g style="--i: 1">
+              <circle cx="280" cy="170" r="7" />
+              <text x="280" y="205" text-anchor="middle">Reglas</text>
+              <text x="280" y="228" text-anchor="middle" class="t-small">
+                29148 · INVEST
+              </text>
+            </g>
+            <g style="--i: 2">
+              <circle cx="500" cy="170" r="7" />
+              <text x="500" y="205" text-anchor="middle">Casos de prueba</text>
+              <text x="500" y="228" text-anchor="middle" class="t-small">
+                técnicas ISTQB
+              </text>
+            </g>
+            <g style="--i: 3">
+              <circle cx="720" cy="170" r="7" />
+              <text x="720" y="205" text-anchor="middle">Sesión de QA</text>
+              <text x="720" y="228" text-anchor="middle" class="t-small">
+                evidencias y defectos
+              </text>
+            </g>
+            <g style="--i: 4">
+              <circle cx="940" cy="170" r="7" />
+              <text x="940" y="205" text-anchor="middle">Métricas</text>
+              <text x="940" y="228" text-anchor="middle" class="t-small">
+                con su denominador
+              </text>
+            </g>
+          </g>
+        </svg>
+
+        <ol class="flow-list" data-reveal>
+          <li><b>Historia</b> escrita a mano o importada de Jira.</li>
+          <li><b>Reglas</b> citadas a ISO/IEC/IEEE 29148, INVEST e ISTQB.</li>
+          <li class="flow-list-ai">
+            <b>IA opcional</b>: sugerencias con su confianza.
+          </li>
+          <li><b>Casos de prueba</b> con técnicas ISTQB y Gherkin.</li>
+          <li><b>Sesión de QA</b> con evidencias y defectos.</li>
+          <li><b>Métricas</b> con su definición y su denominador.</li>
+        </ol>
+      </section>
+
+      <!-- MÓDULOS · A1 + A2 -->
+      <section id="modulos" class="section" aria-labelledby="mod-title">
+        <h2 id="mod-title" data-reveal>Qué incluye</h2>
+        <ol class="modules" data-stagger>
+          <li>
+            <span class="mono n">01</span><b>Proyectos</b>
+            <span
+              >Aislamiento de datos, épicas, versiones, umbrales por proyecto y
+              auditoría.</span
+            >
+          </li>
+          <li>
+            <span class="mono n">02</span><b>Historias e importación</b>
+            <span
+              >Alta manual o CSV/JSON de Jira (hasta 500 filas) en segundo
+              plano.</span
+            >
+          </li>
+          <li>
+            <span class="mono n">03</span><b>Calidad de requisitos</b>
+            <span
+              >Reglas citadas a normas, puntaje y hallazgos que aceptas o
+              descartas.</span
+            >
+          </li>
+          <li>
+            <span class="mono n">04</span><b>IA complementaria</b>
+            <span
+              >Hallazgos de IA con su confianza; siempre sugerencias, tú
+              decides.</span
+            >
+          </li>
+          <li>
+            <span class="mono n">05</span><b>Análisis transversal</b>
+            <span
+              >Duplicados, dependencias, posibles contradicciones y riesgo por
+              épica.</span
+            >
+          </li>
+          <li>
+            <span class="mono n">06</span><b>Casos de prueba</b>
+            <span
+              >Técnicas ISTQB, Gherkin sugerido y trazabilidad criterio →
+              caso.</span
+            >
+          </li>
+          <li>
+            <span class="mono n">07</span><b>Sesiones de QA</b>
+            <span
+              >Checklist, resultados, evidencias y borradores de defecto.</span
+            >
+          </li>
+          <li>
+            <span class="mono n">08</span><b>Informes</b>
+            <span>PDF y Markdown por análisis y por sesión.</span>
+          </li>
+          <li>
+            <span class="mono n">09</span><b>Métricas</b>
+            <span
+              >Cada cifra con su definición; «Sin datos» en vez de un cero
+              inventado.</span
+            >
+          </li>
+          <li>
+            <span class="mono n">10</span><b>Evaluación de la IA</b>
+            <span
+              >Precisión, exhaustividad y F1 contra un conjunto de
+              referencia.</span
+            >
+          </li>
+        </ol>
+      </section>
+
+      <!-- EVALUACIÓN · H1 Animated charts + A7 -->
+      <section id="evaluacion" class="section" aria-labelledby="eval-title">
+        <h2 id="eval-title" data-reveal>Medido, no prometido</h2>
+        <p class="section-lead" data-reveal>
+          F1 contra un conjunto de referencia etiquetado a mano. El conjunto
+          reservado no se miró al ajustar las reglas: es la cifra honesta.
+        </p>
+
+        <div class="charts">
+          <figure class="chart" data-chart>
+            <figcaption>
+              <b>Conjunto de desarrollo</b>
+              <span class="muted">16 historias</span>
+            </figcaption>
+            <dl>
+              <div class="bar-row">
+                <dt>Reglas</dt>
+                <dd>
+                  <span class="bar bar-rules" style="--v: 1"></span>
+                  <span class="mono val"
+                    ><span class="count" data-to="1" data-dec="2"
+                      >1,00</span
+                    ></span
+                  >
+                  <span class="mono muted den"
+                    >12 aciertos · 0 falsos · 0 omitidos</span
+                  >
+                </dd>
+              </div>
+              <div class="bar-row">
+                <dt>IA</dt>
+                <dd>
+                  <span class="bar bar-ai" style="--v: 0.88"></span>
+                  <span class="mono val"
+                    ><span class="count" data-to="0.88" data-dec="2"
+                      >0,88</span
+                    ></span
+                  >
+                  <span class="mono muted den"
+                    >7 aciertos · 2 falsos · 0 omitidos</span
+                  >
+                </dd>
+              </div>
+            </dl>
+            <p class="chart-note">
+              La IA varía entre corridas: con el mismo código dio F1 entre 0,63
+              y 0,88.
+            </p>
+          </figure>
+
+          <figure class="chart" data-chart>
+            <figcaption>
+              <b>Conjunto reservado</b>
+              <span class="muted">13 historias, no vistas al ajustar</span>
+            </figcaption>
+            <dl>
+              <div class="bar-row">
+                <dt>Reglas</dt>
+                <dd>
+                  <span class="bar bar-rules" style="--v: 0.71"></span>
+                  <span class="mono val"
+                    ><span class="count" data-to="0.71" data-dec="2"
+                      >0,71</span
+                    ></span
+                  >
+                  <span class="mono muted den"
+                    >6 aciertos · 3 falsos · 2 omitidos</span
+                  >
+                </dd>
+              </div>
+              <div class="bar-row">
+                <dt>IA</dt>
+                <dd>
+                  <span class="bar bar-ai" style="--v: 0.43"></span>
+                  <span class="mono val"
+                    ><span class="count" data-to="0.43" data-dec="2"
+                      >0,43</span
+                    ></span
+                  >
+                  <span class="mono muted den"
+                    >6 aciertos · 4 falsos · 12 omitidos</span
+                  >
+                </dd>
+              </div>
+            </dl>
+            <p class="chart-note">
+              Por eso la IA solo sugiere: las reglas son la base y la IA nunca
+              decide sola.
+            </p>
+          </figure>
+        </div>
+        <p class="source muted" data-reveal>
+          Fuente: <span class="mono">evaluation/reports/2026-10-31-*.md</span>,
+          catálogo de reglas 1.0.0, Gemini en capa gratuita.
+        </p>
+      </section>
+
+      <!-- CIERRE -->
+      <section class="closing" data-reveal aria-labelledby="close-title">
+        <h2 id="close-title">Pega una historia y mira qué encuentra.</h2>
+        <div class="actions">
+          <a class="btn btn-primary" href="/probar">Prueba tu historia</a>
+          <a class="btn btn-ghost" href="/demo">Recorrer la demo</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>StoryLens QA · Python, FastAPI y React · costo 0</span>
+      <span>
+        <a href="https://github.com/JuanSGarciaC/storylens-qa"
+          >Código en GitHub</a
+        >
+        · Todos los derechos reservados
+      </span>
+    </footer>
+  </body>
+</html>
