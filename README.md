@@ -54,6 +54,47 @@ StoryLens QA toma historias de usuario (escritas a mano o importadas de Jira), d
 
 La demo pública funciona solo con reglas: la IA queda reservada a la cuenta del dueño para no gastar la cuota gratuita. «Prueba tu historia» analiza el texto que escribas y no lo guarda.
 
+## Landing del proyecto (`/inicio`)
+
+Una página para presentar el proyecto en un minuto. Su pieza central es una demo que se usa sola: una historia vaga se teclea, se marcan sus términos vagos, salen los hallazgos citados a ISO/IEC/IEEE 29148 y el puntaje cuenta hasta 46 «No lista». No es un vídeo ni datos inventados: es la salida real del motor de reglas para esa historia.
+
+<img src="docs/screenshots/15-landing-demo.gif" alt="Demo de la landing: se teclea «Como cliente quiero transferir dinero de forma rápida y fácil», se subrayan los términos vagos, el puntaje cuenta hasta 46 de 100 «No lista» y aparecen seis hallazgos con su norma" width="900">
+
+<sub>Grabado en local a ritmo real con Playwright y Edge.</sub>
+
+| Sección | Efecto | Por qué |
+|---|---|---|
+| Hero | Demo que se usa sola, con tecleo y contador | Enseña el producto haciendo su trabajo, sin capturas estáticas |
+| Cómo funciona | Diagrama SVG que se dibuja al llegar | La rama de IA es discontinua y opcional: el flujo sigue por las reglas |
+| Qué incluye | Aparición escalonada de los 10 módulos | Lista sin cajas, como pide el design system |
+| Medido, no prometido | Barras de F1 que crecen y cifras que cuentan | Cada cifra con aciertos, falsos y omitidos; incluye el conjunto reservado, donde la IA cae |
+| Fondo | Rejilla de puntos y luces del design system | Coste bajo, sin animación |
+
+Es HTML, CSS y JS sin dependencias ([`frontend/public/inicio/`](frontend/public/inicio)). Se lee completa sin JavaScript, y con `prefers-reduced-motion` no se anima nada: todo aparece en su estado final. Solo anima `transform` y `opacity`, y en móvil se salta el tecleo.
+
+<table>
+  <tr>
+    <td width="70%"><img src="docs/screenshots/16-landing-hero.png" alt="Hero de la landing con la demo terminada: 46 de 100, «No lista» y seis hallazgos"><br><sub><b>Hero</b> con la demo terminada.</sub></td>
+    <td width="30%"><img src="docs/screenshots/19-landing-movil.png" alt="La demo de la landing en un móvil de 390 px"><br><sub><b>Móvil</b>, 390 px.</sub></td>
+  </tr>
+</table>
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/17-landing-flujo.png" alt="Diagrama del flujo: historia, reglas, casos de prueba, sesión de QA y métricas, con la IA como rama opcional"><br><sub><b>Cómo funciona:</b> la IA es una rama opcional.</sub></td>
+    <td width="50%"><img src="docs/screenshots/18-landing-evaluacion.png" alt="F1 de reglas e IA en el conjunto de desarrollo y en el reservado"><br><sub><b>Medido, no prometido:</b> F1 con su denominador.</sub></td>
+  </tr>
+</table>
+
+**Verla en local:** compila la interfaz y deja que FastAPI la sirva.
+
+```bash
+cd frontend && npm run build
+cd ../backend && STATIC_DIR=../frontend/dist uvicorn app.main:app
+# http://localhost:8000/inicio  (con Docker: http://localhost:8080/inicio)
+```
+
+Con `npm run dev`, Vite la sirve en `http://localhost:5173/inicio/index.html`.
+
 ## Capturas
 
 Todas son del diseño actual. Las de IA se tomaron con Gemini real (capa gratuita) sobre un proyecto de ejemplo de banca móvil; las de la demo, del sitio publicado.
@@ -151,7 +192,7 @@ Más detalle: [guía de desarrollo](docs/08-guia-de-desarrollo.md) · [despliegu
 | Extremo a extremo (Playwright + axe, WCAG 2.1 AA) | `cd frontend && npm run test:e2e` |
 | Evaluación de la IA | pantalla «Evaluación de la IA» o `python evaluation/run_eval.py [--ai]` |
 
-Ninguna prueba llama a Gemini. La integración continua ejecuta todo lo anterior en cada cambio y busca secretos en el historial.
+Cifras actuales: pasan 423 pruebas de backend y 229 de frontend (24 archivos); aparte hay 9 escenarios de extremo a extremo. Ninguna prueba llama a Gemini. La integración continua ejecuta todo lo anterior en cada cambio y busca secretos en el historial.
 
 ## Evaluación de la IA
 
