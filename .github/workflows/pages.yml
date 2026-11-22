@@ -1,0 +1,45 @@
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ["frontend/public/inicio/**", "frontend/public/favicon.svg", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      # La landing está escrita para servirse desde la app (/inicio); en Pages sus
+      # recursos pasan a rutas relativas y los enlaces a la app apuntan a Render.
+      - name: Preparar el sitio
+        run: |
+          mkdir -p _site
+          cp frontend/public/inicio/* _site/
+          cp frontend/public/favicon.svg _site/
+          sed -i \
+            -e 's#"/inicio/#"./#g' \
+            -e 's#"/favicon.svg"#"./favicon.svg"#g' \
+            -e 's#href="/inicio"#href="./"#g' \
+            -e 's#href="/\(probar\|demo\)#href="https://storylens-qa.onrender.com/\1#g' \
+            _site/index.html
+          ! grep -nE '(href|src)="/[a-z]' _site/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
