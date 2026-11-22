@@ -12,6 +12,8 @@ def site(tmp_path, monkeypatch) -> TestClient:
     (static / "assets").mkdir(parents=True)
     (static / "index.html").write_text("<!doctype html><title>StoryLens</title>")
     (static / "assets" / "app.js").write_text("console.log(1)")
+    (static / "inicio").mkdir()
+    (static / "inicio" / "index.html").write_text("<!doctype html><title>Landing</title>")
     (tmp_path / "secreto.txt").write_text("no")
     monkeypatch.setenv("STATIC_DIR", str(static))
     monkeypatch.setenv("DATABASE_URL", f"sqlite:///{(tmp_path / 'app.db').as_posix()}")
@@ -27,6 +29,12 @@ def test_assets_and_spa_routes_are_served_from_the_same_origin(site: TestClient)
     assert page.status_code == 200 and "StoryLens" in page.text
     assert page.headers["x-content-type-options"] == "nosniff"
     assert site.head("/").status_code == 200  # monitores de disponibilidad usan HEAD
+
+
+def test_static_page_folders_serve_their_index(site: TestClient) -> None:
+    for path in ("/inicio", "/inicio/"):
+        assert "Landing" in site.get(path).text
+    assert "StoryLens" in site.get("/assets").text  # carpeta sin index.html: la SPA
 
 
 def test_unknown_api_paths_stay_404_and_files_outside_dist_are_not_served(

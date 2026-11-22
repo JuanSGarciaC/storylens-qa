@@ -200,6 +200,8 @@ def _serve_frontend(app: FastAPI, root: Path) -> None:
         if path == "api" or path.startswith("api/"):
             raise StarletteHTTPException(404, "No encontrado")
         file = (root / path).resolve()
+        if file.is_dir():  # páginas estáticas en carpeta, p. ej. /inicio → inicio/index.html
+            file = file / "index.html"
         if not (file.is_file() and file.is_relative_to(root)):
             file = root / "index.html"
         return FileResponse(file)
